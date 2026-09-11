@@ -2,7 +2,7 @@
  * 気象庁天気コード118種。アイコンファイルと名称の対応。
  */
 
-import { JMA_WEATHER_CODES } from "./jma-codes.js?v=pref206";
+import { JMA_WEATHER_CODES } from "./jma-codes.js?v=pref208";
 
 export const JMA_CODE_LIST = Object.keys(JMA_WEATHER_CODES);
 
@@ -30,8 +30,11 @@ export function jmaLabel(weather) {
 }
 
 export function jmaIconFile(weather, night = false) {
-  const code = resolveWeatherCode(weather);
-  return night ? `icons/jma/night/${code}.svg` : `icons/jma/${code}.svg`;
+  const entry = jmaEntry(weather);
+  const file = night
+    ? (entry?.officialNight || "200.svg")
+    : (entry?.officialDay || "200.svg");
+  return `icons/jma/${file}`;
 }
 
 export function isNightHours(date = new Date()) {
@@ -47,6 +50,25 @@ export function isNightHours(date = new Date()) {
     timeZone: "Asia/Tokyo"
   }).format(date));
   return hour < 6 || hour >= 18;
+}
+
+export function msUntilIconPhaseChange(now = new Date()) {
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Asia/Tokyo",
+    hour: "numeric",
+    minute: "numeric",
+    second: "numeric",
+    hourCycle: "h23"
+  }).formatToParts(now);
+  const hour = Number(parts.find((part) => part.type === "hour")?.value || 0);
+  const minute = Number(parts.find((part) => part.type === "minute")?.value || 0);
+  const second = Number(parts.find((part) => part.type === "second")?.value || 0);
+  const nowSec = hour * 3600 + minute * 60 + second;
+  const morning = 6 * 3600;
+  const evening = 18 * 3600;
+  const day = 24 * 3600;
+  const target = nowSec < morning ? morning : nowSec < evening ? evening : morning + day;
+  return Math.max(1000, (target - nowSec) * 1000 + 80);
 }
 
 export function jmaTone(weather) {

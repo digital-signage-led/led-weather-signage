@@ -1,10 +1,10 @@
 /**
- * モック予報の拡張。今日の地点データから明日・時間帯降水・週間を作る。
- * HTML は JMA API を呼ばない。気象庁天気コード118種を循環して使う。
+ * 地点の今日データから明日・時間帯降水・週間を組み立てる。
+ * HTML は JMA API を呼ばない。雪など季節外れのコードを循環させない。
  */
 
 import { canonicalContent, getContent as contentFromCatalog } from "./catalog.js?v=pref174";
-import { JMA_CODE_LIST, isWetWeather, jmaLabel, resolveWeatherCode } from "./jma-icons.js?v=pref206";
+import { isWetWeather, jmaLabel, jmaTone, resolveWeatherCode } from "./jma-icons.js?v=pref214";
 
 const WEEKDAYS = ["日", "月", "火", "水", "木", "金", "土"];
 
@@ -14,15 +14,15 @@ export function getContent(contentId) {
 
 export function expandForecast(point, updatedAt) {
   const start = new Date(updatedAt);
-  const seed = hash(point.cityId || "");
   const todayWx = resolveWeatherCode(point.weather);
-  const tomorrowWx = shiftCode(todayWx, 1);
+  const storedTomorrow = point.tomorrow || {};
+  const tomorrowWx = resolveWeatherCode(storedTomorrow.weather || todayWx);
   const tomorrow = {
     weather: tomorrowWx,
-    weatherLabel: jmaLabel(tomorrowWx),
-    tempMax: point.tempMax - 1,
-    tempMin: point.tempMin,
-    pop: clampPop(point.pop + (isWetWeather(tomorrowWx) ? 25 : -10))
+    weatherLabel: storedTomorrow.weatherLabel || jmaLabel(tomorrowWx),
+    tempMax: storedTomorrow.tempMax ?? point.tempMax,
+    tempMin: storedTomorrow.tempMin ?? point.tempMin,
+    pop: clampPop(storedTomorrow.pop ?? point.pop)
   };
   const periods = {
     morning: clampPop(point.pop - 10),
@@ -32,21 +32,21 @@ export function expandForecast(point, updatedAt) {
   const weekly = [];
   for (let i = 0; i < 7; i += 1) {
     const date = new Date(start.getFullYear(), start.getMonth(), start.getDate() + i);
-    const weather = shiftCode(todayWx, i);
+    const stored = point.weekly?.[i] || (i === 0 ? point : i === 1 ? tomorrow : point.weekly?.[point.weekly.length - 1]);
+    const weather = resolveWeatherCode(stored?.weather || (i === 1 ? tomorrowWx : todayWx));
     weekly.push({
       date: formatDate(date),
       weekday: WEEKDAYS[date.getDay()],
       weekend: date.getDay() === 0 || date.getDay() === 6,
       today: i === 0,
       weather,
-      weatherLabel: jmaLabel(weather),
-      tempMax: point.tempMax - Math.min(i, 3) + (seed % 2),
-      tempMin: point.tempMin - Math.min(i, 2),
-      pop: i === 0
-        ? point.pop
-        : i === 1
-          ? tomorrow.pop
-          : clampPop((isWetWeather(weather) ? 55 : 8) + i * 6 + (seed % 20))
+      weatherLabel: stored?.weatherLabel || jmaLabel(weather),
+      tempMax: stored?.tempMax ?? point.tempMax,
+      tempMin: stored?.tempMin ?? point.tempMin,
+      pop: clampPop(
+        stored?.pop
+        ?? (i === 0 ? point.pop : i === 1 ? tomorrow.pop : point.pop)
+      )
     });
   }
   const tomorrowPeriods = {
@@ -67,17 +67,26 @@ export function noteFor(contentId, regionId, weather, points) {
     const maxPop = Math.max(0, ...points.map((item) => Number(item.pop) || 0));
     const prefix = content === "tomorrow_precip" ? "明日は" : "";
     return maxPop >= 50
-      ? `${prefix}雨の所が多くなります。傘をご用意ください。`
+      ? `${prefix}降水の所が多くなります。傘をご用意ください。`
       : `${prefix}降水の可能性は低めです。`;
   }
   if (content === "tomorrow_weather") {
-    const wet = points.some((item) => isWetWeather(item.weather));
-    return wet
-      ? "明日は雨の所があります。傘をご用意ください。"
-      : "明日はおおむね穏やかです。";
+    const tone = strongestTone(points);
+    if (tone === "is-thunder") return "明日は雷を伴う所があります。";
+    if (tone === "is-snow") return "明日は雪の所があります。";
+    if (tone === "is-rain") return "明日は雨の所があります。傘をご用意ください。";
+    return "明日はおおむね穏やかです。";
   }
   if (content === "weekly_precip") return "向こう一週間の降水確率です。";
   return "向こう一週間の天気です。";
+}
+
+function strongestTone(points) {
+  return points.reduce((best, point) => {
+    const tone = jmaTone(point.weather);
+    const rank = { "is-thunder": 5, "is-snow": 4, "is-rain": 3, "is-cloudy": 2, "is-sunny": 1 };
+    return (rank[tone] || 0) > (rank[best] || 0) ? tone : best;
+  }, "is-cloudy");
 }
 
 export function popTone(pop) {
@@ -86,21 +95,8 @@ export function popTone(pop) {
   return "is-pop-low";
 }
 
-function shiftCode(weather, dayIndex) {
-  const list = JMA_CODE_LIST;
-  const start = list.indexOf(resolveWeatherCode(weather));
-  const from = start < 0 ? 0 : start;
-  return list[(from + dayIndex) % list.length];
-}
-
 function clampPop(value) {
   return Math.max(0, Math.min(90, Math.round(value / 10) * 10));
-}
-
-function hash(text) {
-  let n = 0;
-  for (let i = 0; i < text.length; i += 1) n = (n * 31 + text.charCodeAt(i)) >>> 0;
-  return n;
 }
 
 function formatDate(date) {

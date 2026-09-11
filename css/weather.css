@@ -518,20 +518,6 @@ html.is-edit .card-resize {
   display: block;
 }
 
-.wx-pair {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  flex: 0 0 auto;
-  gap: 1px;
-}
-
-.wx-pair .wx-icon {
-  width: calc(var(--icon-card) * 1.15);
-  height: calc(var(--icon-card) * 0.5);
-}
-
 .city-card.is-pop {
   flex-direction: column;
   align-items: flex-start;

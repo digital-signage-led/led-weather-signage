@@ -77,10 +77,17 @@ const REGION_NEIGHBORS = {
 };
 
 const CITIES = [
-  { id: "sapporo", name: "札幌", region: "HOKKAIDO", lon: 141.3544, lat: 43.0621 },
-  { id: "asahikawa", name: "旭川", region: "HOKKAIDO", lon: 142.365, lat: 43.7706 },
-  { id: "kushiro", name: "釧路", region: "HOKKAIDO", lon: 144.381, lat: 42.9849 },
-  { id: "hakodate", name: "函館", region: "HOKKAIDO", lon: 140.729, lat: 41.7686 },
+  { id: "wakkanai", name: "稚内", region: "HOKKAIDO", lon: 141.6783, lat: 45.415 },
+  { id: "asahikawa", name: "旭川", region: "HOKKAIDO", lon: 142.3717, lat: 43.7567 },
+  { id: "abashiri", name: "網走", region: "HOKKAIDO", lon: 144.2783, lat: 44.0167 },
+  { id: "kitami", name: "北見", region: "HOKKAIDO", lon: 143.8417, lat: 43.7767 },
+  { id: "nemuro", name: "根室", region: "HOKKAIDO", lon: 145.585, lat: 43.33 },
+  { id: "sapporo", name: "札幌", region: "HOKKAIDO", lon: 141.3283, lat: 43.06 },
+  { id: "otaru", name: "小樽", region: "HOKKAIDO", lon: 141.015, lat: 43.1817 },
+  { id: "kushiro", name: "釧路", region: "HOKKAIDO", lon: 144.3767, lat: 42.985 },
+  { id: "obihiro", name: "帯広", region: "HOKKAIDO", lon: 143.2117, lat: 42.9217 },
+  { id: "muroran", name: "室蘭", region: "HOKKAIDO", lon: 140.975, lat: 42.3117 },
+  { id: "hakodate", name: "函館", region: "HOKKAIDO", lon: 140.7533, lat: 41.8167 },
   { id: "aomori", name: "青森", region: "TOHOKU", lon: 140.74, lat: 40.822 },
   { id: "morioka", name: "盛岡", region: "TOHOKU", lon: 141.153, lat: 39.702 },
   { id: "sendai", name: "仙台", region: "TOHOKU", lon: 140.872, lat: 38.269 },

@@ -7,7 +7,7 @@ import { canonicalRegion, isNational, projectionKey } from "./catalog.js?v=pref1
 import { cardSizePct } from "./viewport.js?v=pref192";
 import { MAP_VERSION } from "./version.js?v=pref181";
 
-import { jmaIconFile } from "./jma-icons.js?v=pref206";
+import { jmaIconFile } from "./jma-icons.js?v=pref214";
 
 const iconCache = new Map();
 let iconSeq = 0;
@@ -486,10 +486,17 @@ const CARD_SLOTS = {
     kochi: { x: 48, y: 82 }
   },
   hokkaido: {
-    asahikawa: { x: 58, y: 20 },
-    sapporo: { x: 20, y: 50 },
-    kushiro: { x: 84, y: 46 },
-    hakodate: { x: 28, y: 80 }
+    wakkanai: { x: 16, y: 26 },
+    abashiri: { x: 80, y: 12 },
+    kitami: { x: 58, y: 18 },
+    asahikawa: { x: 46, y: 28 },
+    nemuro: { x: 88, y: 30 },
+    otaru: { x: 12, y: 40 },
+    sapporo: { x: 22, y: 52 },
+    obihiro: { x: 62, y: 44 },
+    kushiro: { x: 82, y: 46 },
+    muroran: { x: 38, y: 66 },
+    hakodate: { x: 16, y: 82 }
   },
   chugoku: {
     matsue: { x: 48, y: 24 },
@@ -550,6 +557,19 @@ const CARD_SLOTS_POP = {
     aizuwakamatsu: { x: 18, y: 70 },
     fukushima: { x: 18, y: 86 },
     iwaki: { x: 80, y: 80 }
+  },
+  hokkaido: {
+    wakkanai: { x: 16, y: 26 },
+    abashiri: { x: 80, y: 12 },
+    kitami: { x: 58, y: 18 },
+    asahikawa: { x: 46, y: 28 },
+    nemuro: { x: 88, y: 30 },
+    otaru: { x: 12, y: 40 },
+    sapporo: { x: 22, y: 52 },
+    obihiro: { x: 62, y: 44 },
+    kushiro: { x: 82, y: 46 },
+    muroran: { x: 38, y: 66 },
+    hakodate: { x: 16, y: 82 }
   },
   chubu: {
     sado: { x: 48, y: 10 },

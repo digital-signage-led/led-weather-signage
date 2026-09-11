@@ -3,7 +3,7 @@
  * 管理画面は本番URLを iframe の実viewportで開く。
  */
 
-import { APP_VERSION, DATA_VERSION, MAP_VERSION } from "./version.js?v=pref206";
+import { APP_VERSION, DATA_VERSION, MAP_VERSION } from "./version.js?v=pref215";
 import {
   canonicalContent,
   canonicalRegion,
@@ -15,11 +15,11 @@ import {
   loadCatalog
 } from "./catalog.js?v=pref194";
 import { adaptWeather, aggregateRegion } from "./weather-data.js?v=pref194";
-import { loadMapSvg, mountMap, placeCardsAroundMap, projectCity } from "./map-renderer.js?v=pref206";
-import { formatStamp, renderCityCard, renderPin, pickNoteWeather, weatherTone, renderNoteIcon } from "./weather-renderer.js?v=pref206";
+import { loadMapSvg, mountMap, placeCardsAroundMap, projectCity } from "./map-renderer.js?v=pref214";
+import { formatStamp, renderCityCard, renderPin, pickNoteWeather, weatherTone, renderNoteIcon } from "./weather-renderer.js?v=pref208";
 import { applyCardScale, applyLockedCards, applyMapTransform, bindCardEditor, bindMapControls, bindMapEditor, bindOkinawaEditor, CARD_POS_MAX, CARD_POS_MIN, CARD_SCALE_MAX, CARD_SCALE_MIN, centerCityCards, listCardPositions, loadCardScale, loadLayout, moveLockedCard, resetCardScale, resetLayout, saveCardScale, saveLayout } from "./studio-layout.js?v=pref203";
-import { expandForecast, noteFor } from "./forecast.js?v=pref206";
-import { renderWeeklyTable } from "./table-renderer.js?v=pref206";
+import { expandForecast, noteFor } from "./forecast.js?v=pref214";
+import { renderWeeklyTable } from "./table-renderer.js?v=pref208";
 import {
   VIEWPORT_PRESETS,
   applyViewport,
@@ -29,7 +29,8 @@ import {
   fitTitleBars,
   readViewport,
   showAuxiliary
-} from "./viewport.js?v=pref193";
+} from "./viewport.js?v=pref211";
+import { msUntilIconPhaseChange } from "./jma-icons.js?v=pref214";
 
 export { APP_VERSION };
 
@@ -334,8 +335,52 @@ async function bootSignage() {
   const attributionEl = document.getElementById("map-attribution");
   const layout = loadLayout(state.regionId, state.contentId);
   let renderTimer = 0;
+  let iconPhaseTimer = 0;
   let weatherStamp = "";
   let cardsLayer = null;
+  let tickerLayoutTimer = 0;
+
+  function layoutNoteTicker() {
+    const track = noteEl.querySelector(".led-note-track");
+    const items = [...noteEl.querySelectorAll(".led-note-item")];
+    if (!track || !items.length) return;
+    const viewport = noteEl.clientWidth;
+    items.forEach((item) => {
+      item.style.paddingRight = "0px";
+    });
+    const textWidth = items[0].getBoundingClientRect().width;
+    const gap = Math.max(viewport, Math.round(textWidth * 0.35), 96);
+    items.forEach((item) => {
+      item.style.paddingRight = `${gap}px`;
+    });
+    const distance = Math.max(1, textWidth + gap);
+    track.style.setProperty("--ticker-distance", `${distance}px`);
+    track.style.setProperty("--ticker-duration", `${Math.max(10, distance / 68).toFixed(2)}s`);
+  }
+
+  function setNoteTicker(text) {
+    const next = String(text || "");
+    if (noteEl.dataset.note === next && noteEl.querySelector(".led-note-track")) {
+      layoutNoteTicker();
+      return;
+    }
+    noteEl.dataset.note = next;
+    if (next) noteEl.setAttribute("aria-label", next);
+    else noteEl.removeAttribute("aria-label");
+    noteEl.replaceChildren();
+    if (!next) return;
+    const track = document.createElement("div");
+    track.className = "led-note-track";
+    for (let i = 0; i < 2; i += 1) {
+      const item = document.createElement("span");
+      item.className = "led-note-item";
+      item.textContent = next;
+      if (i > 0) item.setAttribute("aria-hidden", "true");
+      track.append(item);
+    }
+    noteEl.append(track);
+    window.requestAnimationFrame(() => layoutNoteTicker());
+  }
 
   const notifyStudio = (payload) => {
     if (!canEdit || window.parent === window) return;
@@ -393,13 +438,17 @@ async function bootSignage() {
       titleEl.textContent = contentTitle(region, content);
       document.title = contentTitle(region, content);
       stampEl.textContent = formatStamp(weather.updatedAt, !showAuxiliary(vp, "stampWeek"));
-      noteEl.textContent = noteFor(content.id, region.id, weather, selected);
+      setNoteTicker(noteFor(content.id, region.id, weather, selected));
       attributionEl.textContent = attribution.text;
       attributionEl.hidden = content.kind !== "map" || !showAuxiliary(vp, "attribution");
       syncTitleMark(content);
       fitTitleBars(screen);
+      layoutNoteTicker();
       if (document.fonts?.ready) {
-        document.fonts.ready.then(() => fitTitleBars(screen)).catch(() => {});
+        document.fonts.ready.then(() => {
+          fitTitleBars(screen);
+          layoutNoteTicker();
+        }).catch(() => {});
       }
 
       if (content.kind === "table") {
@@ -410,6 +459,7 @@ async function bootSignage() {
         lastError = "ok";
         updateDebug(vp, region, content, weatherStamp);
         recordSite();
+        scheduleIconPhase();
         return;
       }
 
@@ -477,6 +527,7 @@ async function bootSignage() {
       lastError = "ok";
       updateDebug(vp, region, content, weatherStamp);
       recordSite();
+      scheduleIconPhase();
     } catch (error) {
       lastError = error?.message || String(error);
       console.error(error);
@@ -517,6 +568,17 @@ async function bootSignage() {
     window.clearTimeout(renderTimer);
     renderTimer = window.setTimeout(() => render(), 80);
   });
+  if (typeof ResizeObserver === "function") {
+    new ResizeObserver(() => {
+      window.clearTimeout(tickerLayoutTimer);
+      tickerLayoutTimer = window.setTimeout(() => layoutNoteTicker(), 40);
+    }).observe(noteEl);
+  }
+
+  function scheduleIconPhase() {
+    window.clearTimeout(iconPhaseTimer);
+    iconPhaseTimer = window.setTimeout(() => render(), msUntilIconPhaseChange());
+  }
 
   persistView();
   if (document.fonts?.ready) await document.fonts.ready.catch(() => {});

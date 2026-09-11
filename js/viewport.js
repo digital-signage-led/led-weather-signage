@@ -138,8 +138,8 @@ export function applyViewport(element, vp, regionId, content) {
 export function cityLimit(vp, regionId, content, available = 12) {
   const wanted = Math.max(1, available);
   if (content.kind === "table") {
-    const rowH = fluidPx(vp.minSide, 0.09, 28, 56);
-    const chrome = fluidPx(vp.minSide, 0.28, 80, 170);
+    const rowH = fluidPx(vp.minSide, 0.07, 20, 48);
+    const chrome = fluidPx(vp.minSide, 0.22, 70, 150);
     const rows = Math.floor((vp.height - chrome) / rowH);
     return clamp(rows, 3, wanted);
   }

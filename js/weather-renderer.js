@@ -2,9 +2,9 @@
  * 天気カードとアイコン描画。気象JSONだけを受け取り、元データAPIには依存しない。
  */
 
-import { loadIcon } from "./map-renderer.js?v=pref206";
-import { popTone } from "./forecast.js?v=pref206";
-import { isNightHours, jmaLabel, jmaRank, jmaTone } from "./jma-icons.js?v=pref206";
+import { loadIcon } from "./map-renderer.js?v=pref214";
+import { popTone } from "./forecast.js?v=pref214";
+import { isNightHours, jmaLabel, jmaRank, jmaTone } from "./jma-icons.js?v=pref214";
 
 export function pickNoteWeather(points) {
   return points.reduce((best, point) => (
@@ -65,19 +65,14 @@ export async function renderCityCard(point, position, options = {}) {
   }
   const tone = weatherTone(point.weather);
   const label = point.weatherLabel || jmaLabel(point.weather);
-  const [dayIcon, nightIcon] = await Promise.all([
-    loadIcon(point.weather, false),
-    loadIcon(point.weather, true)
-  ]);
+  const night = isNightHours();
+  const icon = await loadIcon(point.weather, night);
   const pop = options.showPop && Number.isFinite(point.pop)
     ? `<span class="city-card-pop">${Math.round(point.pop)}%</span>`
     : "";
   return `
     <article class="city-card${options.showPop ? " is-national" : ""}${position.locked ? " is-locked" : ""}" data-city-id="${point.cityId}" style="left:${position.x}%;top:${position.y}%;">
-      <span class="wx-pair">
-        <span class="wx-icon ${tone}" aria-label="昼 ${label}">${dayIcon}</span>
-        <span class="wx-icon ${tone}" aria-label="夜 ${label}">${nightIcon}</span>
-      </span>
+      <span class="wx-icon ${tone}" aria-label="${night ? "夜" : "昼"} ${label}">${icon}</span>
       <span class="city-card-meta">
         <span class="city-card-name">${point.cityName}</span>
         <span class="city-card-row">${temps}${pop}</span>

@@ -3,10 +3,10 @@
  */
 
 import { canonicalContent } from "./catalog.js?v=pref174";
-import { loadIcon } from "./map-renderer.js?v=pref206";
-import { weatherTone } from "./weather-renderer.js?v=pref206";
-import { popTone } from "./forecast.js?v=pref206";
-import { isNightHours, jmaLabel } from "./jma-icons.js?v=pref206";
+import { loadIcon } from "./map-renderer.js?v=pref214";
+import { weatherTone } from "./weather-renderer.js?v=pref208";
+import { popTone } from "./forecast.js?v=pref214";
+import { isNightHours, jmaLabel } from "./jma-icons.js?v=pref214";
 
 export async function renderWeeklyTable(cities, contentId) {
   const days = cities[0]?.weekly || [];

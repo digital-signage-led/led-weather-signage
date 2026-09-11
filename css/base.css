@@ -420,6 +420,7 @@ html:not(.is-edit) .card-resize {
 }
 
 .led-note-bar {
+  position: relative;
   display: flex;
   align-items: stretch;
   width: 100%;
@@ -490,17 +491,64 @@ html:not(.is-edit) .card-resize {
 }
 
 .led-note {
-  flex: 1;
+  flex: 1 1 0;
   min-width: 0;
   display: flex;
   align-items: center;
-  padding: 0 36% 0 0.25em;
+  height: 100%;
+  padding: 0 calc(18 * clamp(8px, 0.7vw, 12px)) 0 0.25em;
   font-size: var(--font-note);
   font-weight: 800;
-  white-space: nowrap;
+  line-height: var(--footer-height);
   overflow: hidden;
-  text-overflow: ellipsis;
   text-align: left;
+}
+
+.led-note-track {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  width: max-content;
+  will-change: transform;
+  animation: led-note-ticker var(--ticker-duration, 16s) linear infinite;
+}
+
+.led-note-item {
+  flex: 0 0 auto;
+  white-space: nowrap;
+  line-height: var(--footer-height);
+}
+
+@keyframes led-note-ticker {
+  0%, 10% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(calc(-1 * var(--ticker-distance, 50%)), 0, 0); }
+}
+
+.jma-credit {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  margin: 0;
+  padding: 0 0.85em 0 1.6em;
+  font-size: clamp(8px, 0.7vw, 12px);
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+  color: rgba(255, 255, 255, 0.62);
+  white-space: nowrap;
+  background: var(--bg-footer);
+  border: none;
+  pointer-events: none;
+}
+
+.jma-credit a {
+  color: inherit;
+  font-weight: inherit;
+  text-decoration: none;
 }
 
 .led-body {
