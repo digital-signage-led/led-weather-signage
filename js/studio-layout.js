@@ -20,7 +20,7 @@ function emptyLayout(regionId = "national") {
     map: isNational(regionId)
       ? { scale: 1.12, rotate: 0, x: 2, y: 0 }
       : { scale: 1, rotate: 0, x: 0, y: 0 },
-    okinawa: { x: 18, y: 56, scale: 1.25 },
+    okinawa: { x: 30, y: 48, scale: 0.9 },
     cards: {}
   };
 }

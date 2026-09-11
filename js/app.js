@@ -15,9 +15,9 @@ import {
   loadCatalog
 } from "./catalog.js?v=pref194";
 import { adaptWeather, aggregateRegion } from "./weather-data.js?v=pref194";
-import { loadMapSvg, mountMap, placeCardsAroundMap, projectCity } from "./map-renderer.js?v=pref201";
+import { loadMapSvg, mountMap, placeCardsAroundMap, projectCity } from "./map-renderer.js?v=pref203";
 import { formatStamp, renderCityCard, renderPin, pickNoteWeather, weatherTone, renderNoteIcon } from "./weather-renderer.js?v=pref185";
-import { applyCardScale, applyLockedCards, applyMapTransform, bindCardEditor, bindMapControls, bindMapEditor, bindOkinawaEditor, CARD_POS_MAX, CARD_POS_MIN, CARD_SCALE_MAX, CARD_SCALE_MIN, centerCityCards, listCardPositions, loadCardScale, loadLayout, moveLockedCard, resetCardScale, resetLayout, saveCardScale, saveLayout } from "./studio-layout.js?v=pref202";
+import { applyCardScale, applyLockedCards, applyMapTransform, bindCardEditor, bindMapControls, bindMapEditor, bindOkinawaEditor, CARD_POS_MAX, CARD_POS_MIN, CARD_SCALE_MAX, CARD_SCALE_MIN, centerCityCards, listCardPositions, loadCardScale, loadLayout, moveLockedCard, resetCardScale, resetLayout, saveCardScale, saveLayout } from "./studio-layout.js?v=pref203";
 import { expandForecast, noteFor } from "./forecast.js?v=pref174";
 import { renderWeeklyTable } from "./table-renderer.js?v=pref174";
 import {
@@ -29,7 +29,7 @@ import {
   fitTitleBars,
   readViewport,
   showAuxiliary
-} from "./viewport.js?v=pref193";
+} from "./viewport.js?v=pref203";
 
 export { APP_VERSION };
 

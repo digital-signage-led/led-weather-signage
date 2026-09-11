@@ -4,7 +4,7 @@
  */
 
 import { canonicalRegion, isNational, projectionKey } from "./catalog.js?v=pref194";
-import { cardSizePct } from "./viewport.js?v=pref192";
+import { cardSizePct } from "./viewport.js?v=pref203";
 import { MAP_VERSION } from "./version.js?v=pref181";
 
 const ICON_FILES = {
@@ -406,17 +406,17 @@ export function estimateCardSizePct(viewportOrRegion, regionId = "national") {
 /** 箱同士が被らない位置。ピンは観測地点のまま。 */
 const CARD_SLOTS = {
   national: {
-    sapporo: { x: 86, y: 14 },
-    naha: { x: 16, y: 36 },
-    niigata: { x: 64, y: 26 },
-    sendai: { x: 88, y: 40 },
-    hiroshima: { x: 13, y: 54 },
-    nagoya: { x: 46, y: 50 },
-    tokyo: { x: 88, y: 60 },
-    fukuoka: { x: 8, y: 74 },
-    osaka: { x: 40, y: 74 },
-    kanazawa: { x: 34, y: 40 },
-    kochi: { x: 30, y: 63 }
+    sapporo: { x: 84, y: 14 },
+    naha: { x: 16, y: 26 },
+    niigata: { x: 62, y: 22 },
+    sendai: { x: 84, y: 36 },
+    kanazawa: { x: 14, y: 38 },
+    nagoya: { x: 52, y: 50 },
+    tokyo: { x: 84, y: 56 },
+    hiroshima: { x: 14, y: 56 },
+    kochi: { x: 38, y: 66 },
+    fukuoka: { x: 14, y: 78 },
+    osaka: { x: 46, y: 80 }
   },
   kinki: {
     kyoto: { x: 22, y: 38 },
@@ -499,17 +499,17 @@ const CARD_SLOTS = {
 
 const CARD_SLOTS_POP = {
   national: {
-    sapporo: { x: 86, y: 13 },
-    naha: { x: 16, y: 36 },
-    niigata: { x: 66, y: 26 },
-    sendai: { x: 88, y: 40 },
-    hiroshima: { x: 12, y: 52 },
-    nagoya: { x: 46, y: 50 },
-    tokyo: { x: 88, y: 60 },
-    fukuoka: { x: 8, y: 74 },
-    osaka: { x: 38, y: 76 },
-    kanazawa: { x: 34, y: 40 },
-    kochi: { x: 28, y: 63 }
+    sapporo: { x: 84, y: 13 },
+    naha: { x: 16, y: 26 },
+    niigata: { x: 62, y: 22 },
+    sendai: { x: 84, y: 36 },
+    kanazawa: { x: 14, y: 38 },
+    nagoya: { x: 54, y: 50 },
+    tokyo: { x: 84, y: 56 },
+    hiroshima: { x: 14, y: 56 },
+    kochi: { x: 38, y: 66 },
+    fukuoka: { x: 14, y: 78 },
+    osaka: { x: 48, y: 80 }
   },
   kanto: {
     nagano: { x: 18, y: 38 },
@@ -598,7 +598,7 @@ export function placeCardsAroundMap(items, cardSize, regionId = "national", vari
     };
   });
 
-  if (variant === "pop" || !PRESET_CARD_SCREENS.has(regionId)) {
+  if ((variant === "pop" && regionId !== "national") || !PRESET_CARD_SCREENS.has(regionId)) {
     const overlapW = regionId === "kinki" ? Math.max(cardW, 27) : cardW;
     const overlapH = regionId === "kinki" ? Math.max(cardH, 11) : cardH;
     resolveOverlaps(placed, overlapW, overlapH, {
