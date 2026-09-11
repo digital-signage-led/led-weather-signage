@@ -3,7 +3,7 @@
  * 管理画面は本番URLを iframe の実viewportで開く。
  */
 
-import { APP_VERSION, DATA_VERSION, MAP_VERSION } from "./version.js?v=pref215";
+import { APP_VERSION, DATA_VERSION, MAP_VERSION } from "./version.js?v=pref217";
 import {
   canonicalContent,
   canonicalRegion,
@@ -15,8 +15,8 @@ import {
   loadCatalog
 } from "./catalog.js?v=pref194";
 import { adaptWeather, aggregateRegion } from "./weather-data.js?v=pref194";
-import { loadMapSvg, mountMap, placeCardsAroundMap, projectCity } from "./map-renderer.js?v=pref214";
-import { formatStamp, renderCityCard, renderPin, pickNoteWeather, weatherTone, renderNoteIcon } from "./weather-renderer.js?v=pref208";
+import { loadMapSvg, mountMap, placeCardsAroundMap, projectCity } from "./map-renderer.js?v=pref216";
+import { formatStamp, renderCityCard, renderPin, pickNoteWeather, weatherTone, renderNoteIcon } from "./weather-renderer.js?v=pref217";
 import { applyCardScale, applyLockedCards, applyMapTransform, bindCardEditor, bindMapControls, bindMapEditor, bindOkinawaEditor, CARD_POS_MAX, CARD_POS_MIN, CARD_SCALE_MAX, CARD_SCALE_MIN, centerCityCards, listCardPositions, loadCardScale, loadLayout, moveLockedCard, resetCardScale, resetLayout, saveCardScale, saveLayout } from "./studio-layout.js?v=pref203";
 import { expandForecast, noteFor } from "./forecast.js?v=pref214";
 import { renderWeeklyTable } from "./table-renderer.js?v=pref208";
@@ -31,6 +31,23 @@ import {
   showAuxiliary
 } from "./viewport.js?v=pref211";
 import { msUntilIconPhaseChange } from "./jma-icons.js?v=pref214";
+import { fetchJmaWeather } from "./jma-live.js?v=pref217";
+
+const LIVE_WEATHER_TTL_MS = 10 * 60 * 1000;
+let liveWeatherCache = { at: 0, doc: null };
+
+function withTimeout(promise, ms) {
+  return new Promise((resolve, reject) => {
+    const timer = window.setTimeout(() => reject(new Error("timeout")), ms);
+    promise.then((value) => {
+      window.clearTimeout(timer);
+      resolve(value);
+    }, (error) => {
+      window.clearTimeout(timer);
+      reject(error);
+    });
+  });
+}
 
 export { APP_VERSION };
 
@@ -421,12 +438,12 @@ async function bootSignage() {
     applyViewport(screen, vp, region.id, content);
 
     try {
-      const [attribution, locations, weatherDoc, projection] = await Promise.all([
+      const [attribution, locations, projection] = await Promise.all([
         fetchJson("data/attribution.json"),
         fetchJson("data/locations.json"),
-        fetchJson("data/weather.json"),
         fetchJson("data/map-projection.json")
       ]);
+      const weatherDoc = await loadWeatherDoc(locations);
       const weather = adaptWeather(weatherDoc);
       weatherStamp = weather.updatedAt;
 
@@ -583,6 +600,10 @@ async function bootSignage() {
   persistView();
   if (document.fonts?.ready) await document.fonts.ready.catch(() => {});
   await render();
+  window.setInterval(() => {
+    liveWeatherCache = { at: 0, doc: null };
+    render();
+  }, LIVE_WEATHER_TTL_MS);
 }
 
 function attachForecast(city, todayPoint, content, updatedAt) {
@@ -653,8 +674,22 @@ function recordSite() {
   }
 }
 
+async function loadWeatherDoc(locations) {
+  const now = Date.now();
+  if (liveWeatherCache.doc && now - liveWeatherCache.at < LIVE_WEATHER_TTL_MS) {
+    return liveWeatherCache.doc;
+  }
+  try {
+    const live = await withTimeout(fetchJmaWeather(locations.cities), 8000);
+    liveWeatherCache = { at: now, doc: live };
+    return live;
+  } catch {
+    return fetchJson("data/weather.json");
+  }
+}
+
 async function fetchJson(url) {
-  const response = await fetch(`${url}?v=${DATA_VERSION}`);
+  const response = await fetch(`${url}?v=${DATA_VERSION}`, { cache: "no-store" });
   if (!response.ok) throw new Error(`${url} を読み込めません`);
   return response.json();
 }

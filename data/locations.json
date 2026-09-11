@@ -1,6 +1,6 @@
 {
   "cities": [
-    { "cityId": "wakkanai", "cityName": "稚内", "regionId": "hokkaido", "jmaOffice": "011000", "jmaOfficeName": "稚内地方気象台", "latitude": 45.415, "longitude": 141.6783, "priority": 2, "showOnNational": false, "useOkinawaInset": false },
+    { "cityId": "wakkanai", "cityName": "稚内", "regionId": "hokkaido", "jmaOffice": "011000", "jmaOfficeName": "稚内地方気象台", "latitude": 45.415, "longitude": 141.6783, "priority": 2, "showOnNational": false, "showOnRegion": false, "useOkinawaInset": false },
     { "cityId": "asahikawa", "cityName": "旭川", "regionId": "hokkaido", "jmaOffice": "012000", "jmaOfficeName": "旭川地方気象台", "latitude": 43.7567, "longitude": 142.3717, "priority": 2, "showOnNational": false, "useOkinawaInset": false },
     { "cityId": "abashiri", "cityName": "網走", "regionId": "hokkaido", "jmaOffice": "013000", "jmaOfficeName": "網走地方気象台", "latitude": 44.0167, "longitude": 144.2783, "priority": 2, "showOnNational": false, "useOkinawaInset": false },
     { "cityId": "kitami", "cityName": "北見", "regionId": "hokkaido", "jmaClass10": "013020", "jmaClass10Name": "北見地方", "latitude": 43.7767, "longitude": 143.8417, "priority": 2, "showOnNational": false, "useOkinawaInset": false },
@@ -8,7 +8,7 @@
     { "cityId": "kushiro", "cityName": "釧路", "regionId": "hokkaido", "jmaOffice": "014100", "jmaOfficeName": "釧路地方気象台", "latitude": 42.985, "longitude": 144.3767, "priority": 2, "showOnNational": false, "useOkinawaInset": false },
     { "cityId": "obihiro", "cityName": "帯広", "regionId": "hokkaido", "jmaOffice": "014030", "jmaOfficeName": "帯広測候所", "latitude": 42.9217, "longitude": 143.2117, "priority": 2, "showOnNational": false, "useOkinawaInset": false },
     { "cityId": "sapporo", "cityName": "札幌", "regionId": "hokkaido", "jmaOffice": "016000", "jmaOfficeName": "札幌管区気象台", "latitude": 43.06, "longitude": 141.3283, "nationalX": 74, "nationalY": 18, "priority": 1, "showOnNational": true, "useOkinawaInset": false },
-    { "cityId": "otaru", "cityName": "小樽", "regionId": "hokkaido", "jmaClass10": "016030", "jmaClass10Name": "後志地方", "latitude": 43.1817, "longitude": 141.015, "priority": 2, "showOnNational": false, "useOkinawaInset": false },
+    { "cityId": "otaru", "cityName": "小樽", "regionId": "hokkaido", "jmaClass10": "016030", "jmaClass10Name": "後志地方", "latitude": 43.1817, "longitude": 141.015, "priority": 2, "showOnNational": false, "showOnRegion": false, "useOkinawaInset": false },
     { "cityId": "muroran", "cityName": "室蘭", "regionId": "hokkaido", "jmaOffice": "015000", "jmaOfficeName": "室蘭地方気象台", "latitude": 42.3117, "longitude": 140.975, "priority": 2, "showOnNational": false, "useOkinawaInset": false },
     { "cityId": "hakodate", "cityName": "函館", "regionId": "hokkaido", "jmaOffice": "017000", "jmaOfficeName": "函館地方気象台", "latitude": 41.8167, "longitude": 140.7533, "priority": 2, "showOnNational": false, "useOkinawaInset": false },
 

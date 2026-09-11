@@ -3,7 +3,7 @@
  */
 
 import { canonicalContent } from "./catalog.js?v=pref174";
-import { loadIcon } from "./map-renderer.js?v=pref214";
+import { loadIcon } from "./map-renderer.js?v=pref216";
 import { weatherTone } from "./weather-renderer.js?v=pref208";
 import { popTone } from "./forecast.js?v=pref214";
 import { isNightHours, jmaLabel } from "./jma-icons.js?v=pref214";

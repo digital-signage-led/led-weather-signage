@@ -2,7 +2,7 @@
  * 天気カードとアイコン描画。気象JSONだけを受け取り、元データAPIには依存しない。
  */
 
-import { loadIcon } from "./map-renderer.js?v=pref214";
+import { loadIcon } from "./map-renderer.js?v=pref216";
 import { popTone } from "./forecast.js?v=pref214";
 import { isNightHours, jmaLabel, jmaRank, jmaTone } from "./jma-icons.js?v=pref214";
 
@@ -22,11 +22,19 @@ export async function renderNoteIcon(weather) {
 
 export function formatStamp(iso, compact = false) {
   const date = new Date(iso);
-  const week = "日月火水木金土"[date.getDay()];
-  const hh = String(date.getHours()).padStart(2, "0");
-  const mm = String(date.getMinutes()).padStart(2, "0");
-  if (compact) return `${date.getDate()}日 ${hh}:${mm}更新`;
-  return `${date.getDate()}日(${week}) ${hh}:${mm}更新`;
+  if (Number.isNaN(date.getTime())) return "";
+  const parts = new Intl.DateTimeFormat("ja-JP", {
+    timeZone: "Asia/Tokyo",
+    day: "numeric",
+    weekday: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23"
+  }).formatToParts(date);
+  const pick = (type) => parts.find((part) => part.type === type)?.value || "";
+  const weekday = pick("weekday").replace("曜日", "");
+  if (compact) return `${pick("day")}日 ${pick("hour")}:${pick("minute")}更新`;
+  return `${pick("day")}日(${weekday}) ${pick("hour")}:${pick("minute")}更新`;
 }
 
 export function renderLeader(position) {

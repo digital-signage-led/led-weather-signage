@@ -486,12 +486,10 @@ const CARD_SLOTS = {
     kochi: { x: 48, y: 82 }
   },
   hokkaido: {
-    wakkanai: { x: 16, y: 26 },
     abashiri: { x: 80, y: 12 },
     kitami: { x: 58, y: 18 },
     asahikawa: { x: 46, y: 28 },
     nemuro: { x: 88, y: 30 },
-    otaru: { x: 12, y: 40 },
     sapporo: { x: 22, y: 52 },
     obihiro: { x: 62, y: 44 },
     kushiro: { x: 82, y: 46 },
@@ -559,12 +557,10 @@ const CARD_SLOTS_POP = {
     iwaki: { x: 80, y: 80 }
   },
   hokkaido: {
-    wakkanai: { x: 16, y: 26 },
     abashiri: { x: 80, y: 12 },
     kitami: { x: 58, y: 18 },
     asahikawa: { x: 46, y: 28 },
     nemuro: { x: 88, y: 30 },
-    otaru: { x: 12, y: 40 },
     sapporo: { x: 22, y: 52 },
     obihiro: { x: 62, y: 44 },
     kushiro: { x: 82, y: 46 },
