@@ -1,0 +1,20 @@
+{
+  "name": "led-weather-signage",
+  "private": true,
+  "type": "module",
+  "version": "1.0.0",
+  "description": "全国対応の天気予報LEDサイネージ。共通テンプレート + 地域マスター + 正規化気象データ。",
+  "scripts": {
+    "start": "node scripts/preview-server.mjs",
+    "maps": "node scripts/build-maps.mjs && node scripts/bake-map-fills.mjs",
+    "test": "node scripts/test-catalog.mjs && node scripts/test-viewport.mjs",
+    "test:catalog": "node scripts/test-catalog.mjs",
+    "test:viewport": "node scripts/test-viewport.mjs",
+    "test:visual": "node scripts/visual-regression.mjs",
+    "baselines": "node scripts/visual-regression.mjs --update"
+  },
+  "dependencies": {
+    "polygon-clipping": "^0.15.7",
+    "shapefile": "^0.6.6"
+  }
+}

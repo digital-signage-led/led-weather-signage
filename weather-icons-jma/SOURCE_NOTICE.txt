@@ -1,0 +1,7 @@
+出典：気象庁ホームページ
+https://www.jma.go.jp/
+
+天気アイコンは気象庁ホームページで公開されている公式SVGを、加工せずローカル保存しています。
+
+気象庁ホームページ利用規約：
+https://www.jma.go.jp/jma/kishou/info/coment.html

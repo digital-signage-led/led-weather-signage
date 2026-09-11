@@ -1,0 +1,51 @@
+:root {
+  --font-main: "Noto Sans JP", "Yu Gothic", "Meiryo", sans-serif;
+  --font-number: "Barlow Condensed", "Noto Sans JP", sans-serif;
+
+  --bg-primary: #EAF7FF;
+  --bg-secondary: #F5FBFF;
+  --bg-panel: #FFFFFF;
+  --bg-panel-alt: #EDF8FF;
+  --bg-header: #073B68;
+  --bg-sea: #DFF4FF;
+
+  --text-primary: #092F55;
+  --text-secondary: #075B9E;
+  --text-muted: #4A7AA0;
+  --text-inverse: #FFFFFF;
+
+  --broadcast: #073B68;
+  --accent: #075B9E;
+  --accent-strong: #07558F;
+  --line: #7EB8D8;
+
+  --map-land: #76C85A;
+  --map-land-selected: #4BB857;
+  --map-stroke: #FFFFFF;
+
+  --weather-sunny: #FF8A00;
+  --weather-cloudy: #8CA3B8;
+  --weather-rain: #087BD7;
+  --weather-snow: #6EC4FF;
+  --weather-thunder: #F0C334;
+
+  --temp-max: #E62919;
+  --temp-min: #086DCC;
+
+  --alert-advisory: #F0C334;
+  --alert-warning: #E62919;
+  --alert-critical: #B10E12;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  background: #222;
+  color: var(--text-primary);
+  font-family: var(--font-main);
+}

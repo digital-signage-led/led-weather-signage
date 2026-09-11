@@ -1,0 +1,6 @@
+<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <path fill="currentColor" d="M16 34h32a12 12 0 0 0 0-22 16 16 0 0 0-30 7 10 10 0 0 0-2 15z"/>
+  <rect x="20" y="42" width="5" height="12" rx="2" fill="currentColor"/>
+  <rect x="30" y="46" width="5" height="12" rx="2" fill="currentColor"/>
+  <rect x="40" y="42" width="5" height="12" rx="2" fill="currentColor"/>
+</svg>

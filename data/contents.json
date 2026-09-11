@@ -1,0 +1,10 @@
+{
+  "contents": [
+    { "id": "today_weather", "name": "今日の天気", "kind": "map", "card": "weather", "family": "weather" },
+    { "id": "today_precip", "name": "今日の降水確率", "kind": "map", "card": "pop", "family": "weather" },
+    { "id": "tomorrow_weather", "name": "明日の天気", "kind": "map", "card": "weather", "family": "weather" },
+    { "id": "tomorrow_precip", "name": "明日の降水確率", "kind": "map", "card": "pop", "family": "weather" },
+    { "id": "weekly_weather", "name": "週間天気", "kind": "table", "card": "weather", "family": "weather" },
+    { "id": "weekly_precip", "name": "週間降水確率", "kind": "table", "card": "pop", "family": "weather" }
+  ]
+}

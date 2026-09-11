@@ -1,0 +1,100 @@
+{
+  "$id": "canonicalWeather",
+  "title": "正規化済み気象データ（テンプレート専用）",
+  "description": "HTML/CSS/テンプレートはこのスキーマだけを参照する。外部APIの生レスポンスをDOMへ渡さない。",
+  "type": "object",
+  "required": ["site", "updatedAt", "expiresAt", "dataVersion", "today", "hourly", "weekly", "points", "alerts"],
+  "properties": {
+    "site": {
+      "type": "object",
+      "required": ["id", "name", "prefecture", "city", "region"],
+      "properties": {
+        "id": { "type": "string", "examples": ["OSAKA_001"] },
+        "name": { "type": "string" },
+        "prefecture": { "type": "string" },
+        "prefectureId": { "type": "string" },
+        "city": { "type": "string" },
+        "region": { "type": "string", "examples": ["KINKI"] },
+        "forecastAreaId": { "type": "string" },
+        "forecastAreaName": { "type": "string" },
+        "pointId": { "type": "string" }
+      }
+    },
+    "updatedAt": { "type": "string", "format": "date-time" },
+    "expiresAt": { "type": "string", "format": "date-time" },
+    "dataVersion": { "type": "string" },
+    "isStale": { "type": "boolean" },
+    "sourceStatus": { "enum": ["ok", "fallback", "stale"] },
+    "today": {
+      "type": "object",
+      "properties": {
+        "weather": { "type": "string" },
+        "weatherCode": { "type": "string" },
+        "tempMax": { "type": "number" },
+        "tempMin": { "type": "number" },
+        "rainProbability": {
+          "type": "object",
+          "properties": {
+            "00-06": { "type": "number" },
+            "06-12": { "type": "number" },
+            "12-18": { "type": "number" },
+            "18-24": { "type": "number" }
+          }
+        },
+        "windDir": { "type": "string" },
+        "windSpeed": { "type": "number" }
+      }
+    },
+    "hourly": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "at": { "type": "string", "format": "date-time" },
+          "label": { "type": "string" },
+          "weather": { "type": "string" },
+          "weatherCode": { "type": "string" },
+          "temp": { "type": "number" },
+          "rainProbability": { "type": "number" },
+          "windDir": { "type": "string" },
+          "windSpeed": { "type": "number" }
+        }
+      }
+    },
+    "weekly": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "date": { "type": "string" },
+          "weekday": { "type": "string" },
+          "weather": { "type": "string" },
+          "weatherCode": { "type": "string" },
+          "tempMax": { "type": "number" },
+          "tempMin": { "type": "number" },
+          "rainProbability": { "type": "number" }
+        }
+      }
+    },
+    "points": {
+      "type": "array",
+      "description": "地図・一覧用の代表地点。全国/地方テンプレートが参照する。"
+    },
+    "alerts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "level": { "enum": ["advisory", "warning", "critical"] },
+          "type": { "type": "string" },
+          "title": { "type": "string" },
+          "headline": { "type": "string" },
+          "issuedAt": { "type": "string" },
+          "areaCodes": { "type": "array", "items": { "type": "string" } },
+          "areaNames": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    }
+  }
+}

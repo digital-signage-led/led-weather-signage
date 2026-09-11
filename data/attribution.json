@@ -1,0 +1,16 @@
+{
+  "datasetName": "地球地図日本 第2.2版ベクタ（行政界）",
+  "datasetPage": "https://www.gsi.go.jp/kankyochiri/gm_jpn.html",
+  "termsPage": "https://www.gsi.go.jp/kikakuchousei/kikakuchousei40182.html",
+  "faqPage": "https://www.gsi.go.jp/kankyochiri/gm_faq.html",
+  "surveyProcedurePage": "https://www.gsi.go.jp/LAW/2930-index.html",
+  "commercialUse": "allowed_with_attribution",
+  "attributionRequired": true,
+  "processingNoticeRequired": true,
+  "surveyActApprovalRequired": false,
+  "confirmedAt": "2026-09-10",
+  "surveyActNote": "公式ページは地球地図日本を国土地理院技術資料D1-No.576とし、国土地理院コンテンツ利用規約（PDL1.0）を適用すると明記している。測量成果の利用手続ページは技術資料を基本測量成果の対象外としている。本画面は地理院タイル標準地図・基盤地図情報などの基本測量成果を使っていない。",
+  "termsNote": "FAQは商用・非商用を問わず出典記載を求め、記載例を「地球地図日本 © 国土地理院」としている。コンテンツ利用規約は加工時に加工した旨の併記を求め、国土地理院が作成したかのような表示を禁じている。",
+  "text": "地球地図日本 © 国土地理院／加工",
+  "textWithUrl": "地球地図日本 © 国土地理院（https://www.gsi.go.jp/kankyochiri/gm_jpn.html）を加工して作成"
+}

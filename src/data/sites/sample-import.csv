@@ -1,0 +1,4 @@
+siteId,siteName,postalCode,address,pitch,screenSize,templates
+OSAKA_001,大阪中央現場,530-0001,大阪府大阪市北区梅田1-1-1,P3.47,100,"W01|W05|W07|W09|W10|W11"
+TOKYO_001,東京駅前現場,100-0005,東京都千代田区丸の内1-9-1,P2.87,125,"W01|W05|W10|W11"
+SAPPORO_001,札幌大通現場,060-0001,北海道札幌市中央区北1条西2丁目,P3.47,75,"W05|W10"

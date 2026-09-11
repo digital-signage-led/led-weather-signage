@@ -1,0 +1,216 @@
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-label="地図">
+  <!-- 出典: 国土地理院 地球地図日本 第2.2版 https://www.gsi.go.jp/kankyochiri/gm_jpn.html -->
+  <g class="map-fills map-dim" fill="#d0d5db" fill-rule="evenodd" stroke="none">
+      
+  </g>
+  <g class="map-borders map-dim" fill="none" stroke="#ffffff" stroke-width="0.45" stroke-linejoin="round" stroke-linecap="round">
+      
+  </g>
+  <g class="map-fills map-dim map-fills-cover" fill="#d0d5db" fill-rule="evenodd" stroke="none">
+      
+  </g>
+  <g class="map-fills map-focus" data-region="OKINAWA" fill="#76c85a" fill-rule="evenodd" stroke="none">
+      <path data-pref="47" d="M62.57 22.10L62.88 22.05L63.31 21.58L63.95 21.46L64.03 22.07L64.42 22.12L65.02 21.45L65.17 20.94L65.09 20.94L64.98 20.72L65.25 19.97L65.01 19.70L65.26 19.47L65.41 18.51L65.29 17.87L65.03 17.54L65.18 17.37L65.67 17.55L65.78 17.42L66.70 18.39L66.69 20.41L65.84 21.09L66.08 21.46L65.78 21.60L66.30 21.82L66.00 22.62L65.57 22.63L65.41 22.82L65.30 22.70L65.25 22.85L65.69 23.09L65.22 23.62L65.44 23.87L65.29 24.25L65.03 24.40L65.27 24.82L64.34 25.17L64.27 25.74L64.15 25.75L64.44 25.99L65.00 26.04L65.08 26.28L65.35 26.41L65.74 26.32L66.01 26.64L65.77 26.75L65.11 26.54L64.96 26.92L65.16 27.00L64.94 27.48L65.15 27.68L65.05 27.91L65.24 28.49L65.15 28.77L65.26 28.91L65.10 28.98L65.44 29.03L65.54 29.21L65.84 28.66L66.09 28.91L65.94 29.59L65.64 30.07L65.62 30.55L65.27 31.11L65.02 31.15L64.75 30.47L64.61 30.61L64.46 30.48L64.62 30.25L64.40 30.40L64.32 30.09L64.14 30.16L63.95 29.93L63.96 29.59L64.25 29.55L64.08 29.53L64.22 29.27L63.91 29.13L64.10 29.05L64.10 28.52L64.29 28.43L64.42 27.91L64.23 27.59L64.00 27.56L62.89 26.50L63.28 26.55L63.45 26.02L63.78 25.93L63.73 25.51L63.92 25.06L63.74 24.80L63.90 24.74L63.90 24.53L64.18 24.48L64.38 24.10L64.32 23.71L64.65 23.50L64.64 23.18L64.46 22.81L63.74 22.98L63.49 23.21L63.07 22.92L63.08 22.58L62.67 22.40L62.57 22.10Z"/>
+      <path data-pref="47" d="M41.59 76.42L42.06 76.20L41.94 75.87L41.76 75.80L42.17 75.82L42.30 76.10L42.34 75.87L43.01 75.36L42.75 74.78L42.88 74.34L43.20 74.33L43.09 73.81L42.84 73.68L42.89 73.14L42.76 72.88L43.06 72.73L43.25 73.08L43.16 73.69L43.31 73.88L43.22 74.99L43.68 75.59L43.98 76.54L43.64 76.62L43.56 77.08L43.15 77.29L43.02 77.16L42.59 77.22L42.68 76.68L42.54 76.42L42.20 76.33L41.99 76.48L41.95 76.81L41.68 76.73L41.59 76.42Z"/>
+      <path data-pref="47" d="M38.79 80.92L38.61 80.67L38.98 80.72L38.67 80.33L38.93 80.50L38.97 80.23L39.42 80.42L39.13 80.12L39.23 79.95L38.92 79.82L38.96 79.67L38.73 79.52L38.83 78.98L38.68 78.81L39.29 78.82L39.47 79.01L39.52 78.71L39.89 78.65L39.95 78.46L40.23 78.59L40.89 78.44L41.14 79.12L40.91 79.11L40.96 79.47L41.21 79.76L40.95 79.85L41.11 80.16L39.71 80.78L39.22 80.79L39.35 81.06L38.94 81.28L38.56 81.12L38.79 80.92Z"/>
+      <path data-pref="47" d="M51.01 64.08L51.17 64.26L51.34 64.13L50.76 63.80L50.87 63.43L50.64 63.16L50.83 63.03L49.88 62.45L50.05 62.37L50.55 62.52L51.00 62.90L51.33 62.92L51.49 63.19L52.74 62.95L53.42 63.17L53.17 63.16L52.37 63.76L51.88 64.43L51.26 64.48L51.00 64.30L51.01 64.08Z"/>
+  </g>
+  <g class="map-borders map-focus" fill="none" stroke="#ffffff" stroke-width="0.75" stroke-linejoin="round" stroke-linecap="round">
+      <path data-pref="47" d="M62.57 22.10L62.88 22.05L63.31 21.58L63.95 21.46L64.03 22.07L64.42 22.12L65.02 21.45L65.17 20.94L65.09 20.94L64.98 20.72L65.25 19.97L65.01 19.70L65.26 19.47L65.41 18.51L65.29 17.87L65.03 17.54L65.18 17.37L65.67 17.55L65.78 17.42L66.70 18.39L66.69 20.41L65.84 21.09L66.08 21.46L65.78 21.60L66.30 21.82L66.00 22.62L65.57 22.63L65.41 22.82L65.30 22.70L65.25 22.85L65.69 23.09L65.22 23.62L65.44 23.87L65.29 24.25L65.03 24.40L65.27 24.82L64.34 25.17L64.27 25.74L64.15 25.75L64.44 25.99L65.00 26.04L65.08 26.28L65.35 26.41L65.74 26.32L66.01 26.64L65.77 26.75L65.11 26.54L64.96 26.92L65.16 27.00L64.94 27.48L65.15 27.68L65.05 27.91L65.24 28.49L65.15 28.77L65.26 28.91L65.10 28.98L65.44 29.03L65.54 29.21L65.84 28.66L66.09 28.91L65.94 29.59L65.64 30.07L65.62 30.55L65.27 31.11L65.02 31.15L64.75 30.47L64.61 30.61L64.46 30.48L64.62 30.25L64.40 30.40L64.32 30.09L64.14 30.16L63.95 29.93L63.96 29.59L64.25 29.55L64.08 29.53L64.22 29.27L63.91 29.13L64.10 29.05L64.10 28.52L64.29 28.43L64.42 27.91L64.23 27.59L64.00 27.56L62.89 26.50L63.28 26.55L63.45 26.02L63.78 25.93L63.73 25.51L63.92 25.06L63.74 24.80L63.90 24.74L63.90 24.53L64.18 24.48L64.38 24.10L64.32 23.71L64.65 23.50L64.64 23.18L64.46 22.81L63.74 22.98L63.49 23.21L63.07 22.92L63.08 22.58L62.67 22.40L62.57 22.10Z"/>
+      <path data-pref="47" d="M41.59 76.42L42.06 76.20L41.94 75.87L41.76 75.80L42.17 75.82L42.30 76.10L42.34 75.87L43.01 75.36L42.75 74.78L42.88 74.34L43.20 74.33L43.09 73.81L42.84 73.68L42.89 73.14L42.76 72.88L43.06 72.73L43.25 73.08L43.16 73.69L43.31 73.88L43.22 74.99L43.68 75.59L43.98 76.54L43.64 76.62L43.56 77.08L43.15 77.29L43.02 77.16L42.59 77.22L42.68 76.68L42.54 76.42L42.20 76.33L41.99 76.48L41.95 76.81L41.68 76.73L41.59 76.42Z"/>
+      <path data-pref="47" d="M38.79 80.92L38.61 80.67L38.98 80.72L38.67 80.33L38.93 80.50L38.97 80.23L39.42 80.42L39.13 80.12L39.23 79.95L38.92 79.82L38.96 79.67L38.73 79.52L38.83 78.98L38.68 78.81L39.29 78.82L39.47 79.01L39.52 78.71L39.89 78.65L39.95 78.46L40.23 78.59L40.89 78.44L41.14 79.12L40.91 79.11L40.96 79.47L41.21 79.76L40.95 79.85L41.11 80.16L39.71 80.78L39.22 80.79L39.35 81.06L38.94 81.28L38.56 81.12L38.79 80.92Z"/>
+      <path data-pref="47" d="M51.01 64.08L51.17 64.26L51.34 64.13L50.76 63.80L50.87 63.43L50.64 63.16L50.83 63.03L49.88 62.45L50.05 62.37L50.55 62.52L51.00 62.90L51.33 62.92L51.49 63.19L52.74 62.95L53.42 63.17L53.17 63.16L52.37 63.76L51.88 64.43L51.26 64.48L51.00 64.30L51.01 64.08Z"/>
+  </g>
+  <g class="map-fills map-focus map-fills-cover" data-region="OKINAWA" fill="#76c85a" fill-rule="evenodd" stroke="none">
+      <path data-pref="47" d="M62.57 22.10L62.88 22.05L63.31 21.58L63.95 21.46L64.03 22.07L64.42 22.12L65.02 21.45L65.17 20.94L65.09 20.94L64.98 20.72L65.25 19.97L65.01 19.70L65.26 19.47L65.41 18.51L65.29 17.87L65.03 17.54L65.18 17.37L65.67 17.55L65.78 17.42L66.70 18.39L66.69 20.41L65.84 21.09L66.08 21.46L65.78 21.60L66.30 21.82L66.00 22.62L65.57 22.63L65.41 22.82L65.30 22.70L65.25 22.85L65.69 23.09L65.22 23.62L65.44 23.87L65.29 24.25L65.03 24.40L65.27 24.82L64.34 25.17L64.27 25.74L64.15 25.75L64.44 25.99L65.00 26.04L65.08 26.28L65.35 26.41L65.74 26.32L66.01 26.64L65.77 26.75L65.11 26.54L64.96 26.92L65.16 27.00L64.94 27.48L65.15 27.68L65.05 27.91L65.24 28.49L65.15 28.77L65.26 28.91L65.10 28.98L65.44 29.03L65.54 29.21L65.84 28.66L66.09 28.91L65.94 29.59L65.64 30.07L65.62 30.55L65.27 31.11L65.02 31.15L64.75 30.47L64.61 30.61L64.46 30.48L64.62 30.25L64.40 30.40L64.32 30.09L64.14 30.16L63.95 29.93L63.96 29.59L64.25 29.55L64.08 29.53L64.22 29.27L63.91 29.13L64.10 29.05L64.10 28.52L64.29 28.43L64.42 27.91L64.23 27.59L64.00 27.56L62.89 26.50L63.28 26.55L63.45 26.02L63.78 25.93L63.73 25.51L63.92 25.06L63.74 24.80L63.90 24.74L63.90 24.53L64.18 24.48L64.38 24.10L64.32 23.71L64.65 23.50L64.64 23.18L64.46 22.81L63.74 22.98L63.49 23.21L63.07 22.92L63.08 22.58L62.67 22.40L62.57 22.10Z"/>
+      <path data-pref="47" d="M41.59 76.42L42.06 76.20L41.94 75.87L41.76 75.80L42.17 75.82L42.30 76.10L42.34 75.87L43.01 75.36L42.75 74.78L42.88 74.34L43.20 74.33L43.09 73.81L42.84 73.68L42.89 73.14L42.76 72.88L43.06 72.73L43.25 73.08L43.16 73.69L43.31 73.88L43.22 74.99L43.68 75.59L43.98 76.54L43.64 76.62L43.56 77.08L43.15 77.29L43.02 77.16L42.59 77.22L42.68 76.68L42.54 76.42L42.20 76.33L41.99 76.48L41.95 76.81L41.68 76.73L41.59 76.42Z"/>
+      <path data-pref="47" d="M38.79 80.92L38.61 80.67L38.98 80.72L38.67 80.33L38.93 80.50L38.97 80.23L39.42 80.42L39.13 80.12L39.23 79.95L38.92 79.82L38.96 79.67L38.73 79.52L38.83 78.98L38.68 78.81L39.29 78.82L39.47 79.01L39.52 78.71L39.89 78.65L39.95 78.46L40.23 78.59L40.89 78.44L41.14 79.12L40.91 79.11L40.96 79.47L41.21 79.76L40.95 79.85L41.11 80.16L39.71 80.78L39.22 80.79L39.35 81.06L38.94 81.28L38.56 81.12L38.79 80.92Z"/>
+      <path data-pref="47" d="M51.01 64.08L51.17 64.26L51.34 64.13L50.76 63.80L50.87 63.43L50.64 63.16L50.83 63.03L49.88 62.45L50.05 62.37L50.55 62.52L51.00 62.90L51.33 62.92L51.49 63.19L52.74 62.95L53.42 63.17L53.17 63.16L52.37 63.76L51.88 64.43L51.26 64.48L51.00 64.30L51.01 64.08Z"/>
+  </g>
+    <g class="map-land-tris map-focus" fill="#76c85a" fill-rule="nonzero" stroke="none">
+      <polygon data-pref="47" fill-rule="nonzero" points="62.67,22.40 62.57,22.10 62.88,22.05"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="62.67,22.40 62.88,22.05 63.31,21.58"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="62.67,22.40 63.31,21.58 63.95,21.46"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="62.67,22.40 63.95,21.46 64.03,22.07"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="62.67,22.40 64.03,22.07 64.42,22.12"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="65.17,20.94 65.09,20.94 64.98,20.72"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="65.17,20.94 64.98,20.72 65.25,19.97"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="65.25,19.97 65.01,19.70 65.26,19.47"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="65.25,19.97 65.26,19.47 65.41,18.51"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="65.17,20.94 65.25,19.97 65.41,18.51"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="65.29,17.87 65.03,17.54 65.18,17.37"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="65.29,17.87 65.18,17.37 65.67,17.55"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="65.41,18.51 65.29,17.87 65.67,17.55"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="65.17,20.94 65.41,18.51 65.67,17.55"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="65.17,20.94 65.67,17.55 65.78,17.42"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="65.17,20.94 65.78,17.42 66.70,18.39"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="65.02,21.45 65.17,20.94 66.70,18.39"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="65.02,21.45 66.70,18.39 66.69,20.41"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="64.42,22.12 65.02,21.45 66.69,20.41"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="64.42,22.12 66.69,20.41 65.84,21.09"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="64.42,22.12 65.84,21.09 66.08,21.46"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="64.42,22.12 66.08,21.46 65.78,21.60"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="64.42,22.12 65.78,21.60 66.30,21.82"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="62.67,22.40 64.42,22.12 66.30,21.82"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="62.67,22.40 66.30,21.82 66.00,22.62"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="62.67,22.40 66.00,22.62 65.57,22.63"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="65.57,22.63 65.41,22.82 65.30,22.70"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="62.67,22.40 65.57,22.63 65.30,22.70"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="62.67,22.40 65.30,22.70 65.25,22.85"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="62.67,22.40 65.25,22.85 65.69,23.09"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="65.22,23.62 65.44,23.87 65.29,24.25"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="65.22,23.62 65.29,24.25 65.03,24.40"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="65.03,24.40 65.27,24.82 64.34,25.17"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="65.22,23.62 65.03,24.40 64.34,25.17"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="64.34,25.17 64.27,25.74 64.15,25.75"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="64.44,25.99 65.00,26.04 65.08,26.28"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="64.44,25.99 65.08,26.28 65.35,26.41"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="65.35,26.41 65.74,26.32 66.01,26.64"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="65.35,26.41 66.01,26.64 65.77,26.75"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="64.44,25.99 65.35,26.41 65.77,26.75"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="64.44,25.99 65.77,26.75 65.11,26.54"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="64.44,25.99 65.11,26.54 64.96,26.92"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="64.15,25.75 64.44,25.99 64.96,26.92"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="64.96,26.92 65.16,27.00 64.94,27.48"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="64.15,25.75 64.96,26.92 64.94,27.48"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="64.94,27.48 65.15,27.68 65.05,27.91"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="64.15,25.75 64.94,27.48 65.05,27.91"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="64.15,25.75 65.05,27.91 65.24,28.49"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="64.15,25.75 65.24,28.49 65.15,28.77"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="65.15,28.77 65.26,28.91 65.10,28.98"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="64.15,25.75 65.15,28.77 65.10,28.98"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="65.10,28.98 65.44,29.03 65.54,29.21"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="65.54,29.21 65.84,28.66 66.09,28.91"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="65.54,29.21 66.09,28.91 65.94,29.59"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="65.10,28.98 65.54,29.21 65.94,29.59"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="65.10,28.98 65.94,29.59 65.64,30.07"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="65.10,28.98 65.64,30.07 65.62,30.55"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="65.10,28.98 65.62,30.55 65.27,31.11"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="64.15,25.75 65.10,28.98 65.27,31.11"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="64.15,25.75 65.27,31.11 65.02,31.15"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="64.15,25.75 65.02,31.15 64.75,30.47"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="64.75,30.47 64.61,30.61 64.46,30.48"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="64.75,30.47 64.46,30.48 64.62,30.25"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="64.62,30.25 64.40,30.40 64.32,30.09"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="64.32,30.09 64.14,30.16 63.95,29.93"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="64.32,30.09 63.95,29.93 63.96,29.59"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="64.62,30.25 64.32,30.09 63.96,29.59"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="64.62,30.25 63.96,29.59 64.25,29.55"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="64.75,30.47 64.62,30.25 64.25,29.55"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="64.25,29.55 64.08,29.53 64.22,29.27"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="64.75,30.47 64.25,29.55 64.22,29.27"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="64.22,29.27 63.91,29.13 64.10,29.05"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="64.22,29.27 64.10,29.05 64.10,28.52"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="64.75,30.47 64.22,29.27 64.10,28.52"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="64.75,30.47 64.10,28.52 64.29,28.43"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="64.75,30.47 64.29,28.43 64.42,27.91"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="64.15,25.75 64.75,30.47 64.42,27.91"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="64.15,25.75 64.42,27.91 64.23,27.59"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="64.15,25.75 64.23,27.59 64.00,27.56"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="64.00,27.56 62.89,26.50 63.28,26.55"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="64.15,25.75 64.00,27.56 63.28,26.55"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="63.28,26.55 63.45,26.02 63.78,25.93"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="64.15,25.75 63.28,26.55 63.78,25.93"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="64.34,25.17 64.15,25.75 63.78,25.93"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="65.22,23.62 64.34,25.17 63.78,25.93"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="65.22,23.62 63.78,25.93 63.73,25.51"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="65.22,23.62 63.73,25.51 63.92,25.06"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="65.69,23.09 65.22,23.62 63.92,25.06"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="63.92,25.06 63.74,24.80 63.90,24.74"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="65.69,23.09 63.92,25.06 63.90,24.74"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="63.90,24.74 63.90,24.53 64.18,24.48"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="65.69,23.09 63.90,24.74 64.18,24.48"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="65.69,23.09 64.18,24.48 64.38,24.10"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="65.69,23.09 64.38,24.10 64.32,23.71"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="65.69,23.09 64.32,23.71 64.65,23.50"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="65.69,23.09 64.65,23.50 64.64,23.18"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="65.69,23.09 64.64,23.18 64.46,22.81"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="62.67,22.40 65.69,23.09 64.46,22.81"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="63.74,22.98 63.49,23.21 63.07,22.92"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="64.46,22.81 63.74,22.98 63.07,22.92"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="64.46,22.81 63.07,22.92 63.08,22.58"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="64.46,22.81 63.08,22.58 62.67,22.40"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="41.68,76.73 41.59,76.42 42.06,76.20"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="41.94,75.87 41.76,75.80 42.17,75.82"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="42.06,76.20 41.94,75.87 42.17,75.82"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="42.06,76.20 42.17,75.82 42.30,76.10"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="41.68,76.73 42.06,76.20 42.30,76.10"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="42.30,76.10 42.34,75.87 43.01,75.36"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="43.01,75.36 42.75,74.78 42.88,74.34"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="43.01,75.36 42.88,74.34 43.20,74.33"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="43.09,73.81 42.84,73.68 42.89,73.14"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="42.89,73.14 42.76,72.88 43.06,72.73"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="43.09,73.81 42.89,73.14 43.06,72.73"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="43.20,74.33 43.09,73.81 43.06,72.73"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="43.06,72.73 43.25,73.08 43.16,73.69"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="43.20,74.33 43.06,72.73 43.16,73.69"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="43.20,74.33 43.16,73.69 43.31,73.88"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="43.01,75.36 43.20,74.33 43.31,73.88"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="43.01,75.36 43.31,73.88 43.22,74.99"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="43.01,75.36 43.22,74.99 43.68,75.59"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="42.30,76.10 43.01,75.36 43.68,75.59"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="42.30,76.10 43.68,75.59 43.98,76.54"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="42.30,76.10 43.98,76.54 43.64,76.62"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="42.30,76.10 43.64,76.62 43.56,77.08"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="43.56,77.08 43.15,77.29 43.02,77.16"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="43.56,77.08 43.02,77.16 42.59,77.22"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="43.56,77.08 42.59,77.22 42.68,76.68"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="43.56,77.08 42.68,76.68 42.54,76.42"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="42.30,76.10 43.56,77.08 42.54,76.42"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="42.30,76.10 42.54,76.42 42.20,76.33"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="42.30,76.10 42.20,76.33 41.99,76.48"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="41.68,76.73 42.30,76.10 41.99,76.48"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="41.99,76.48 41.95,76.81 41.68,76.73"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="38.79,80.92 38.61,80.67 38.98,80.72"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="38.98,80.72 38.67,80.33 38.93,80.50"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="38.98,80.72 38.93,80.50 38.97,80.23"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="38.98,80.72 38.97,80.23 39.42,80.42"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="38.79,80.92 38.98,80.72 39.42,80.42"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="38.56,81.12 38.79,80.92 39.42,80.42"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="39.42,80.42 39.13,80.12 39.23,79.95"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="39.23,79.95 38.92,79.82 38.96,79.67"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="38.96,79.67 38.73,79.52 38.83,78.98"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="39.23,79.95 38.96,79.67 38.83,78.98"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="38.83,78.98 38.68,78.81 39.29,78.82"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="39.23,79.95 38.83,78.98 39.29,78.82"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="39.42,80.42 39.23,79.95 39.29,78.82"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="39.42,80.42 39.29,78.82 39.47,79.01"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="39.42,80.42 39.47,79.01 39.52,78.71"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="39.42,80.42 39.52,78.71 39.89,78.65"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="39.42,80.42 39.89,78.65 39.95,78.46"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="39.42,80.42 39.95,78.46 40.23,78.59"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="39.42,80.42 40.23,78.59 40.89,78.44"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="40.89,78.44 41.14,79.12 40.91,79.11"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="39.42,80.42 40.89,78.44 40.91,79.11"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="39.42,80.42 40.91,79.11 40.96,79.47"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="38.56,81.12 39.42,80.42 40.96,79.47"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="40.96,79.47 41.21,79.76 40.95,79.85"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="38.56,81.12 40.96,79.47 40.95,79.85"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="40.95,79.85 41.11,80.16 39.71,80.78"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="40.95,79.85 39.71,80.78 39.22,80.79"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="38.56,81.12 40.95,79.85 39.22,80.79"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="38.56,81.12 39.22,80.79 39.35,81.06"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="39.35,81.06 38.94,81.28 38.56,81.12"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="51.00,64.30 51.01,64.08 51.17,64.26"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="51.34,64.13 50.76,63.80 50.87,63.43"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="50.87,63.43 50.64,63.16 50.83,63.03"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="51.34,64.13 50.87,63.43 50.83,63.03"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="50.83,63.03 49.88,62.45 50.05,62.37"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="50.83,63.03 50.05,62.37 50.55,62.52"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="50.83,63.03 50.55,62.52 51.00,62.90"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="51.34,64.13 50.83,63.03 51.00,62.90"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="51.34,64.13 51.00,62.90 51.33,62.92"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="51.34,64.13 51.33,62.92 51.49,63.19"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="51.34,64.13 51.49,63.19 52.74,62.95"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="52.74,62.95 53.42,63.17 53.17,63.16"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="51.34,64.13 52.74,62.95 53.17,63.16"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="51.17,64.26 51.34,64.13 53.17,63.16"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="51.17,64.26 53.17,63.16 52.37,63.76"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="51.17,64.26 52.37,63.76 51.88,64.43"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="51.00,64.30 51.17,64.26 51.88,64.43"/>
+      <polygon data-pref="47" fill-rule="nonzero" points="51.88,64.43 51.26,64.48 51.00,64.30"/>
+  </g>
+  <g class="map-lakes" fill="#c8ebff" fill-rule="evenodd" stroke="none">
+      <path d=""/>
+  </g>
+</svg>
