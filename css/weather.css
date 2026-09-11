@@ -295,19 +295,19 @@ html.is-edit .map-cards {
 
 .map-okinawa-dock {
   position: absolute;
-  left: var(--oki-x, 28%);
-  top: var(--oki-y, 50%);
+  left: var(--oki-x, 18%);
+  top: var(--oki-y, 56%);
   width: calc(22% * var(--oki-scale, 1));
   aspect-ratio: 20 / 22;
   height: auto;
-  min-width: 72px;
+  min-width: 88px;
   transform: translate(-50%, -50%);
-  z-index: 4;
   pointer-events: auto;
   cursor: grab;
   overflow: visible;
-  background: var(--bg-sea);
-  box-shadow: 0 0 0 1.5px var(--bg-footer);
+  background: #ffffff;
+  outline: 2px solid #08357f;
+  z-index: 6;
 }
 
 .map-okinawa-overlay text {
