@@ -29,7 +29,7 @@ import {
   fitTitleBars,
   readViewport,
   showAuxiliary
-} from "./viewport.js?v=pref203";
+} from "./viewport.js?v=pref193";
 
 export { APP_VERSION };
 
