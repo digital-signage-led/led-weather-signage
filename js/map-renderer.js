@@ -407,7 +407,7 @@ export function estimateCardSizePct(viewportOrRegion, regionId = "national") {
 const CARD_SLOTS = {
   national: {
     sapporo: { x: 86, y: 14 },
-    naha: { x: 13, y: 28 },
+    naha: { x: 16, y: 36 },
     niigata: { x: 64, y: 26 },
     sendai: { x: 88, y: 40 },
     hiroshima: { x: 13, y: 54 },
@@ -500,7 +500,7 @@ const CARD_SLOTS = {
 const CARD_SLOTS_POP = {
   national: {
     sapporo: { x: 86, y: 13 },
-    naha: { x: 13, y: 28 },
+    naha: { x: 16, y: 36 },
     niigata: { x: 66, y: 26 },
     sendai: { x: 88, y: 40 },
     hiroshima: { x: 12, y: 52 },
