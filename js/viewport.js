@@ -62,11 +62,11 @@ export function fluidPx(minSide, ratio, minPx, maxPx) {
 export function cardBoxPx(vp, variant = "weather") {
   const s = vp.minSide;
   const pop = variant === "pop";
-  const rawW = fluidPx(s, pop ? 0.24 : 0.28, pop ? 84 : 90, pop ? 200 : 220);
-  const rawH = fluidPx(s, pop ? 0.1 : 0.09, pop ? 30 : 28, pop ? 84 : 76);
+  const rawW = fluidPx(s, pop ? 0.34 : 0.38, pop ? 96 : 100, pop ? 420 : 460);
+  const rawH = fluidPx(s, pop ? 0.132 : 0.112, pop ? 34 : 32, pop ? 170 : 150);
   return {
-    w: Math.min(rawW, Math.round(s * (pop ? 0.24 : 0.26)), Math.round(vp.width * (pop ? 0.2 : 0.18))),
-    h: Math.min(rawH, Math.round(s * (pop ? 0.11 : 0.1)), Math.round(vp.height * (pop ? 0.12 : 0.1)))
+    w: Math.min(rawW, Math.round(vp.width * (pop ? 0.34 : 0.28))),
+    h: Math.min(rawH, Math.round(vp.height * (pop ? 0.18 : 0.14)))
   };
 }
 

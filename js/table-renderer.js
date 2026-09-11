@@ -3,9 +3,10 @@
  */
 
 import { canonicalContent } from "./catalog.js?v=pref174";
-import { loadIcon } from "./map-renderer.js?v=pref174";
-import { weatherTone } from "./weather-renderer.js?v=pref174";
-import { popTone } from "./forecast.js?v=pref174";
+import { loadIcon } from "./map-renderer.js?v=pref206";
+import { weatherTone } from "./weather-renderer.js?v=pref206";
+import { popTone } from "./forecast.js?v=pref206";
+import { isNightHours, jmaLabel } from "./jma-icons.js?v=pref206";
 
 export async function renderWeeklyTable(cities, contentId) {
   const days = cities[0]?.weekly || [];
@@ -39,10 +40,12 @@ async function renderRow(city, contentId) {
 }
 
 async function renderWeatherCell(day) {
-  const icon = await loadIcon(day.weather);
+  const night = Boolean(day.today) && isNightHours();
+  const icon = await loadIcon(day.weather, night);
+  const when = night ? "夜" : "昼";
   return `
     <div class="forecast-cell is-weather${day.today ? " is-today" : ""}">
-      <span class="wx-icon ${weatherTone(day.weather)}" aria-label="${day.weatherLabel}">${icon}</span>
+      <span class="wx-icon ${weatherTone(day.weather)}" aria-label="${when} ${day.weatherLabel || jmaLabel(day.weather)}">${icon}</span>
       <span class="forecast-temps">
         <b class="temp-max">${Math.round(day.tempMax)}</b>
         <span class="temp-slash">/</span>

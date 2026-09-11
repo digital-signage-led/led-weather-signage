@@ -7,16 +7,24 @@ import { canonicalRegion, isNational, projectionKey } from "./catalog.js?v=pref1
 import { cardSizePct } from "./viewport.js?v=pref192";
 import { MAP_VERSION } from "./version.js?v=pref181";
 
-const ICON_FILES = {
-  sunny: "icons/sunny.svg",
-  cloudy: "icons/cloudy.svg",
-  rain: "icons/rain.svg",
-  snow: "icons/snow.svg",
-  thunder: "icons/thunder.svg",
-  "sunny-cloudy": "icons/sunny-cloudy.svg"
-};
+import { jmaIconFile } from "./jma-icons.js?v=pref206";
 
 const iconCache = new Map();
+let iconSeq = 0;
+
+function inlineJmaSvg(svgText, prefix) {
+  let svg = String(svgText).replace(/^\uFEFF/, "").replace(/<\?xml[^>]*>/, "").trim();
+  svg = svg.replace(/<svg\b([^>]*)>/i, (_, attrs) => {
+    const rest = String(attrs)
+      .replace(/\s(width|height)="[^"]*"/g, "")
+      .replace(/\sclass="[^"]*"/g, "");
+    return `<svg class="jma-icon" width="100%" height="100%" preserveAspectRatio="xMidYMid meet"${rest}>`;
+  });
+  svg = svg.replace(/\bid="([^"]+)"/g, `id="${prefix}-$1"`);
+  svg = svg.replace(/url\(#([^)]+)\)/g, `url(#${prefix}-$1)`);
+  svg = svg.replace(/xlink:href="#([^"]+)"/g, `xlink:href="#${prefix}-$1"`);
+  return svg;
+}
 
 export async function loadMapSvg(mapFile = "japan.svg") {
   const response = await fetch(`maps/${mapFile}?v=${MAP_VERSION}`);
@@ -24,14 +32,15 @@ export async function loadMapSvg(mapFile = "japan.svg") {
   return response.text();
 }
 
-export async function loadIcon(weather) {
-  const file = ICON_FILES[weather] || ICON_FILES.cloudy;
-  if (iconCache.has(file)) return iconCache.get(file);
-  const response = await fetch(file);
-  if (!response.ok) throw new Error(`アイコンを読み込めません: ${file}`);
-  const svg = await response.text();
-  iconCache.set(file, svg);
-  return svg;
+export async function loadIcon(weather, night = false) {
+  const file = jmaIconFile(weather, night);
+  if (!iconCache.has(file)) {
+    const response = await fetch(file);
+    if (!response.ok) throw new Error(`アイコンを読み込めません: ${file}`);
+    iconCache.set(file, await response.text());
+  }
+  iconSeq += 1;
+  return inlineJmaSvg(iconCache.get(file), `jma${iconSeq}`);
 }
 
 /** 地図は画面いっぱいに置き、カードは各地点のそばへ重ねる。 */

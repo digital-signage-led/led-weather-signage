@@ -3,7 +3,7 @@
  * 管理画面は本番URLを iframe の実viewportで開く。
  */
 
-import { APP_VERSION, DATA_VERSION, MAP_VERSION } from "./version.js?v=pref196";
+import { APP_VERSION, DATA_VERSION, MAP_VERSION } from "./version.js?v=pref206";
 import {
   canonicalContent,
   canonicalRegion,
@@ -15,11 +15,11 @@ import {
   loadCatalog
 } from "./catalog.js?v=pref194";
 import { adaptWeather, aggregateRegion } from "./weather-data.js?v=pref194";
-import { loadMapSvg, mountMap, placeCardsAroundMap, projectCity } from "./map-renderer.js?v=pref203";
-import { formatStamp, renderCityCard, renderPin, pickNoteWeather, weatherTone, renderNoteIcon } from "./weather-renderer.js?v=pref185";
+import { loadMapSvg, mountMap, placeCardsAroundMap, projectCity } from "./map-renderer.js?v=pref206";
+import { formatStamp, renderCityCard, renderPin, pickNoteWeather, weatherTone, renderNoteIcon } from "./weather-renderer.js?v=pref206";
 import { applyCardScale, applyLockedCards, applyMapTransform, bindCardEditor, bindMapControls, bindMapEditor, bindOkinawaEditor, CARD_POS_MAX, CARD_POS_MIN, CARD_SCALE_MAX, CARD_SCALE_MIN, centerCityCards, listCardPositions, loadCardScale, loadLayout, moveLockedCard, resetCardScale, resetLayout, saveCardScale, saveLayout } from "./studio-layout.js?v=pref203";
-import { expandForecast, noteFor } from "./forecast.js?v=pref174";
-import { renderWeeklyTable } from "./table-renderer.js?v=pref174";
+import { expandForecast, noteFor } from "./forecast.js?v=pref206";
+import { renderWeeklyTable } from "./table-renderer.js?v=pref206";
 import {
   VIEWPORT_PRESETS,
   applyViewport,
@@ -356,6 +356,10 @@ async function bootSignage() {
     next.searchParams.set("content", state.contentId);
     if (canEdit) next.searchParams.set("edit", "1");
     if (isDebug) next.searchParams.set("debug", "1");
+    const icon = params.get("icon");
+    if (icon === "night" || icon === "day") next.searchParams.set("icon", icon);
+    if (params.get("night") === "1") next.searchParams.set("night", "1");
+    if (params.get("day") === "1") next.searchParams.set("day", "1");
     window.history.replaceState({}, "", next);
   };
 
@@ -402,7 +406,7 @@ async function bootSignage() {
         stage.innerHTML = await renderWeeklyTable(selected, content.id);
         const noteWeather = pickNoteWeather(selected.flatMap((city) => city.weekly || [city]));
         noteIconEl.className = `wx-icon ${weatherTone(noteWeather)}`;
-        noteIconEl.innerHTML = renderNoteIcon(noteWeather);
+        noteIconEl.innerHTML = await renderNoteIcon(noteWeather);
         lastError = "ok";
         updateDebug(vp, region, content, weatherStamp);
         recordSite();
@@ -431,7 +435,7 @@ async function bootSignage() {
 
       const noteWeather = pickNoteWeather(laidOut);
       noteIconEl.className = `wx-icon ${weatherTone(noteWeather)}`;
-      noteIconEl.innerHTML = renderNoteIcon(noteWeather);
+      noteIconEl.innerHTML = await renderNoteIcon(noteWeather);
       layers.leaders.innerHTML = "";
       const visiblePins = laidOut.filter((item) => !item.hidePin);
       const insetPins = layers.okinawaPins

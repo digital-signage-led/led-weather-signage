@@ -1,0 +1,7 @@
+出典：気象庁ホームページ（https://www.jma.go.jp/bosai/forecast/）
+
+SVG取得元：https://www.jma.go.jp/bosai/forecast/img/{filename}
+利用条件：https://www.jma.go.jp/jma/kishou/info/coment.html
+取得日時：2026-09-11T06:30:12.446Z
+
+SVG本体は無改変です。by-code配下は、公式SVGを天気コード名で複製したものです。

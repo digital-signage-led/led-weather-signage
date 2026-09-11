@@ -504,22 +504,33 @@ html.is-edit .card-resize {
 }
 
 .wx-icon {
-  width: var(--icon-card);
+  width: calc(var(--icon-card) * 1.5);
   height: var(--icon-card);
   display: inline-flex;
   flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
 }
 
 .wx-icon svg {
   width: 100%;
   height: 100%;
+  display: block;
 }
 
-.wx-icon.is-sunny { color: #ff8a00; }
-.wx-icon.is-cloudy { color: #8ca3b8; }
-.wx-icon.is-rain { color: #087bd7; }
-.wx-icon.is-snow { color: #6ec4ff; }
-.wx-icon.is-thunder { color: #d4a017; }
+.wx-pair {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  flex: 0 0 auto;
+  gap: 1px;
+}
+
+.wx-pair .wx-icon {
+  width: calc(var(--icon-card) * 1.15);
+  height: calc(var(--icon-card) * 0.5);
+}
 
 .city-card.is-pop {
   flex-direction: column;

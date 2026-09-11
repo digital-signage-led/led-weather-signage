@@ -450,13 +450,12 @@ html:not(.is-edit) .card-resize {
 
 .led-note-mark .wx-icon {
   position: absolute;
-  left: 12%;
+  left: 8%;
   top: 50%;
   transform: translateY(-50%);
   z-index: 1;
-  width: calc(var(--footer-height) * 0.62);
-  height: calc(var(--footer-height) * 0.62);
-  color: #ffffff;
+  width: calc(var(--footer-height) * 0.96);
+  height: calc(var(--footer-height) * 0.64);
 }
 
 .led-note-mark .wx-icon.is-sunny,
@@ -464,7 +463,7 @@ html:not(.is-edit) .card-resize {
 .led-note-mark .wx-icon.is-rain,
 .led-note-mark .wx-icon.is-snow,
 .led-note-mark .wx-icon.is-thunder {
-  color: #ffffff;
+  color: inherit;
 }
 
 .led-title {

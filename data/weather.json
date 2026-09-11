@@ -14,64 +14,477 @@
     "okinawa": "晴れ。強い日差しと高温に注意。"
   },
   "points": [
-    { "cityId": "sapporo", "weather": "cloudy", "weatherLabel": "曇り", "tempMax": 22, "tempMin": 15, "pop": 20 },
-    { "cityId": "asahikawa", "weather": "cloudy", "weatherLabel": "曇り", "tempMax": 21, "tempMin": 12, "pop": 30 },
-    { "cityId": "kushiro", "weather": "rain", "weatherLabel": "雨", "tempMax": 18, "tempMin": 13, "pop": 70 },
-    { "cityId": "hakodate", "weather": "rain", "weatherLabel": "雨", "tempMax": 19, "tempMin": 14, "pop": 60 },
-    { "cityId": "aomori", "weather": "cloudy", "weatherLabel": "曇り", "tempMax": 25, "tempMin": 16, "pop": 30 },
-    { "cityId": "akita", "weather": "cloudy", "weatherLabel": "曇り", "tempMax": 25, "tempMin": 17, "pop": 40 },
-    { "cityId": "morioka", "weather": "cloudy", "weatherLabel": "曇り", "tempMax": 22, "tempMin": 16, "pop": 60 },
-    { "cityId": "miyakoIwate", "weather": "cloudy", "weatherLabel": "曇り", "tempMax": 21, "tempMin": 16, "pop": 60 },
-    { "cityId": "yamagata", "weather": "sunny", "weatherLabel": "晴れ", "tempMax": 22, "tempMin": 17, "pop": 60 },
-    { "cityId": "sendai", "weather": "cloudy", "weatherLabel": "曇り", "tempMax": 24, "tempMin": 19, "pop": 50 },
-    { "cityId": "fukushima", "weather": "cloudy", "weatherLabel": "曇り", "tempMax": 24, "tempMin": 19, "pop": 50 },
-    { "cityId": "aizuwakamatsu", "weather": "cloudy", "weatherLabel": "曇り", "tempMax": 23, "tempMin": 18, "pop": 60 },
-    { "cityId": "iwaki", "weather": "cloudy", "weatherLabel": "曇り", "tempMax": 26, "tempMin": 19, "pop": 60 },
-    { "cityId": "nagano", "weather": "cloudy", "weatherLabel": "曇り", "tempMax": 27, "tempMin": 18, "pop": 20 },
-    { "cityId": "maebashi", "weather": "sunny", "weatherLabel": "晴れ", "tempMax": 31, "tempMin": 21, "pop": 10 },
-    { "cityId": "utsunomiya", "weather": "sunny", "weatherLabel": "晴れ", "tempMax": 30, "tempMin": 20, "pop": 10 },
-    { "cityId": "mito", "weather": "sunny-cloudy", "weatherLabel": "晴れ時々曇り", "tempMax": 30, "tempMin": 21, "pop": 10 },
-    { "cityId": "kofu", "weather": "sunny", "weatherLabel": "晴れ", "tempMax": 32, "tempMin": 21, "pop": 10 },
-    { "cityId": "saitama", "weather": "sunny-cloudy", "weatherLabel": "晴れ時々曇り", "tempMax": 31, "tempMin": 22, "pop": 10 },
-    { "cityId": "tokyo", "weather": "sunny-cloudy", "weatherLabel": "晴れ時々曇り", "tempMax": 31, "tempMin": 23, "pop": 10 },
-    { "cityId": "yokohama", "weather": "sunny-cloudy", "weatherLabel": "晴れ時々曇り", "tempMax": 30, "tempMin": 23, "pop": 10 },
-    { "cityId": "chiba", "weather": "sunny-cloudy", "weatherLabel": "晴れ時々曇り", "tempMax": 30, "tempMin": 23, "pop": 10 },
-    { "cityId": "sado", "weather": "sunny", "weatherLabel": "晴れ", "tempMax": 23, "tempMin": 17, "pop": 60 },
-    { "cityId": "niigata", "weather": "rain", "weatherLabel": "雨", "tempMax": 24, "tempMin": 19, "pop": 60 },
-    { "cityId": "toyama", "weather": "rain", "weatherLabel": "雨", "tempMax": 25, "tempMin": 19, "pop": 70 },
-    { "cityId": "kanazawa", "weather": "rain", "weatherLabel": "雨", "tempMax": 26, "tempMin": 20, "pop": 80 },
-    { "cityId": "fukui", "weather": "rain", "weatherLabel": "雨", "tempMax": 26, "tempMin": 20, "pop": 70 },
-    { "cityId": "takayama", "weather": "cloudy", "weatherLabel": "曇り", "tempMax": 22, "tempMin": 17, "pop": 60 },
-    { "cityId": "gifu", "weather": "cloudy", "weatherLabel": "曇り", "tempMax": 29, "tempMin": 21, "pop": 30 },
-    { "cityId": "nagoya", "weather": "cloudy", "weatherLabel": "曇り", "tempMax": 30, "tempMin": 23, "pop": 40 },
-    { "cityId": "shizuoka", "weather": "sunny-cloudy", "weatherLabel": "晴れ時々曇り", "tempMax": 30, "tempMin": 23, "pop": 20 },
-    { "cityId": "tsu", "weather": "cloudy", "weatherLabel": "曇り", "tempMax": 29, "tempMin": 23, "pop": 40 },
-    { "cityId": "otsu", "weather": "rain", "weatherLabel": "雨", "tempMax": 28, "tempMin": 21, "pop": 60 },
-    { "cityId": "kyoto", "weather": "rain", "weatherLabel": "雨", "tempMax": 29, "tempMin": 22, "pop": 70 },
-    { "cityId": "nara", "weather": "rain", "weatherLabel": "雨", "tempMax": 28, "tempMin": 21, "pop": 60 },
-    { "cityId": "osaka", "weather": "rain", "weatherLabel": "雨", "tempMax": 29, "tempMin": 23, "pop": 70 },
-    { "cityId": "kobe", "weather": "rain", "weatherLabel": "雨", "tempMax": 28, "tempMin": 23, "pop": 70 },
-    { "cityId": "wakayama", "weather": "thunder", "weatherLabel": "雷雨", "tempMax": 29, "tempMin": 23, "pop": 80 },
-    { "cityId": "tottori", "weather": "cloudy", "weatherLabel": "曇り", "tempMax": 27, "tempMin": 20, "pop": 40 },
-    { "cityId": "matsue", "weather": "cloudy", "weatherLabel": "曇り", "tempMax": 27, "tempMin": 20, "pop": 40 },
-    { "cityId": "okayama", "weather": "rain", "weatherLabel": "雨", "tempMax": 28, "tempMin": 22, "pop": 50 },
-    { "cityId": "hiroshima", "weather": "rain", "weatherLabel": "雨", "tempMax": 28, "tempMin": 22, "pop": 60 },
-    { "cityId": "yamaguchi", "weather": "rain", "weatherLabel": "雨", "tempMax": 27, "tempMin": 22, "pop": 50 },
-    { "cityId": "tokushima", "weather": "thunder", "weatherLabel": "雷雨", "tempMax": 29, "tempMin": 23, "pop": 70 },
-    { "cityId": "takamatsu", "weather": "rain", "weatherLabel": "雨", "tempMax": 29, "tempMin": 23, "pop": 60 },
-    { "cityId": "matsuyama", "weather": "rain", "weatherLabel": "雨", "tempMax": 29, "tempMin": 23, "pop": 70 },
-    { "cityId": "kochi", "weather": "thunder", "weatherLabel": "雷雨", "tempMax": 29, "tempMin": 23, "pop": 80 },
-    { "cityId": "fukuoka", "weather": "sunny", "weatherLabel": "晴れ", "tempMax": 32, "tempMin": 24, "pop": 10 },
-    { "cityId": "saga", "weather": "sunny", "weatherLabel": "晴れ", "tempMax": 32, "tempMin": 23, "pop": 10 },
-    { "cityId": "oita", "weather": "sunny", "weatherLabel": "晴れ", "tempMax": 31, "tempMin": 23, "pop": 10 },
-    { "cityId": "nagasaki", "weather": "sunny-cloudy", "weatherLabel": "晴れ時々曇り", "tempMax": 31, "tempMin": 24, "pop": 20 },
-    { "cityId": "kumamoto", "weather": "sunny-cloudy", "weatherLabel": "晴れ時々曇り", "tempMax": 32, "tempMin": 23, "pop": 20 },
-    { "cityId": "miyazaki", "weather": "sunny", "weatherLabel": "晴れ", "tempMax": 32, "tempMin": 24, "pop": 10 },
-    { "cityId": "kagoshima", "weather": "sunny-cloudy", "weatherLabel": "晴れ時々曇り", "tempMax": 33, "tempMin": 25, "pop": 20 },
-    { "cityId": "naze", "weather": "sunny", "weatherLabel": "晴れ", "tempMax": 32, "tempMin": 26, "pop": 20 },
-    { "cityId": "nago", "weather": "sunny", "weatherLabel": "晴れ", "tempMax": 31, "tempMin": 26, "pop": 20 },
-    { "cityId": "naha", "weather": "sunny", "weatherLabel": "晴れ", "tempMax": 32, "tempMin": 27, "pop": 20 },
-    { "cityId": "miyako", "weather": "sunny", "weatherLabel": "晴れ", "tempMax": 32, "tempMin": 27, "pop": 10 },
-    { "cityId": "ishigaki", "weather": "sunny-cloudy", "weatherLabel": "晴れ時々曇り", "tempMax": 32, "tempMin": 27, "pop": 20 }
+    {
+      "cityId": "sapporo",
+      "weather": "100",
+      "weatherLabel": "晴",
+      "tempMax": 22,
+      "tempMin": 15,
+      "pop": 20
+    },
+    {
+      "cityId": "asahikawa",
+      "weather": "102",
+      "weatherLabel": "晴一時雨",
+      "tempMax": 21,
+      "tempMin": 12,
+      "pop": 30
+    },
+    {
+      "cityId": "kushiro",
+      "weather": "104",
+      "weatherLabel": "晴一時雪",
+      "tempMax": 18,
+      "tempMin": 13,
+      "pop": 70
+    },
+    {
+      "cityId": "hakodate",
+      "weather": "106",
+      "weatherLabel": "晴一時雨か雪",
+      "tempMax": 19,
+      "tempMin": 14,
+      "pop": 60
+    },
+    {
+      "cityId": "aomori",
+      "weather": "108",
+      "weatherLabel": "晴一時雨か雷雨",
+      "tempMax": 25,
+      "tempMin": 16,
+      "pop": 30
+    },
+    {
+      "cityId": "akita",
+      "weather": "111",
+      "weatherLabel": "晴後曇",
+      "tempMax": 25,
+      "tempMin": 17,
+      "pop": 40
+    },
+    {
+      "cityId": "morioka",
+      "weather": "113",
+      "weatherLabel": "晴後時々雨",
+      "tempMax": 22,
+      "tempMin": 16,
+      "pop": 60
+    },
+    {
+      "cityId": "miyakoIwate",
+      "weather": "115",
+      "weatherLabel": "晴後一時雪",
+      "tempMax": 21,
+      "tempMin": 16,
+      "pop": 60
+    },
+    {
+      "cityId": "yamagata",
+      "weather": "117",
+      "weatherLabel": "晴後雪",
+      "tempMax": 22,
+      "tempMin": 17,
+      "pop": 60
+    },
+    {
+      "cityId": "sendai",
+      "weather": "119",
+      "weatherLabel": "晴後雨か雷雨",
+      "tempMax": 24,
+      "tempMin": 19,
+      "pop": 50
+    },
+    {
+      "cityId": "fukushima",
+      "weather": "121",
+      "weatherLabel": "晴朝の内一時雨",
+      "tempMax": 24,
+      "tempMin": 19,
+      "pop": 50
+    },
+    {
+      "cityId": "aizuwakamatsu",
+      "weather": "123",
+      "weatherLabel": "晴山沿い雷雨",
+      "tempMax": 23,
+      "tempMin": 18,
+      "pop": 60
+    },
+    {
+      "cityId": "iwaki",
+      "weather": "125",
+      "weatherLabel": "晴午後は雷雨",
+      "tempMax": 26,
+      "tempMin": 19,
+      "pop": 60
+    },
+    {
+      "cityId": "nagano",
+      "weather": "127",
+      "weatherLabel": "晴夕方から雨",
+      "tempMax": 27,
+      "tempMin": 18,
+      "pop": 20
+    },
+    {
+      "cityId": "maebashi",
+      "weather": "130",
+      "weatherLabel": "朝の内霧後晴",
+      "tempMax": 31,
+      "tempMin": 21,
+      "pop": 10
+    },
+    {
+      "cityId": "utsunomiya",
+      "weather": "132",
+      "weatherLabel": "晴朝夕曇",
+      "tempMax": 30,
+      "tempMin": 20,
+      "pop": 10
+    },
+    {
+      "cityId": "mito",
+      "weather": "160",
+      "weatherLabel": "晴一時雪か雨",
+      "tempMax": 30,
+      "tempMin": 21,
+      "pop": 10
+    },
+    {
+      "cityId": "kofu",
+      "weather": "181",
+      "weatherLabel": "晴後雪か雨",
+      "tempMax": 32,
+      "tempMin": 21,
+      "pop": 10
+    },
+    {
+      "cityId": "saitama",
+      "weather": "201",
+      "weatherLabel": "曇時々晴",
+      "tempMax": 31,
+      "tempMin": 22,
+      "pop": 10
+    },
+    {
+      "cityId": "tokyo",
+      "weather": "203",
+      "weatherLabel": "曇時々雨",
+      "tempMax": 31,
+      "tempMin": 23,
+      "pop": 10
+    },
+    {
+      "cityId": "yokohama",
+      "weather": "205",
+      "weatherLabel": "曇時々雪",
+      "tempMax": 30,
+      "tempMin": 23,
+      "pop": 10
+    },
+    {
+      "cityId": "chiba",
+      "weather": "207",
+      "weatherLabel": "曇時々雨か雪",
+      "tempMax": 30,
+      "tempMin": 23,
+      "pop": 10
+    },
+    {
+      "cityId": "sado",
+      "weather": "209",
+      "weatherLabel": "霧",
+      "tempMax": 23,
+      "tempMin": 17,
+      "pop": 60
+    },
+    {
+      "cityId": "niigata",
+      "weather": "211",
+      "weatherLabel": "曇後晴",
+      "tempMax": 24,
+      "tempMin": 19,
+      "pop": 60
+    },
+    {
+      "cityId": "toyama",
+      "weather": "213",
+      "weatherLabel": "曇後時々雨",
+      "tempMax": 25,
+      "tempMin": 19,
+      "pop": 70
+    },
+    {
+      "cityId": "kanazawa",
+      "weather": "215",
+      "weatherLabel": "曇後一時雪",
+      "tempMax": 26,
+      "tempMin": 20,
+      "pop": 80
+    },
+    {
+      "cityId": "fukui",
+      "weather": "217",
+      "weatherLabel": "曇後雪",
+      "tempMax": 26,
+      "tempMin": 20,
+      "pop": 70
+    },
+    {
+      "cityId": "takayama",
+      "weather": "219",
+      "weatherLabel": "曇後雨か雷雨",
+      "tempMax": 22,
+      "tempMin": 17,
+      "pop": 60
+    },
+    {
+      "cityId": "gifu",
+      "weather": "221",
+      "weatherLabel": "曇朝の内一時雨",
+      "tempMax": 29,
+      "tempMin": 21,
+      "pop": 30
+    },
+    {
+      "cityId": "nagoya",
+      "weather": "223",
+      "weatherLabel": "曇日中時々晴",
+      "tempMax": 30,
+      "tempMin": 23,
+      "pop": 40
+    },
+    {
+      "cityId": "shizuoka",
+      "weather": "225",
+      "weatherLabel": "曇夕方から雨",
+      "tempMax": 30,
+      "tempMin": 23,
+      "pop": 20
+    },
+    {
+      "cityId": "tsu",
+      "weather": "228",
+      "weatherLabel": "曇昼頃から雪",
+      "tempMax": 29,
+      "tempMin": 23,
+      "pop": 40
+    },
+    {
+      "cityId": "otsu",
+      "weather": "230",
+      "weatherLabel": "曇夜は雪",
+      "tempMax": 28,
+      "tempMin": 21,
+      "pop": 60
+    },
+    {
+      "cityId": "kyoto",
+      "weather": "240",
+      "weatherLabel": "曇時々雨で雷を伴う",
+      "tempMax": 29,
+      "tempMin": 22,
+      "pop": 70
+    },
+    {
+      "cityId": "nara",
+      "weather": "260",
+      "weatherLabel": "曇一時雪か雨",
+      "tempMax": 28,
+      "tempMin": 21,
+      "pop": 60
+    },
+    {
+      "cityId": "osaka",
+      "weather": "281",
+      "weatherLabel": "曇後雪か雨",
+      "tempMax": 29,
+      "tempMin": 23,
+      "pop": 70
+    },
+    {
+      "cityId": "kobe",
+      "weather": "301",
+      "weatherLabel": "雨時々晴",
+      "tempMax": 28,
+      "tempMin": 23,
+      "pop": 70
+    },
+    {
+      "cityId": "wakayama",
+      "weather": "303",
+      "weatherLabel": "雨時々雪",
+      "tempMax": 29,
+      "tempMin": 23,
+      "pop": 80
+    },
+    {
+      "cityId": "tottori",
+      "weather": "306",
+      "weatherLabel": "大雨",
+      "tempMax": 27,
+      "tempMin": 20,
+      "pop": 40
+    },
+    {
+      "cityId": "matsue",
+      "weather": "309",
+      "weatherLabel": "雨一時雪",
+      "tempMax": 27,
+      "tempMin": 20,
+      "pop": 40
+    },
+    {
+      "cityId": "okayama",
+      "weather": "313",
+      "weatherLabel": "雨後曇",
+      "tempMax": 28,
+      "tempMin": 22,
+      "pop": 50
+    },
+    {
+      "cityId": "hiroshima",
+      "weather": "315",
+      "weatherLabel": "雨後雪",
+      "tempMax": 28,
+      "tempMin": 22,
+      "pop": 60
+    },
+    {
+      "cityId": "yamaguchi",
+      "weather": "317",
+      "weatherLabel": "雨か雪後曇",
+      "tempMax": 27,
+      "tempMin": 22,
+      "pop": 50
+    },
+    {
+      "cityId": "tokushima",
+      "weather": "321",
+      "weatherLabel": "朝の内雨後曇",
+      "tempMax": 29,
+      "tempMin": 23,
+      "pop": 70
+    },
+    {
+      "cityId": "takamatsu",
+      "weather": "323",
+      "weatherLabel": "雨昼頃から晴",
+      "tempMax": 29,
+      "tempMin": 23,
+      "pop": 60
+    },
+    {
+      "cityId": "matsuyama",
+      "weather": "325",
+      "weatherLabel": "雨夜は晴",
+      "tempMax": 29,
+      "tempMin": 23,
+      "pop": 70
+    },
+    {
+      "cityId": "kochi",
+      "weather": "327",
+      "weatherLabel": "雨夜は雪",
+      "tempMax": 29,
+      "tempMin": 23,
+      "pop": 80
+    },
+    {
+      "cityId": "fukuoka",
+      "weather": "329",
+      "weatherLabel": "雨一時みぞれ",
+      "tempMax": 32,
+      "tempMin": 24,
+      "pop": 10
+    },
+    {
+      "cityId": "saga",
+      "weather": "350",
+      "weatherLabel": "雨で雷を伴う",
+      "tempMax": 32,
+      "tempMin": 23,
+      "pop": 10
+    },
+    {
+      "cityId": "oita",
+      "weather": "371",
+      "weatherLabel": "雪か雨後曇",
+      "tempMax": 31,
+      "tempMin": 23,
+      "pop": 10
+    },
+    {
+      "cityId": "nagasaki",
+      "weather": "401",
+      "weatherLabel": "雪時々晴",
+      "tempMax": 31,
+      "tempMin": 24,
+      "pop": 20
+    },
+    {
+      "cityId": "kumamoto",
+      "weather": "403",
+      "weatherLabel": "雪時々雨",
+      "tempMax": 32,
+      "tempMin": 23,
+      "pop": 20
+    },
+    {
+      "cityId": "miyazaki",
+      "weather": "406",
+      "weatherLabel": "風雪強い",
+      "tempMax": 32,
+      "tempMin": 24,
+      "pop": 10
+    },
+    {
+      "cityId": "kagoshima",
+      "weather": "409",
+      "weatherLabel": "雪一時雨",
+      "tempMax": 33,
+      "tempMin": 25,
+      "pop": 20
+    },
+    {
+      "cityId": "naze",
+      "weather": "413",
+      "weatherLabel": "雪後曇",
+      "tempMax": 32,
+      "tempMin": 26,
+      "pop": 20
+    },
+    {
+      "cityId": "nago",
+      "weather": "420",
+      "weatherLabel": "朝の内雪後晴",
+      "tempMax": 31,
+      "tempMin": 26,
+      "pop": 20
+    },
+    {
+      "cityId": "naha",
+      "weather": "422",
+      "weatherLabel": "雪昼頃から雨",
+      "tempMax": 32,
+      "tempMin": 27,
+      "pop": 20
+    },
+    {
+      "cityId": "miyako",
+      "weather": "425",
+      "weatherLabel": "雪一時強く降る",
+      "tempMax": 32,
+      "tempMin": 27,
+      "pop": 10
+    },
+    {
+      "cityId": "ishigaki",
+      "weather": "427",
+      "weatherLabel": "雪一時みぞれ",
+      "tempMax": 32,
+      "tempMin": 27,
+      "pop": 20
+    }
   ]
 }
