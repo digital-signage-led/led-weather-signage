@@ -739,7 +739,7 @@ html.is-edit .precip-tod-legend.is-dragging {
 
 .led-screen[data-content="weekly_weather"],
 .led-screen[data-content="weekly_precip"] {
-  background: var(--bg-sea) url("../img/weekly-frame.svg?v=pref373") no-repeat center / 100% 100%;
+  background: var(--bg-sea) url("../img/weekly-frame.svg?v=pref374") no-repeat center / 100% 100%;
 }
 
 .led-screen[data-content="weekly_weather"] .led-header,
@@ -963,9 +963,9 @@ html.is-edit .precip-tod-legend.is-dragging {
   grid-column: 1;
   justify-self: start;
   align-self: center;
-  width: 2.2em;
+  width: 2.4em;
   font-family: var(--font-main);
-  font-size: var(--font-week-label, 12px);
+  font-size: calc(var(--font-week-label, 12px) * 1.08);
   font-weight: 800;
   line-height: 1;
   white-space: nowrap;
@@ -1009,14 +1009,14 @@ html.is-edit .precip-tod-legend.is-dragging {
 }
 
 .forecast-cell.is-pop-metrics .pop-metric-value b {
-  font-size: var(--font-week-value, 18px);
+  font-size: calc(var(--font-week-value, 18px) * 1.06);
   font-weight: 900;
   line-height: 1;
   color: #123b5c;
 }
 
 .forecast-cell.is-pop-metrics .pop-metric-value small {
-  font-size: var(--font-week-unit, 10px);
+  font-size: calc(var(--font-week-unit, 10px) * 1.1);
   font-weight: 800;
   line-height: 1;
   align-self: flex-end;
