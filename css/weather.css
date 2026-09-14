@@ -742,7 +742,7 @@ html.is-edit .precip-tod-legend.is-dragging {
 
 .led-screen[data-content="weekly_weather"],
 .led-screen[data-content="weekly_precip"] {
-  background: var(--bg-sea) url("../img/weekly-frame.svg?v=pref367") no-repeat center / 100% 100%;
+  background: var(--bg-sea) url("../img/weekly-frame.svg?v=pref368") no-repeat center / 100% 100%;
 }
 
 .led-screen[data-content="weekly_weather"] .led-header,
@@ -881,17 +881,22 @@ html.is-edit .precip-tod-legend.is-dragging {
 }
 
 .forecast-cell.is-weather {
-  justify-content: space-evenly;
-  gap: 0.06em;
+  display: grid;
+  grid-template-rows: 6fr 4fr;
+  align-items: center;
+  justify-items: center;
+  gap: 0;
+  padding: var(--week-pad-y, 0.06em) var(--week-pad-x, 0.06em);
 }
 
 .forecast-cell.is-weather .wx-icon {
-  width: var(--icon-week, 40%);
-  max-width: 70%;
-  height: auto;
+  grid-row: 1;
+  width: auto;
+  height: 88%;
+  max-width: 86%;
+  max-height: 88%;
   aspect-ratio: 1.12 / 1;
-  max-height: 52%;
-  flex: 0 1 auto;
+  flex: unset;
   min-width: 0;
   min-height: 0;
 }
@@ -903,6 +908,14 @@ html.is-edit .precip-tod-legend.is-dragging {
   max-height: 100%;
 }
 
+.forecast-cell.is-weather .forecast-temps {
+  grid-row: 2;
+  align-self: center;
+  font-size: calc(var(--font-week-temp, var(--font-temp)) * 0.92);
+  flex: unset;
+  max-height: 100%;
+}
+
 .forecast-temps {
   font-family: var(--font-main);
   font-size: var(--font-week-temp, var(--font-temp));
@@ -911,7 +924,6 @@ html.is-edit .precip-tod-legend.is-dragging {
   display: flex;
   align-items: baseline;
   justify-content: center;
-  flex: 0 0 auto;
   gap: 0.02em;
   max-width: 100%;
   white-space: nowrap;

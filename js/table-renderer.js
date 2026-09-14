@@ -2,11 +2,11 @@
  * Weekly weather / precip table renderer.
  */
 
-import { canonicalContent } from "./catalog.js?v=pref367";
-import { loadIcon } from "./map-renderer.js?v=pref367";
-import { weatherTone } from "./weather-renderer.js?v=pref367";
-import { popTone } from "./forecast.js?v=pref367";
-import { isNightHours, jmaLabel } from "./jma-icons.js?v=pref367";
+import { canonicalContent } from "./catalog.js?v=pref368";
+import { loadIcon } from "./map-renderer.js?v=pref368";
+import { weatherTone } from "./weather-renderer.js?v=pref368";
+import { popTone } from "./forecast.js?v=pref368";
+import { isNightHours, jmaLabel } from "./jma-icons.js?v=pref368";
 
 /** 1ページの上限行。ページ都市数がこれ未満ならその数で描く（1行だけは避ける） */
 const TABLE_ROW_MAX = 5;
