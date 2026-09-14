@@ -3,8 +3,8 @@
  * HTML は JMA API を呼ばない。雪など季節外れのコードを循環させない。
  */
 
-import { canonicalContent, getContent as contentFromCatalog } from "./catalog.js?v=pref353";
-import { isWetWeather, jmaLabel, jmaTone, resolveWeatherCode } from "./jma-icons.js?v=pref353";
+import { canonicalContent, getContent as contentFromCatalog } from "./catalog.js?v=pref354";
+import { isWetWeather, jmaLabel, jmaTone, resolveWeatherCode } from "./jma-icons.js?v=pref354";
 
 const WEEKDAYS = ["日", "月", "火", "水", "木", "金", "土"];
 
@@ -74,7 +74,7 @@ export function expandForecast(point, updatedAt) {
   return { tomorrow, periods, tomorrowPeriods, weekly };
 }
 
-const LOCAL_CONDITIONS = "現地の気象状況　🌡 28.4℃　💨 北西 6.2m/s　☔ 1時間雨量 0.4mm";
+const LOCAL_CONDITIONS = "現在の気象状況　🌡 28.4℃　💨 北西 6.2m/s　☔ 1時間雨量 0.4mm";
 
 /** ノート用。絵文字の風・傘アイコンを線画へ差し替える */
 export function formatNoteHtml(text) {
@@ -119,7 +119,7 @@ export function noteFor(contentId, regionId, weather, points) {
 function appendLocalConditions(text) {
   const base = String(text || "").trim();
   if (!base) return LOCAL_CONDITIONS;
-  if (base.includes("現地の気象状況")) return base;
+  if (base.includes("現在の気象状況")) return base;
   return `${base}　　${LOCAL_CONDITIONS}`;
 }
 
