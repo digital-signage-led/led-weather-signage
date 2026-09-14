@@ -743,7 +743,7 @@ html.is-edit .precip-tod-legend.is-dragging {
 
 .led-screen[data-content="weekly_weather"],
 .led-screen[data-content="weekly_precip"] {
-  background: var(--bg-sea) url("../img/weekly-frame.svg?v=pref349") no-repeat center / 100% 100%;
+  background: var(--bg-sea) url("../img/weekly-frame.svg?v=pref350") no-repeat center / 100% 100%;
 }
 
 .led-screen[data-content="weekly_weather"] .map-stage,
@@ -966,6 +966,21 @@ html.is-edit .precip-tod-legend.is-dragging {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: clip;
+}
+
+.forecast-cell.is-pop-metrics .pop-metric-label.is-two-line {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 0.06em;
+  white-space: normal;
+  line-height: 1.05;
+  font-size: clamp(6px, 14cqh, calc(var(--font-week) * 0.48));
+}
+
+.forecast-cell.is-pop-metrics .pop-metric-label.is-two-line > span {
+  display: block;
 }
 
 .forecast-cell.is-pop-metrics .pop-metric.is-humidity .pop-metric-label {
