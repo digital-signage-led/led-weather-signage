@@ -63,18 +63,18 @@ export function cardBoxPx(vp, variant = "weather") {
   const s = vp.minSide;
   const pop = variant === "pop";
   if (pop) {
-    const rawW = fluidPx(s, 0.28, 96, 320);
-    const rawH = fluidPx(s, 0.28, 88, 300);
+    const rawW = fluidPx(s, 0.22, 80, 220);
+    const rawH = fluidPx(s, 0.24, 72, 240);
     return {
-      w: Math.min(rawW, Math.round(vp.width * 0.28)),
-      h: Math.min(rawH, Math.round(vp.height * 0.34))
+      w: Math.min(rawW, Math.round(vp.width * 0.2)),
+      h: Math.min(rawH, Math.round(vp.height * 0.28))
     };
   }
-  const rawW = fluidPx(s, 0.22, 72, 260);
-  const rawH = fluidPx(s, 0.32, 100, 360);
+  const rawW = fluidPx(s, 0.18, 64, 200);
+  const rawH = fluidPx(s, 0.26, 88, 260);
   return {
-    w: Math.min(rawW, Math.round(vp.width * 0.24)),
-    h: Math.min(rawH, Math.round(vp.height * 0.4))
+    w: Math.min(rawW, Math.round(vp.width * 0.18)),
+    h: Math.min(rawH, Math.round(vp.height * 0.32))
   };
 }
 
@@ -103,7 +103,7 @@ export function tokensFor(vp, content = { id: "today_weather", name: "今日の�
     "--footer-height": `${fluidPx(s, 0.146, 36, 112)}px`,
     "--footer-gap": `${fluidPx(s, 0.035, 8, 32)}px`,
     "--safe-inset": `${fluidPx(s, 0.056, 10, 42)}px`,
-    "--icon-card": `${fluidPx(s, popTight ? 0.05 : 0.11, 22, 112)}px`,
+    "--icon-card": `${fluidPx(s, popTight ? 0.05 : 0.1, 20, 96)}px`,
     "--icon-note": `${fluidPx(s, 0.076, 18, 64)}px`,
     "--card-pad-y": `${fluidPx(s, 0.014, 4, 14)}px`,
     "--card-pad-x": `${fluidPx(s, 0.016, 4, 16)}px`,

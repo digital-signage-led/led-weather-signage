@@ -519,11 +519,11 @@ html.is-edit .card-resize {
 /* 繧｢繧､繧ｳ繝ｳ縺ｨ蜷後§菴咲ｽｮ縺ｮ繝懊ャ繧ｯ繧ｹ縲ゅΞ繧､繝､繝ｼ縺ｯ繧｢繧､繧ｳ繝ｳ縺御ｸ翫ゆｸ九・蝨ｰ蜷阪・豌玲ｸｩ繧呈ｽｰ縺輔↑縺・*/
 .city-card-icon-stack {
   position: relative;
-  width: min(100%, 88cqh);
+  width: min(100%, 80cqh);
   height: auto;
   aspect-ratio: 1 / 1;
   max-width: 100%;
-  max-height: 62%;
+  max-height: 56%;
   display: inline-flex;
   flex: 1 1 auto;
   min-width: 0;

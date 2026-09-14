@@ -1,4 +1,5 @@
 {
+  "rev": 1757823600000,
   "layouts": {
     "national": {
       "viewports": {
@@ -21,7 +22,8 @@
             "niigata": { "x": 51.7, "y": 34.0, "locked": true },
             "fukuoka": { "x": 8.3, "y": 72.1, "locked": true },
             "naha": { "x": -5.1, "y": 35.1, "locked": true }
-          }
+          },
+          "rev": 1757823600000
         }
       }
     }
@@ -29,7 +31,16 @@
   "cardScales": {
     "national:map:576x432": 0.52,
     "national:weather:576x432": 0.52,
-    "national:pop:576x432": 0.52
+    "national:pop:576x432": 0.52,
+    "national:map:1920x1080": 0.48,
+    "national:weather:1920x1080": 0.48,
+    "national:pop:1920x1080": 0.48,
+    "national:map:1280x720": 0.5,
+    "national:weather:1280x720": 0.5,
+    "national:pop:1280x720": 0.5,
+    "regional:map:576x432": 0.52,
+    "regional:weather:576x432": 0.52,
+    "regional:pop:576x432": 0.52
   },
   "titleScales": {
     "576x432": 1,

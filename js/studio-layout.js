@@ -4,7 +4,7 @@
  * カード倍率もその4種で共有。全国は単体、地方は地方同士で倍率を共有。
  */
 
-import { canonicalContent, canonicalRegion, isNational } from "./catalog.js?v=pref329";
+import { canonicalContent, canonicalRegion, isNational } from "./catalog.js?v=pref330";
 
 const STORAGE_KEY = "led-weather-layout-v5";
 const STORAGE_KEY_LEGACY = "led-weather-layout-v4";
@@ -483,6 +483,36 @@ function cardScaleLookupKeys(contentId = "today_weather", regionId = "national",
   return [...new Set(keys)];
 }
 
+/** 近い解像度に保存されたカード倍率を探す（全画面表示で巨大化しないため）。 */
+function nearestCardScaleValue(stores, scope, variants, width, height) {
+  if (!(width > 0 && height > 0)) return null;
+  const targetArea = Math.max(1, width * height);
+  const ratio = width / height;
+  let best = null;
+  let bestScore = Infinity;
+  for (const store of stores) {
+    if (!store || typeof store !== "object") continue;
+    for (const [key, raw] of Object.entries(store)) {
+      const value = Number(raw);
+      if (!Number.isFinite(value)) continue;
+      for (const variant of variants) {
+        const prefix = `${scope}:${variant}:`;
+        if (!key.startsWith(prefix)) continue;
+        const parts = key.slice(prefix.length).split("x");
+        const ww = Number(parts[0]);
+        const hh = Number(parts[1]);
+        if (!(ww > 0 && hh > 0)) continue;
+        const score = Math.abs(Math.log((ww * hh) / targetArea)) + Math.abs(ww / hh - ratio) * 0.35;
+        if (score < bestScore) {
+          bestScore = score;
+          best = value;
+        }
+      }
+    }
+  }
+  return best;
+}
+
 function readCardScaleStore() {
   try {
     const raw = localStorage.getItem(CARD_SIZE_KEY);
@@ -526,9 +556,25 @@ export function loadCardScale(contentId = "today_weather", regionId = "national"
         break;
       }
     }
-    return clamp(Number(value) || 1, CARD_SCALE_MIN, CARD_SCALE_MAX);
+    if (!Number.isFinite(value)) {
+      const scope = cardScaleScope(regionId);
+      const variants = isSharedMapContent(contentId)
+        ? ["map", "weather", "pop"]
+        : [cardScaleVariant(contentId), "weather", "pop"];
+      const nearest = nearestCardScaleValue(
+        [all, shippedDefaults.cardScales],
+        scope,
+        variants,
+        Math.round(Number(width) || 0),
+        Math.round(Number(height) || 0)
+      );
+      if (Number.isFinite(nearest)) value = nearest;
+    }
+    // 地図コンテンツは未設定時も 1 にせず LED向けの小さめ既定にする
+    const fallback = isSharedMapContent(contentId) ? 0.52 : 1;
+    return clamp(Number(value) || fallback, CARD_SCALE_MIN, CARD_SCALE_MAX);
   } catch {
-    return 1;
+    return isSharedMapContent(contentId) ? 0.52 : 1;
   }
 }
 
