@@ -136,13 +136,13 @@ export function tokensFor(vp, content = { id: "today_weather", name: "今日の�
     "--card-min-width": "0px",
     "--pin-size": `${fluidPx(s, 0.028, 8, 22)}px`,
     "--map-stroke": `${clamp(s * 0.0028, 0.8, 2.4).toFixed(2)}px`,
-    "--precip-legend-title": `${fluidPx(s, 0.036, 12, 28)}px`,
-    "--precip-legend-label": `${fluidPx(s, 0.034, 11, 26)}px`,
-    "--precip-legend-pad-y": `${fluidPx(s, 0.014, 3, 12)}px`,
-    "--precip-legend-pad-x": `${fluidPx(s, 0.022, 6, 16)}px`,
-    "--precip-legend-min-w": `${fluidPx(s, 0.12, 40, 88)}px`,
-    "--precip-legend-radius": `${fluidPx(s, 0.012, 3, 10)}px`,
-    "--precip-legend-gap": `${fluidPx(s, 0.012, 3, 10)}px`
+    "--precip-legend-title": `${fluidPx(s, 0.024, 9, 18)}px`,
+    "--precip-legend-label": `${fluidPx(s, 0.022, 8, 16)}px`,
+    "--precip-legend-pad-y": `${fluidPx(s, 0.009, 2, 7)}px`,
+    "--precip-legend-pad-x": `${fluidPx(s, 0.014, 4, 10)}px`,
+    "--precip-legend-min-w": `${fluidPx(s, 0.08, 28, 56)}px`,
+    "--precip-legend-radius": `${fluidPx(s, 0.008, 2, 6)}px`,
+    "--precip-legend-gap": `${fluidPx(s, 0.008, 2, 6)}px`
   };
 }
 

@@ -3,7 +3,7 @@
  * 表示区分と気象内部区分を分ける。旧IDはエイリアスで受ける。
  */
 
-const DATA_VERSION = "pref379";
+const DATA_VERSION = "pref380";
 
 const REGION_ALIASES = {
   NATIONAL: "national",
