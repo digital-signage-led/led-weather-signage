@@ -501,9 +501,9 @@ svg.jma-icon {
   transform: translateY(-50%);
   box-sizing: border-box;
   background: rgba(255, 255, 255, 0.92);
-  border: calc(var(--footer-height) * 0.035) solid #0a2f7a;
+  border: 0;
   border-radius: calc(var(--footer-height) * 0.06);
-  box-shadow: 0 1px 0 rgba(10, 47, 122, 0.18);
+  box-shadow: none;
   pointer-events: none;
 }
 
