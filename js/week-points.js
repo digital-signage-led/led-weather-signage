@@ -3,7 +3,7 @@
  * 通常は週末・週明け・気温の3点。警報・雷・台風があるときだけ差し替える。
  * 気温は気象庁週間予報の平年値（tempAverage）が取れた場合だけ出す。
  */
-import { jmaTone, isWetWeather } from "./jma-icons.js?v=pref357";
+import { jmaTone, isWetWeather } from "./jma-icons.js?v=pref358";
 
 const WARNING_URL = (office) => `https://www.jma.go.jp/bosai/warning/data/warning/${office}.json`;
 const ALERT_MAX_AGE_MS = 36 * 60 * 60 * 1000;

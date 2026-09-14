@@ -2,7 +2,7 @@
  * Studio / signage bootstrap. Studio drives the iframe viewport.
  */
 
-import { APP_VERSION, DATA_VERSION, MAP_VERSION } from "./version.js?v=pref357";
+import { APP_VERSION, DATA_VERSION, MAP_VERSION } from "./version.js?v=pref358";
 import {
   canonicalContent,
   canonicalRegion,
@@ -12,13 +12,13 @@ import {
   listContents,
   listRegions,
   loadCatalog
-} from "./catalog.js?v=pref357";
-import { adaptWeather, aggregateRegion } from "./weather-data.js?v=pref357";
-import { loadMapSvg, mountMap, placeCardsAroundMap, projectCity } from "./map-renderer.js?v=pref357";
-import { formatStamp, renderCityCard, renderPin, pinRadiusForViewBox, pinRadiusForMatchingScreen, pickNoteWeather, weatherTone, renderNoteIcon, renderPrecipTodLegend } from "./weather-renderer.js?v=pref357";
-import { applyCardScale, applyLockedCards, applyMapTransform, applyPrecipLegend, applyTitleScale, bindCardEditor, bindMapControls, bindMapEditor, bindOkinawaEditor, bindPrecipLegendEditor, CARD_POS_MAX, CARD_POS_MIN, CARD_SCALE_MAX, CARD_SCALE_MIN, TITLE_SCALE_MAX, TITLE_SCALE_MIN, centerCityCards, containMapInStage, freezeCardLayout, initLayoutDefaults, isCustomLayout, listCardPositions, loadCardScale, loadLayout, loadTitleScale, moveLockedCard, resetCardScale, resetLayout, resetTitleScale, saveCardScale, saveLayout, saveTitleScale, snapshotLayoutDefaults } from "./studio-layout.js?v=pref357";
-import { expandForecast, formatNoteHtml, noteFor } from "./forecast.js?v=pref357";
-import { renderWeeklyTable } from "./table-renderer.js?v=pref357";
+} from "./catalog.js?v=pref358";
+import { adaptWeather, aggregateRegion } from "./weather-data.js?v=pref358";
+import { loadMapSvg, mountMap, placeCardsAroundMap, projectCity } from "./map-renderer.js?v=pref358";
+import { formatStamp, renderCityCard, renderPin, pinRadiusForViewBox, pinRadiusForMatchingScreen, pickNoteWeather, weatherTone, renderNoteIcon, renderPrecipTodLegend } from "./weather-renderer.js?v=pref358";
+import { applyCardScale, applyLockedCards, applyMapTransform, applyPrecipLegend, applyTitleScale, bindCardEditor, bindMapControls, bindMapEditor, bindOkinawaEditor, bindPrecipLegendEditor, CARD_POS_MAX, CARD_POS_MIN, CARD_SCALE_MAX, CARD_SCALE_MIN, TITLE_SCALE_MAX, TITLE_SCALE_MIN, centerCityCards, containMapInStage, freezeCardLayout, initLayoutDefaults, isCustomLayout, listCardPositions, loadCardScale, loadLayout, loadTitleScale, moveLockedCard, resetCardScale, resetLayout, resetTitleScale, saveCardScale, saveLayout, saveTitleScale, snapshotLayoutDefaults } from "./studio-layout.js?v=pref358";
+import { expandForecast, formatNoteHtml, noteFor } from "./forecast.js?v=pref358";
+import { renderWeeklyTable } from "./table-renderer.js?v=pref358";
 import {
   VIEWPORT_PRESETS,
   applyViewport,
@@ -29,13 +29,19 @@ import {
   fitCityCardNames,
   readViewport,
   showAuxiliary
-} from "./viewport.js?v=pref357";
-import { msUntilIconPhaseChange } from "./jma-icons.js?v=pref357";
-import { fetchJmaWeather } from "./jma-live.js?v=pref357";
-import { buildWeekPoints, fetchWeekAlert, renderWeekPointsHtml } from "./week-points.js?v=pref357";
+} from "./viewport.js?v=pref358";
+import { msUntilIconPhaseChange } from "./jma-icons.js?v=pref358";
+import { fetchJmaWeather } from "./jma-live.js?v=pref358";
+import { buildWeekPoints, fetchWeekAlert, renderWeekPointsHtml } from "./week-points.js?v=pref358";
 
-const LIVE_WEATHER_TTL_MS = 10 * 60 * 1000;
+/** 府県天気予報の発表時刻（JST）。発表反映待ちで +5 分後に取りに行く。 */
+const JMA_PUBLISH_HOURS_JST = [5, 11, 17];
+const JMA_PUBLISH_LAG_MS = 5 * 60 * 1000;
+const LIVE_FETCH_TIMEOUT_MS = 12000;
 let liveWeatherCache = { at: 0, doc: null };
+let bundledWeatherDoc = null;
+let livePullInFlight = null;
+let jmaRefreshTimer = 0;
 
 function withTimeout(promise, ms) {
   return new Promise((resolve, reject) => {
@@ -48,6 +54,68 @@ function withTimeout(promise, ms) {
       reject(error);
     });
   });
+}
+
+/** Asia/Tokyo の壁時計部品を返す */
+function jstParts(date = new Date()) {
+  const parts = Object.fromEntries(
+    new Intl.DateTimeFormat("en-US", {
+      timeZone: "Asia/Tokyo",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hourCycle: "h23"
+    }).formatToParts(date).filter((p) => p.type !== "literal").map((p) => [p.type, p.value])
+  );
+  return {
+    year: Number(parts.year),
+    month: Number(parts.month),
+    day: Number(parts.day),
+    hour: Number(parts.hour),
+    minute: Number(parts.minute),
+    second: Number(parts.second)
+  };
+}
+
+/** JST の年月日時分秒 → UTC Date（発表スロット計算用） */
+function dateFromJst(year, month, day, hour = 0, minute = 0, second = 0) {
+  const utc = Date.UTC(year, month - 1, day, hour - 9, minute, second);
+  return new Date(utc);
+}
+
+function nextJmaRefreshAt(now = new Date()) {
+  const jst = jstParts(now);
+  const candidates = [];
+  for (const hour of JMA_PUBLISH_HOURS_JST) {
+    candidates.push(dateFromJst(jst.year, jst.month, jst.day, hour, 0, 0).getTime() + JMA_PUBLISH_LAG_MS);
+  }
+  const tomorrow = dateFromJst(jst.year, jst.month, jst.day, 0, 0, 0);
+  tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
+  const t = jstParts(tomorrow);
+  candidates.push(dateFromJst(t.year, t.month, t.day, JMA_PUBLISH_HOURS_JST[0], 0, 0).getTime() + JMA_PUBLISH_LAG_MS);
+  const nowMs = now.getTime();
+  const upcoming = candidates.filter((ms) => ms > nowMs).sort((a, b) => a - b);
+  return upcoming[0] ?? (nowMs + 60 * 60 * 1000);
+}
+
+function msUntilNextJmaRefresh(now = new Date()) {
+  return Math.max(1000, nextJmaRefreshAt(now) - now.getTime());
+}
+
+/** 直近の発表スロット（+lag）より前の取得なら取り直し */
+function needsJmaRefresh(now = new Date()) {
+  if (!liveWeatherCache.doc) return true;
+  const jst = jstParts(now);
+  const slots = JMA_PUBLISH_HOURS_JST.map(
+    (hour) => dateFromJst(jst.year, jst.month, jst.day, hour, 0, 0).getTime() + JMA_PUBLISH_LAG_MS
+  );
+  const nowMs = now.getTime();
+  const due = slots.filter((ms) => ms <= nowMs).pop();
+  if (due == null) return false;
+  return liveWeatherCache.at < due;
 }
 
 export { APP_VERSION };
@@ -527,8 +595,8 @@ async function bootStudio() {
 }
 
 async function bootSignage() {
-  // 初回描画完了まで隠す。ハング時のみ 20 秒後に強制表示（JMA 8s + 余裕）
-  window.setTimeout(() => document.documentElement.classList.remove("is-boot"), 20000);
+  // 初回は同梱 weather.json で即表示。ハング時のみ 8 秒後に強制表示
+  window.setTimeout(() => document.documentElement.classList.remove("is-boot"), 8000);
   await loadCatalog();
   await initLayoutDefaults();
   state.regionId = getRegion(state.regionId).id;
@@ -952,10 +1020,15 @@ async function bootSignage() {
   } finally {
     document.documentElement.classList.remove("is-boot");
   }
-  window.setInterval(() => {
-    liveWeatherCache = { at: 0, doc: null };
-    render();
-  }, LIVE_WEATHER_TTL_MS);
+  // 画面は同梱データで出したあと、気象庁最新へ差し替え → 発表時刻に合わせて再取得
+  const refreshLive = () => pullLiveWeatherAndRender(render);
+  refreshLive();
+  scheduleJmaRefresh(refreshLive);
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible" && needsJmaRefresh()) {
+      refreshLive();
+    }
+  });
 }
 
 function attachForecast(city, todayPoint, content, updatedAt) {
@@ -1040,18 +1113,41 @@ function recordSite() {
   }
 }
 
-async function loadWeatherDoc(locations) {
-  const now = Date.now();
-  if (liveWeatherCache.doc && now - liveWeatherCache.at < LIVE_WEATHER_TTL_MS) {
-    return liveWeatherCache.doc;
+function scheduleJmaRefresh(onRefresh) {
+  window.clearTimeout(jmaRefreshTimer);
+  const wait = msUntilNextJmaRefresh();
+  jmaRefreshTimer = window.setTimeout(async () => {
+    try {
+      await onRefresh();
+    } finally {
+      scheduleJmaRefresh(onRefresh);
+    }
+  }, wait);
+}
+
+async function pullLiveWeatherAndRender(renderFn) {
+  if (livePullInFlight) return livePullInFlight;
+  livePullInFlight = (async () => {
+    try {
+      const locations = await fetchJson("data/locations.json");
+      const live = await withTimeout(fetchJmaWeather(locations.cities), LIVE_FETCH_TIMEOUT_MS);
+      liveWeatherCache = { at: Date.now(), doc: live };
+      if (typeof renderFn === "function") await renderFn();
+    } catch {
+      /* 同梱データまたは前回キャッシュのまま */
+    } finally {
+      livePullInFlight = null;
+    }
+  })();
+  return livePullInFlight;
+}
+
+async function loadWeatherDoc() {
+  if (liveWeatherCache.doc) return liveWeatherCache.doc;
+  if (!bundledWeatherDoc) {
+    bundledWeatherDoc = await fetchJson("data/weather.json");
   }
-  try {
-    const live = await withTimeout(fetchJmaWeather(locations.cities), 8000);
-    liveWeatherCache = { at: now, doc: live };
-    return live;
-  } catch {
-    return fetchJson("data/weather.json");
-  }
+  return bundledWeatherDoc;
 }
 
 async function fetchJson(url) {

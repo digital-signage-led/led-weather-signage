@@ -278,10 +278,21 @@ export function buildJmaWeather(cities, area, forecastsByOffice) {
   };
 }
 
-export async function fetchJmaWeather(cities) {
-  const areaRes = await fetch(AREA_URL, { cache: "no-store" });
+let areaCache = { at: 0, doc: null };
+const AREA_TTL_MS = 24 * 60 * 60 * 1000;
+
+async function loadArea() {
+  const now = Date.now();
+  if (areaCache.doc && now - areaCache.at < AREA_TTL_MS) return areaCache.doc;
+  const areaRes = await fetch(AREA_URL, { cache: "force-cache" });
   if (!areaRes.ok) throw new Error("area.json");
   const area = await areaRes.json();
+  areaCache = { at: now, doc: area };
+  return area;
+}
+
+export async function fetchJmaWeather(cities) {
+  const area = await loadArea();
   const offices = [...new Set(cities.map((city) => findCityArea(area, city).office).filter(Boolean))];
   const forecastsByOffice = {};
   await Promise.all(offices.map(async (office) => {
