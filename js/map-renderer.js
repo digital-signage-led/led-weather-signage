@@ -4,8 +4,8 @@
  */
 
 import { canonicalRegion, isNational } from "./catalog.js?v=pref320";
-import { cardSizePct } from "./viewport.js?v=pref337";
-import { MAP_VERSION } from "./version.js?v=pref337";
+import { cardSizePct } from "./viewport.js?v=pref338";
+import { MAP_VERSION } from "./version.js?v=pref338";
 
 import { jmaIconFile } from "./jma-icons.js?v=pref320";
 
@@ -711,11 +711,13 @@ const CARD_SLOTS = {
     kochi: { x: 48, y: 82 }
   },
   hokkaido: {
+    wakkanai: { x: 28, y: 10 },
     abashiri: { x: 80, y: 12 },
     kitami: { x: 58, y: 18 },
     asahikawa: { x: 46, y: 28 },
     nemuro: { x: 88, y: 30 },
-    sapporo: { x: 22, y: 52 },
+    otaru: { x: 12, y: 44 },
+    sapporo: { x: 30, y: 54 },
     obihiro: { x: 62, y: 44 },
     kushiro: { x: 82, y: 46 },
     muroran: { x: 38, y: 66 },
@@ -782,11 +784,13 @@ const CARD_SLOTS_POP = {
     iwaki: { x: 80, y: 80 }
   },
   hokkaido: {
+    wakkanai: { x: 28, y: 10 },
     abashiri: { x: 80, y: 12 },
     kitami: { x: 58, y: 18 },
     asahikawa: { x: 46, y: 28 },
     nemuro: { x: 88, y: 30 },
-    sapporo: { x: 22, y: 52 },
+    otaru: { x: 12, y: 44 },
+    sapporo: { x: 30, y: 54 },
     obihiro: { x: 62, y: 44 },
     kushiro: { x: 82, y: 46 },
     muroran: { x: 38, y: 66 },
