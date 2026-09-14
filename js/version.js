@@ -2,5 +2,5 @@
  * アプリ版。現場URLは変えず、この版を差し替えて更新・ロールバックする。
  */
 export const APP_VERSION = "1.0.0";
-export const DATA_VERSION = "pref375";
-export const MAP_VERSION = "pref375";
+export const DATA_VERSION = "pref376";
+export const MAP_VERSION = "pref376";

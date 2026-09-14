@@ -102,28 +102,30 @@ export function tokensFor(vp, content = { id: "today_weather", name: "今日の�
   const titleRatio = longTitle ? 0.046 : 0.06;
   const popTight = content.card === "pop";
   const box = cardBoxPx(vp, content.kind === "map" ? "weather" : (popTight ? "pop" : "weather"));
+  // 1920×1080 固定キャンバス向け：メイン／サブ／ニュースティッカーを 1.5 倍
+  const chrome = 1.5;
   return {
     "--viewport-width": `${vp.width}px`,
     "--viewport-height": `${vp.height}px`,
     "--led-width": `${vp.width}px`,
     "--led-height": `${vp.height}px`,
-    "--font-title": `${fluidPx(s, 0.039, 10, 34)}px`,
-    "--font-main-title": `${fluidPx(s, titleRatio, 12, 48)}px`,
-    "--font-stamp": `${fluidPx(s, 0.025, 9, 22)}px`,
-    "--font-note": `${fluidPx(s, 0.049, 11, 40)}px`,
+    "--font-title": `${fluidPx(s, 0.039 * chrome, 10, Math.round(34 * chrome))}px`,
+    "--font-main-title": `${fluidPx(s, titleRatio * chrome, 12, Math.round(48 * chrome))}px`,
+    "--font-stamp": `${fluidPx(s, 0.025 * chrome, 9, Math.round(22 * chrome))}px`,
+    "--font-note": `${fluidPx(s, 0.049 * chrome, 11, Math.round(40 * chrome))}px`,
     "--font-city": `${fluidPx(s, popTight ? 0.056 : 0.062, 12, 52)}px`,
     "--font-temp": `${fluidPx(s, popTight ? 0.056 : 0.074, 14, 64)}px`,
     "--font-pop": `${fluidPx(s, 0.04, 11, 32)}px`,
     "--font-pop-lg": `${fluidPx(s, popTight ? 0.068 : 0.058, 14, 56)}px`,
     "--font-week": `${fluidPx(s, 0.028, 10, 24)}px`,
     "--font-attr": `${fluidPx(s, 0.023, 8, 16)}px`,
-    "--header-height": `${fluidPx(s, 0.062, 16, 40)}px`,
-    "--header-title-height": `${fluidPx(s, 0.092, 24, 58)}px`,
-    "--footer-height": `${fluidPx(s, 0.146, 32, 100)}px`,
-    "--footer-gap": `${fluidPx(s, 0.035, 6, 28)}px`,
+    "--header-height": `${fluidPx(s, 0.062 * chrome, 16, Math.round(40 * chrome))}px`,
+    "--header-title-height": `${fluidPx(s, 0.092 * chrome, 24, Math.round(58 * chrome))}px`,
+    "--footer-height": `${fluidPx(s, 0.146 * chrome, 32, Math.round(100 * chrome))}px`,
+    "--footer-gap": `${fluidPx(s, 0.035 * chrome, 6, Math.round(28 * chrome))}px`,
     "--safe-inset": `${fluidPx(s, 0.056, 8, 36)}px`,
     "--icon-card": `${fluidPx(s, popTight ? 0.05 : 0.1, 16, 88)}px`,
-    "--icon-note": `${fluidPx(s, 0.076, 14, 56)}px`,
+    "--icon-note": `${fluidPx(s, 0.076 * chrome, 14, Math.round(56 * chrome))}px`,
     "--card-pad-y": `${fluidPx(s, 0.014, 3, 12)}px`,
     "--card-pad-x": `${fluidPx(s, 0.016, 3, 14)}px`,
     "--card-gap": `${fluidPx(s, 0.01, 2, 8)}px`,
@@ -150,11 +152,12 @@ export function tokensFor(vp, content = { id: "today_weather", name: "今日の�
 export function tableLayoutTokens(vp, rows = 5) {
   const rowCount = Math.max(1, Number(rows) || 5);
   const s = vp.basis || vp.minSide;
+  const chrome = 1.5;
   const gap = Math.max(1, fluidPx(s, 0.005, 1, 4));
   const pad = fluidPx(s, 0.035, 6, 28);
-  const headerTitle = fluidPx(s, 0.092, 24, 58);
-  const headerSub = fluidPx(s, 0.062, 16, 40);
-  const footer = fluidPx(s, 0.146, 32, 100);
+  const headerTitle = fluidPx(s, 0.092 * chrome, 24, Math.round(58 * chrome));
+  const headerSub = fluidPx(s, 0.062 * chrome, 16, Math.round(40 * chrome));
+  const footer = fluidPx(s, 0.146 * chrome, 32, Math.round(100 * chrome));
   const topChrome = headerTitle + headerSub + pad + 10;
   const bottomChrome = footer + 14;
   const availW = Math.max(80, vp.width - pad * 2);
