@@ -158,7 +158,7 @@ export function tableLayoutTokens(vp, rows = 5) {
   const headerTitle = fluidPx(s, 0.092 * chrome, 24, Math.round(58 * chrome));
   const headerSub = fluidPx(s, 0.062 * chrome, 16, Math.round(40 * chrome));
   const footer = fluidPx(s, 0.146 * chrome, 32, Math.round(100 * chrome));
-  const topChrome = headerTitle + headerSub + pad + 10;
+  const topChrome = headerTitle + headerSub + pad + 22;
   const bottomChrome = footer + 14;
   const availW = Math.max(80, vp.width - pad * 2);
   const availH = Math.max(80, vp.height - topChrome - bottomChrome);
@@ -182,7 +182,7 @@ export function tableLayoutTokens(vp, rows = 5) {
     "--cell-height": `${Math.round(cellH)}px`,
     "--cell-min": `${Math.round(cellMin)}px`,
     "--font-week-day": `${Math.round(clamp(dayHeadH * 0.52, 9, 26))}px`,
-    "--font-week-city": `${Math.round(clamp(cellMin * 0.34, 10, 30))}px`,
+    "--font-week-city": `${Math.round(clamp(cellMin * 0.42, 12, 40))}px`,
     "--font-week-label": `${Math.round(clamp(cellMin * 0.26, 11, 24))}px`,
     "--font-week-value": `${Math.round(clamp(cellMin * 0.55, 14, 52))}px`,
     "--font-week-unit": `${Math.round(clamp(cellMin * 0.22, 10, 18))}px`,
