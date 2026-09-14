@@ -154,13 +154,8 @@ export function applyViewport(element, vp, regionId, content) {
 export function cityLimit(vp, regionId, content, available = 12) {
   const wanted = Math.max(1, available);
   if (content.kind === "table") {
-    // 全国の週間表は4都市ずつページ切替
-    const region = String(regionId || "").toLowerCase();
-    if (region === "national") return Math.min(4, wanted);
-    const rowH = fluidPx(vp.minSide, 0.135, 52, 140);
-    const chrome = fluidPx(vp.minSide, 0.28, 90, 200);
-    const rows = Math.floor((vp.height - chrome) / rowH);
-    return clamp(rows, 3, wanted);
+    // 全国・地方の週間表は4都市ずつページ切替（余りは最終ページ）
+    return Math.min(4, wanted);
   }
   // 北海道・東北・中部は地点をできるだけすべて出す
   const region = String(regionId || "").toLowerCase();

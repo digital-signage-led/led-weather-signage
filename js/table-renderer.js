@@ -2,11 +2,11 @@
  * 週間天気 / 週間降水確率の表。地図の上には7日分を置けないので表にする。
  */
 
-import { canonicalContent } from "./catalog.js?v=pref347";
-import { loadIcon } from "./map-renderer.js?v=pref347";
-import { weatherTone } from "./weather-renderer.js?v=pref347";
-import { popTone } from "./forecast.js?v=pref347";
-import { isNightHours, jmaLabel } from "./jma-icons.js?v=pref347";
+import { canonicalContent } from "./catalog.js?v=pref348";
+import { loadIcon } from "./map-renderer.js?v=pref348";
+import { weatherTone } from "./weather-renderer.js?v=pref348";
+import { popTone } from "./forecast.js?v=pref348";
+import { isNightHours, jmaLabel } from "./jma-icons.js?v=pref348";
 
 export async function renderWeeklyTable(cities, contentId) {
   const days = cities[0]?.weekly || [];
