@@ -1,8 +1,8 @@
 /**
- * 外部気象 → 共通モデル。Renderer はここだけを見る。
+ * 螟夜Κ豌苓ｱ｡ 竊・蜈ｱ騾壹Δ繝・Ν縲３enderer 縺ｯ縺薙％縺縺代ｒ隕九ｋ縲・
  */
 
-import { citiesForRegion } from "./catalog.js?v=pref194";
+import { citiesForRegion } from "./catalog.js?v=pref320";
 
 export function adaptWeather(doc) {
   return {

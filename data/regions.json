@@ -9,55 +9,55 @@
     {
       "id": "hokkaido",
       "name": "北海道",
-      "mapFile": "hokkaido.svg",
+      "mapFile": "japan.svg",
       "forecastDivisions": ["hokkaido"]
     },
     {
       "id": "tohoku",
       "name": "東北",
-      "mapFile": "tohoku.svg",
+      "mapFile": "japan.svg",
       "forecastDivisions": ["tohoku"]
     },
     {
       "id": "kanto",
       "name": "関東",
-      "mapFile": "kanto.svg",
+      "mapFile": "japan.svg",
       "forecastDivisions": ["kanto", "koshin"]
     },
     {
       "id": "chubu",
       "name": "中部",
-      "mapFile": "chubu.svg",
+      "mapFile": "japan.svg",
       "forecastDivisions": ["hokuriku", "tokai"]
     },
     {
       "id": "kinki",
       "name": "近畿",
-      "mapFile": "kinki.svg",
+      "mapFile": "japan.svg",
       "forecastDivisions": ["kinki"]
     },
     {
       "id": "chugoku",
       "name": "中国",
-      "mapFile": "chugoku.svg",
+      "mapFile": "japan.svg",
       "forecastDivisions": ["chugoku"]
     },
     {
       "id": "shikoku",
       "name": "四国",
-      "mapFile": "shikoku.svg",
+      "mapFile": "japan.svg",
       "forecastDivisions": ["shikoku"]
     },
     {
       "id": "kyushu",
       "name": "九州",
-      "mapFile": "kyushu.svg",
+      "mapFile": "japan.svg",
       "forecastDivisions": ["kyushu_north", "kyushu_south"]
     },
     {
       "id": "okinawa",
       "name": "沖縄",
-      "mapFile": "okinawa.svg",
+      "mapFile": "japan.svg",
       "forecastDivisions": ["okinawa"]
     }
   ]

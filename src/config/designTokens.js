@@ -46,7 +46,7 @@ export const COLOR_TOKENS = {
 
 export const FONT_TOKENS = {
   "--font-main": '"Noto Sans JP", "Yu Gothic", "Meiryo", sans-serif',
-  "--font-number": '"Barlow Condensed", "Noto Sans JP", sans-serif'
+  "--font-number": '"Noto Sans JP", "Yu Gothic", "Meiryo", sans-serif'
 };
 
 const MIN_FONT_PX = {

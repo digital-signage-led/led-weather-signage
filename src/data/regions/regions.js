@@ -24,7 +24,7 @@ export const regions = [
     id: "HOKKAIDO",
     name: "北海道",
     nameEn: "Hokkaido",
-    mapFile: "hokkaido.svg",
+    mapFile: "japan.svg",
     nationalPoint: { id: "sapporo", name: "札幌", x: 73.14, y: 17.56 },
     prefectures: [
       { id: "01", name: "北海道", jmaOffice: "016000" }
@@ -43,7 +43,7 @@ export const regions = [
     id: "TOHOKU",
     name: "東北",
     nameEn: "Tohoku",
-    mapFile: "tohoku.svg",
+    mapFile: "japan.svg",
     nationalPoint: { id: "sendai", name: "仙台", x: 70.5, y: 47.54 },
     prefectures: [
       { id: "02", name: "青森県", jmaOffice: "020000" },
@@ -74,7 +74,7 @@ export const regions = [
     id: "KANTO",
     name: "関東甲信",
     nameEn: "Kanto",
-    mapFile: "kanto.svg",
+    mapFile: "japan.svg",
     nationalPoint: { id: "tokyo", name: "東京", x: 64.45, y: 63.72 },
     prefectures: [
       { id: "08", name: "茨城県", jmaOffice: "080000" },
@@ -114,7 +114,7 @@ export const regions = [
     id: "HOKURIKU",
     name: "北陸",
     nameEn: "Hokuriku",
-    mapFile: "hokuriku.svg",
+    mapFile: "japan.svg",
     nationalPoint: { id: "kanazawa", name: "金沢", x: 47.43, y: 58.22 },
     prefectures: [
       { id: "15", name: "新潟県", jmaOffice: "150000" },
@@ -139,7 +139,7 @@ export const regions = [
     id: "TOKAI",
     name: "東海",
     nameEn: "Tokai",
-    mapFile: "tokai.svg",
+    mapFile: "japan.svg",
     nationalPoint: { id: "nagoya", name: "名古屋", x: 48.8, y: 66.85 },
     prefectures: [
       { id: "21", name: "岐阜県", jmaOffice: "210000" },
@@ -164,7 +164,7 @@ export const regions = [
     id: "KINKI",
     name: "近畿",
     nameEn: "Kinki",
-    mapFile: "kinki.svg",
+    mapFile: "japan.svg",
     nationalPoint: { id: "osaka", name: "大阪", x: 41.09, y: 69.84 },
     prefectures: [
       { id: "25", name: "滋賀県", jmaOffice: "250000" },
@@ -198,7 +198,7 @@ export const regions = [
     id: "CHUGOKU",
     name: "中国",
     nameEn: "Chugoku",
-    mapFile: "chugoku.svg",
+    mapFile: "japan.svg",
     nationalPoint: { id: "hiroshima", name: "広島", x: 24.48, y: 71.76 },
     prefectures: [
       { id: "31", name: "鳥取県", jmaOffice: "310000" },
@@ -226,7 +226,7 @@ export const regions = [
     id: "SHIKOKU",
     name: "四国",
     nameEn: "Shikoku",
-    mapFile: "shikoku.svg",
+    mapFile: "japan.svg",
     nationalPoint: { id: "takamatsu", name: "高松", x: 33.16, y: 72.09 },
     prefectures: [
       { id: "36", name: "徳島県", jmaOffice: "360000" },
@@ -251,7 +251,7 @@ export const regions = [
     id: "KYUSHU",
     name: "九州",
     nameEn: "Kyushu",
-    mapFile: "kyushu.svg",
+    mapFile: "japan.svg",
     nationalPoint: { id: "fukuoka", name: "福岡", x: 13.22, y: 76.8 },
     prefectures: [
       { id: "40", name: "福岡県", jmaOffice: "400000" },
@@ -285,7 +285,7 @@ export const regions = [
     id: "OKINAWA",
     name: "沖縄",
     nameEn: "Okinawa",
-    mapFile: "okinawa.svg",
+    mapFile: "japan.svg",
     nationalPoint: { id: "naha", name: "那覇", x: 92.95, y: 82.79 },
     prefectures: [
       { id: "47", name: "沖縄県", jmaOffice: "471000" }

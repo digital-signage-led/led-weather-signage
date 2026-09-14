@@ -58,15 +58,23 @@ export function fluidPx(minSide, ratio, minPx, maxPx) {
   return Math.round(clamp(minSide * ratio, minPx, maxPx));
 }
 
-/** 天気／降水ボックスの実ピクセル。短い辺に比例し、画面を食い過ぎないよう幅・高さも抑える。 */
+/** 天気／降水ボックスの実ピクセル。縦型（立て）を基本にし、画面を食い過ぎないよう抑える。 */
 export function cardBoxPx(vp, variant = "weather") {
   const s = vp.minSide;
   const pop = variant === "pop";
-  const rawW = fluidPx(s, pop ? 0.34 : 0.38, pop ? 96 : 100, pop ? 420 : 460);
-  const rawH = fluidPx(s, pop ? 0.132 : 0.112, pop ? 34 : 32, pop ? 170 : 150);
+  if (pop) {
+    const rawW = fluidPx(s, 0.28, 96, 320);
+    const rawH = fluidPx(s, 0.28, 88, 300);
+    return {
+      w: Math.min(rawW, Math.round(vp.width * 0.28)),
+      h: Math.min(rawH, Math.round(vp.height * 0.34))
+    };
+  }
+  const rawW = fluidPx(s, 0.22, 72, 260);
+  const rawH = fluidPx(s, 0.32, 100, 360);
   return {
-    w: Math.min(rawW, Math.round(vp.width * (pop ? 0.34 : 0.28))),
-    h: Math.min(rawH, Math.round(vp.height * (pop ? 0.18 : 0.14)))
+    w: Math.min(rawW, Math.round(vp.width * 0.24)),
+    h: Math.min(rawH, Math.round(vp.height * 0.4))
   };
 }
 
@@ -83,29 +91,36 @@ export function tokensFor(vp, content = { id: "today_weather", name: "今日の�
     "--font-main-title": `${fluidPx(s, titleRatio, 15, 52)}px`,
     "--font-stamp": `${fluidPx(s, 0.025, 10, 24)}px`,
     "--font-note": `${fluidPx(s, 0.049, 13, 44)}px`,
-    "--font-city": `${fluidPx(s, popTight ? 0.034 : 0.038, 10, 42)}px`,
-    "--font-temp": `${fluidPx(s, 0.04, 11, 46)}px`,
-    "--font-pop": `${fluidPx(s, 0.026, 9, 22)}px`,
-    "--font-pop-lg": `${fluidPx(s, popTight ? 0.038 : 0.044, 11, 40)}px`,
+    "--font-city": `${fluidPx(s, popTight ? 0.056 : 0.062, 16, 58)}px`,
+    "--font-temp": `${fluidPx(s, popTight ? 0.056 : 0.074, 18, 70)}px`,
+    "--font-pop": `${fluidPx(s, 0.04, 13, 34)}px`,
+    "--font-pop-lg": `${fluidPx(s, popTight ? 0.068 : 0.058, 18, 64)}px`,
     "--font-week": `${fluidPx(s, 0.028, 10, 26)}px`,
     "--font-attr": `${fluidPx(s, 0.023, 8, 18)}px`,
-    "--header-height": `${fluidPx(s, 0.083, 22, 68)}px`,
-    "--header-title-height": `${fluidPx(s, 0.125, 32, 100)}px`,
+    "--header-height": `${fluidPx(s, 0.062, 18, 44)}px`,
+    "--header-title-height": `${fluidPx(s, 0.092, 28, 64)}px`,
     "--footer-height": `${fluidPx(s, 0.146, 36, 112)}px`,
     "--footer-gap": `${fluidPx(s, 0.035, 8, 32)}px`,
     "--safe-inset": `${fluidPx(s, 0.056, 10, 42)}px`,
-    "--icon-card": `${fluidPx(s, 0.078, 16, 88)}px`,
+    "--icon-card": `${fluidPx(s, popTight ? 0.05 : 0.09, 20, 96)}px`,
     "--icon-note": `${fluidPx(s, 0.076, 18, 64)}px`,
-    "--card-pad-y": `${fluidPx(s, 0.012, 3, 14)}px`,
-    "--card-pad-x": `${fluidPx(s, 0.022, 5, 22)}px`,
-    "--card-gap": `${fluidPx(s, 0.014, 3, 12)}px`,
-    "--card-meta-gap": `${fluidPx(s, 0.007, 2, 8)}px`,
+    "--card-pad-y": `${fluidPx(s, 0.014, 4, 14)}px`,
+    "--card-pad-x": `${fluidPx(s, 0.016, 4, 16)}px`,
+    "--card-gap": `${fluidPx(s, 0.01, 2, 10)}px`,
+    "--card-meta-gap": `${fluidPx(s, 0.006, 2, 8)}px`,
     "--box-radius": `${fluidPx(s, 0.01, 3, 8)}px`,
     "--card-box-w": `${box.w}px`,
     "--card-box-h": `${box.h}px`,
     "--card-min-width": "0px",
     "--pin-size": `${fluidPx(s, 0.028, 8, 22)}px`,
-    "--map-stroke": `${clamp(s * 0.0028, 0.8, 2.4).toFixed(2)}px`
+    "--map-stroke": `${clamp(s * 0.0028, 0.8, 2.4).toFixed(2)}px`,
+    "--precip-legend-title": `${fluidPx(s, 0.032, 11, 26)}px`,
+    "--precip-legend-label": `${fluidPx(s, 0.03, 10, 22)}px`,
+    "--precip-legend-pad-y": `${fluidPx(s, 0.014, 4, 12)}px`,
+    "--precip-legend-pad-x": `${fluidPx(s, 0.02, 6, 16)}px`,
+    "--precip-legend-min-w": `${fluidPx(s, 0.12, 44, 92)}px`,
+    "--precip-legend-radius": `${fluidPx(s, 0.01, 3, 8)}px`,
+    "--precip-legend-gap": `${fluidPx(s, 0.012, 3, 10)}px`
   };
 }
 
@@ -138,8 +153,8 @@ export function applyViewport(element, vp, regionId, content) {
 export function cityLimit(vp, regionId, content, available = 12) {
   const wanted = Math.max(1, available);
   if (content.kind === "table") {
-    const rowH = fluidPx(vp.minSide, 0.07, 20, 48);
-    const chrome = fluidPx(vp.minSide, 0.22, 70, 150);
+    const rowH = fluidPx(vp.minSide, 0.135, 52, 140);
+    const chrome = fluidPx(vp.minSide, 0.28, 90, 200);
     const rows = Math.floor((vp.height - chrome) / rowH);
     return clamp(rows, 3, wanted);
   }
@@ -164,7 +179,9 @@ export function cardSizePct(vp, regionId, variant = "weather") {
 export function fitTitleBars(screen) {
   if (!screen) return;
   const gap = parseFloat(getComputedStyle(screen).getPropertyValue("--footer-gap")) || 8;
-  const maxW = Math.max(72, screen.clientWidth - gap);
+  const points = screen.querySelector(".week-points:not([hidden])");
+  const reserve = points ? points.getBoundingClientRect().width + gap : 0;
+  const maxW = Math.max(72, screen.clientWidth - gap - reserve);
 
   const shrinkToFit = (el, bar, ratio) => {
     if (!el || !bar) return;

@@ -2,9 +2,9 @@
  * 天気カードとアイコン描画。気象JSONだけを受け取り、元データAPIには依存しない。
  */
 
-import { loadIcon } from "./map-renderer.js?v=pref216";
-import { popTone } from "./forecast.js?v=pref214";
-import { isNightHours, jmaLabel, jmaRank, jmaTone } from "./jma-icons.js?v=pref214";
+import { loadIcon } from "./map-renderer.js?v=pref320";
+import { popTone } from "./forecast.js?v=pref320";
+import { isNightHours, jmaLabel, jmaRank, jmaTone } from "./jma-icons.js?v=pref320";
 
 export function pickNoteWeather(points) {
   return points.reduce((best, point) => (
@@ -61,12 +61,12 @@ export async function renderCityCard(point, position, options = {}) {
     const noon = Number.isFinite(point.noon) ? point.noon : point.pop;
     const night = Number.isFinite(point.night) ? point.night : point.pop;
     return `
-    <article class="city-card is-pop${position.locked ? " is-locked" : ""}" data-city-id="${point.cityId}" style="left:${position.x}%;top:${position.y}%;">
+    <article class="city-card is-pop is-vertical${position.locked ? " is-locked" : ""}" data-city-id="${point.cityId}" style="left:${position.x}%;top:${position.y}%;">
       <span class="city-card-name">${point.cityName}</span>
       <span class="city-card-pops">
-        <span class="pop-slot ${popTone(morning)}"><i>朝</i><b>${Math.round(morning)}</b></span>
-        <span class="pop-slot ${popTone(noon)}"><i>昼</i><b>${Math.round(noon)}</b></span>
-        <span class="pop-slot ${popTone(night)}"><i>夜</i><b>${Math.round(night)}</b><small class="pop-unit">%</small></span>
+        <span class="pop-slot is-morning ${popTone(morning)}"><b>${Math.round(morning)}</b></span>
+        <span class="pop-slot is-noon ${popTone(noon)}"><b>${Math.round(noon)}</b></span>
+        <span class="pop-slot is-night ${popTone(night)}"><b>${Math.round(night)}</b></span>
       </span>
       <i class="card-resize" aria-hidden="true"></i>
     </article>`;
@@ -79,17 +79,76 @@ export async function renderCityCard(point, position, options = {}) {
     ? `<span class="city-card-pop">${Math.round(point.pop)}%</span>`
     : "";
   return `
-    <article class="city-card${options.showPop ? " is-national" : ""}${position.locked ? " is-locked" : ""}" data-city-id="${point.cityId}" style="left:${position.x}%;top:${position.y}%;">
-      <span class="wx-icon ${tone}" aria-label="${night ? "夜" : "昼"} ${label}">${icon}</span>
-      <span class="city-card-meta">
-        <span class="city-card-name">${point.cityName}</span>
-        <span class="city-card-row">${temps}${pop}</span>
+    <article class="city-card is-vertical${options.showPop ? " is-national" : ""}${position.locked ? " is-locked" : ""}" data-city-id="${point.cityId}" style="left:${position.x}%;top:${position.y}%;">
+      <span class="city-card-icon-stack">
+        <span class="city-card-icon-box" aria-hidden="true"></span>
+        <span class="wx-icon ${tone}" aria-label="${night ? "夜" : "昼"} ${label}">${icon}</span>
       </span>
+      <span class="city-card-name">${point.cityName}</span>
+      <span class="city-card-row">${temps}${pop}</span>
       <i class="card-resize" aria-hidden="true"></i>
     </article>
   `;
 }
 
-export function renderPin(position) {
-  return `<circle class="map-pin" cx="${position.stagePinX.toFixed(2)}" cy="${position.stagePinY.toFixed(2)}" r="1.25"/>`;
+export function renderPrecipTodLegend() {
+  return `
+    <aside class="precip-tod-legend" aria-label="降水確率・時間帯">
+      <div class="precip-tod-legend-title">降水確率</div>
+      <div class="precip-tod-legend-row">
+        <div class="precip-tod-legend-box">
+          <span class="is-morning">朝</span>
+          <span class="is-noon">昼</span>
+          <span class="is-night">夜</span>
+        </div>
+      </div>
+    </aside>
+  `;
+}
+
+export function renderPin(position, radius = 0.28) {
+  const r = Number.isFinite(radius) ? radius : 0.28;
+  return `<circle class="map-pin" cx="${position.stagePinX.toFixed(2)}" cy="${position.stagePinY.toFixed(2)}" r="${r.toFixed(3)}"/>`;
+}
+
+/** 赤い点の画面上サイズ。地図の短辺に比例させ、小さい解像度で相対的に巨大化しない。 */
+export function pinRadiusForViewBox(svg, { national = false } = {}) {
+  const vb = svg?.viewBox?.baseVal;
+  if (!vb || !(vb.width > 0) || !(vb.height > 0)) return national ? 0.14 : 0.22;
+  const shortUser = Math.min(vb.width, vb.height);
+  const rect = typeof svg.getBoundingClientRect === "function" ? svg.getBoundingClientRect() : null;
+  if (rect && rect.width > 8 && rect.height > 8) {
+    const shortPx = Math.min(rect.width, rect.height);
+    // 直径（px）。短辺の一定割合。上限・下限で極端な解像度を抑える
+    const targetPx = national
+      ? Math.min(11, Math.max(6, shortPx * 0.02))
+      : Math.min(14, Math.max(7, shortPx * 0.028));
+    return Math.max(national ? 0.05 : 0.06, ((targetPx / shortPx) * shortUser) / 2);
+  }
+  return Math.max(national ? 0.1 : 0.14, shortUser * (national ? 0.0035 : 0.005));
+}
+
+/** 参照SVG上のピン半径が同じ画面ピクセルになるよう、対象SVGの半径へ換算する。 */
+export function pinRadiusForMatchingScreen(svg, referenceSvg, referenceRadius) {
+  const refVb = referenceSvg?.viewBox?.baseVal;
+  const tgtVb = svg?.viewBox?.baseVal;
+  if (!Number.isFinite(referenceRadius) || referenceRadius <= 0) {
+    return pinRadiusForViewBox(svg, { national: true });
+  }
+  if (!refVb?.width || !tgtVb?.width) {
+    const refShort = Math.min(refVb?.width || 100, refVb?.height || 100);
+    const tgtShort = Math.min(tgtVb?.width || 20, tgtVb?.height || 22);
+    return referenceRadius * (tgtShort / refShort);
+  }
+  const refRect = referenceSvg.getBoundingClientRect?.();
+  const tgtRect = svg.getBoundingClientRect?.();
+  const refShortUser = Math.min(refVb.width, refVb.height);
+  const tgtShortUser = Math.min(tgtVb.width, tgtVb.height);
+  const refShortPx = Math.min(refRect?.width || 0, refRect?.height || 0);
+  const tgtShortPx = Math.min(tgtRect?.width || 0, tgtRect?.height || 0);
+  if (refShortPx > 8 && tgtShortPx > 8) {
+    const pinPx = 2 * referenceRadius * (refShortPx / refShortUser);
+    return Math.max(0.02, ((pinPx / tgtShortPx) * tgtShortUser) / 2);
+  }
+  return referenceRadius * (tgtShortUser / refShortUser);
 }

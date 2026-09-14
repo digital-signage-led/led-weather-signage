@@ -1,16 +1,20 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="ja" class="is-boot">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="color-scheme" content="light">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <title>今日の天気</title>
+  <style>
+    html.is-boot { background: #c8ebff; }
+    html.is-boot .led-screen { visibility: hidden; }
+  </style>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800&family=Noto+Sans+JP:wght@400;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/base.css?v=pref215">
-  <link rel="stylesheet" href="css/weather.css?v=pref210">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/base.css?v=pref320">
+  <link rel="stylesheet" href="css/weather.css?v=pref320">
 </head>
 <body>
   <div id="studio-root" hidden>
@@ -34,6 +38,10 @@
       <div class="studio-presets" id="viewport-presets" aria-label="確認用サイズ"></div>
       <div id="studio-map-tools" class="studio-map-tools">
         <label>
+          タイトル大きさ <span id="title-scale-value">1.00</span>
+          <input id="title-scale" type="range" min="0.6" max="1.8" step="0.02" value="1">
+        </label>
+        <label>
           列島 拡大 <span id="map-scale-value">1.00</span>
           <input id="map-scale" type="range" min="0.4" max="3.6" step="0.02" value="1">
         </label>
@@ -52,11 +60,11 @@
         <label>
           ボックス大きさ <span id="card-scale-value">1.00</span>
           <span id="card-size-px">—</span>
-          <input id="card-scale" type="range" min="0.5" max="3" step="0.02" value="1">
+          <input id="card-scale" type="range" min="0.28" max="3" step="0.02" value="1">
         </label>
         <label>
           ボックス幅
-          <input id="card-width-px" name="cardw" type="number" min="40" max="720" step="1" value="160">
+          <input id="card-width-px" name="cardw" type="number" min="28" max="720" step="1" value="160">
         </label>
         <button type="button" id="layout-reset">配置リセット</button>
       </div>
@@ -64,7 +72,7 @@
         <span class="studio-card-heading">ボックス位置 左右％ / 上下％</span>
         <div id="card-editors"></div>
       </div>
-      <p class="studio-hint">白い天気ボックスをプレビュー上でドラッグすると位置を変えられます。大きさはスライダー、幅の数値、ボックス右下の角ドラッグ、ボックス上のホイールで手動変更できます。全市まとめて変わります。天気と降水は別サイズです。</p>
+      <p class="studio-hint">地図はプレビュー上でドラッグ／ホイール、または「列島」スライダーで動かせます。白い天気ボックスをドラッグすると位置を変えられます。今日の天気・今日の降水・明日の天気・明日の降水は同じ配置を共有します（今日の天気が親）。地図の縮尺・位置、タイトル大きさ、ボックス大きさ・位置、降水凡例の位置はすべて解像度ごとに別保存です。全国と地方別のボックス大きさは別（地方どうしは共通）。天気と降水のボックス大きさも別です。</p>
       <div class="studio-metrics" id="preview-metrics"></div>
     </form>
     <div id="preview-stage">
@@ -113,6 +121,6 @@
     </article>
     <aside id="debug-overlay" hidden></aside>
   </div>
-  <script type="module" src="js/app.js?v=pref217"></script>
+  <script type="module" src="js/app.js?v=pref320"></script>
 </body>
 </html>

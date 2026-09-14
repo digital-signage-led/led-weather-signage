@@ -56,6 +56,24 @@ function num(value) {
   return Number.isFinite(n) ? n : null;
 }
 
+function formatYmd(date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
+function popAtHour(defines, values, ymd, hour) {
+  for (let i = 0; i < defines.length; i += 1) {
+    const stamp = new Date(defines[i]);
+    if (Number.isNaN(stamp.getTime())) continue;
+    if (formatYmd(stamp) === ymd && stamp.getHours() === hour) {
+      return values[i] ?? null;
+    }
+  }
+  return null;
+}
+
 function labelOf(code) {
   return JMA_WEATHER_CODES[String(code)]?.labelJa || "";
 }
@@ -92,7 +110,7 @@ function findCityArea(area, city) {
   const raw = (city.jmaOffice && area.offices[city.jmaOffice] ? city.jmaOffice : null)
     || walked.office
     || officeFromClass10;
-  return { class10, office: FORECAST_OFFICE[raw] || raw };
+  return { class10, class20: class20 || null, office: FORECAST_OFFICE[raw] || raw };
 }
 
 function pickArea(areas, codesOrNames) {
@@ -121,9 +139,23 @@ function extractPoint(forecast, city, mapping) {
 
   const todayCode = String(wxArea.weatherCodes[0] || "200");
   const tomorrowCode = String(wxArea.weatherCodes[1] || todayCode);
-  const pops = (popArea?.pops || []).map(num).filter((n) => n != null);
-  const todayPop = pops.length ? Math.max(...pops.slice(0, Math.min(3, pops.length))) : 0;
-  const tomorrowPop = pops.length ? Math.max(...pops.slice(-3)) : todayPop;
+  const pops = (popArea?.pops || []).map(num);
+  const popDefines = popSeries?.timeDefines || [];
+  const todayYmd = formatYmd(new Date());
+  const tomorrowDate = new Date();
+  tomorrowDate.setDate(tomorrowDate.getDate() + 1);
+  const tomorrowYmd = formatYmd(tomorrowDate);
+  const todayAm = popAtHour(popDefines, pops, todayYmd, 6);
+  const todayPm = popAtHour(popDefines, pops, todayYmd, 12);
+  const tomorrowAm = popAtHour(popDefines, pops, tomorrowYmd, 6);
+  const tomorrowPm = popAtHour(popDefines, pops, tomorrowYmd, 12);
+  const todayPops = pops.filter((n) => n != null);
+  const todayPop = todayAm != null || todayPm != null
+    ? Math.max(todayAm ?? 0, todayPm ?? 0)
+    : (todayPops.length ? Math.max(...todayPops.slice(0, Math.min(3, todayPops.length))) : 0);
+  const tomorrowPop = tomorrowAm != null || tomorrowPm != null
+    ? Math.max(tomorrowAm ?? 0, tomorrowPm ?? 0)
+    : (todayPops.length ? Math.max(...todayPops.slice(-3)) : todayPop);
   const tempMin = num(tempArea?.temps?.[0]);
   const tempMax = num(tempArea?.temps?.[1]);
 
@@ -144,20 +176,30 @@ function extractPoint(forecast, city, mapping) {
         weatherLabel: labelOf(todayCode),
         tempMax: tempMax ?? num(weeklyTempArea?.tempsMax?.[0]) ?? 0,
         tempMin: tempMin ?? num(weeklyTempArea?.tempsMin?.[0]) ?? 0,
-        pop: todayPop
+        pop: todayPop,
+        popAm: todayAm ?? todayPop,
+        popPm: todayPm ?? todayPop
       });
       continue;
     }
     const weeklyIndex = i - 1;
     const code = String((i === 1 ? tomorrowCode : null) || weeklyCodes[weeklyIndex] || tomorrowCode);
+    const dayPop = weeklyPops[weeklyIndex] ?? (i === 1 ? tomorrowPop : todayPop);
     weeklyDays.push({
       weather: code,
       weatherLabel: labelOf(code),
       tempMax: num(weeklyTempArea?.tempsMax?.[weeklyIndex]) ?? tempMax ?? 0,
       tempMin: num(weeklyTempArea?.tempsMin?.[weeklyIndex]) ?? tempMin ?? 0,
-      pop: weeklyPops[weeklyIndex] ?? (i === 1 ? tomorrowPop : todayPop)
+      pop: dayPop,
+      popAm: i === 1 ? (tomorrowAm ?? dayPop) : dayPop,
+      popPm: i === 1 ? (tomorrowPm ?? dayPop) : dayPop
     });
   }
+
+  const climateAreas = weekly?.tempAverage?.areas || [];
+  const climate = climateAreas.find((item) => item.area?.name === city.cityName)
+    || climateAreas.find((item) => city.cityName && item.area?.name?.includes(city.cityName.replace(/[市町村]$/, "")))
+    || null;
 
   return {
     cityId: city.cityId,
@@ -166,6 +208,10 @@ function extractPoint(forecast, city, mapping) {
     tempMax: weeklyDays[0].tempMax,
     tempMin: weeklyDays[0].tempMin,
     pop: todayPop,
+    normalMax: num(climate?.max),
+    normalMin: num(climate?.min),
+    jmaClass10: mapping.class10 || "",
+    jmaClass20: mapping.class20 || "",
     tomorrow: {
       weather: weeklyDays[1].weather,
       weatherLabel: weeklyDays[1].weatherLabel,

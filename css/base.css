@@ -25,10 +25,14 @@
   --pop-color: #123b5c;
   --line: #7eb8d8;
   --font-main: "Noto Sans JP", "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif;
-  --font-number: "Barlow Condensed", "Noto Sans JP", "Arial Narrow", sans-serif;
+  --font-number: "Noto Sans JP", "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif;
   --box-radius: 4px;
   --card-box-w: 110px;
   --card-box-h: 42px;
+  --header-title-height: 40px;
+  --header-height: 28px;
+  --footer-height: 56px;
+  --footer-gap: 12px;
   color-scheme: only light;
 }
 
@@ -54,10 +58,13 @@ body {
   font-weight: 800;
 }
 
-img,
-svg {
+img {
   display: block;
   max-width: 100%;
+}
+
+svg {
+  display: block;
 }
 
 table {
@@ -69,6 +76,10 @@ input,
 select {
   font: inherit;
   color: inherit;
+}
+
+html.is-boot .led-screen {
+  visibility: hidden;
 }
 
 html.is-kiosk,
@@ -272,6 +283,11 @@ body.is-kiosk #app {
 
 .led-screen {
   --card-scale: 1;
+  --title-scale: 1;
+  --header-title-height: 40px;
+  --header-height: 28px;
+  --footer-height: 56px;
+  --footer-gap: 12px;
   position: absolute;
   inset: 0;
   width: 100%;
@@ -284,7 +300,6 @@ body.is-kiosk #app {
   border-radius: 0;
 }
 
-html.is-edit .led-screen,
 html.is-edit .led-body {
   overflow: visible;
 }
@@ -366,6 +381,8 @@ html:not(.is-edit) .card-resize {
   background: none;
   border-radius: 0;
   overflow: visible;
+  transform: scale(var(--title-scale, 1));
+  transform-origin: top left;
 }
 
 .led-title-bar,
@@ -376,8 +393,8 @@ html:not(.is-edit) .card-resize {
   max-width: 100%;
   height: var(--header-height);
   min-width: 0;
-  gap: 0.35em;
-  padding: 0 calc(var(--header-title-height) * 0.42) 0 calc(var(--header-title-height) * 0.22);
+  gap: 0.3em;
+  padding: 0 calc(var(--header-title-height) * 0.28) 0 calc(var(--header-title-height) * 0.16);
   background: color-mix(in srgb, var(--bg-header) 80%, transparent);
   border-radius: 0 var(--box-radius) var(--box-radius) 0;
   overflow: hidden;
@@ -386,23 +403,24 @@ html:not(.is-edit) .card-resize {
 
 .led-title-bar:not(.led-sub-bar) {
   height: var(--header-title-height);
-  gap: 0.45em;
+  gap: 0.35em;
 }
 
 .led-title-mark {
   flex: 0 0 auto;
-  width: calc(var(--header-title-height) * 0.62);
-  height: calc(var(--header-title-height) * 0.62);
+  width: calc(var(--header-title-height, 52px) * 0.52);
+  height: calc(var(--header-title-height, 52px) * 0.52);
   color: var(--text-title);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  overflow: visible;
+  overflow: hidden;
 }
 
 .led-title-mark svg {
   width: 100%;
   height: 100%;
+  max-width: none;
   overflow: visible;
 }
 
@@ -517,6 +535,26 @@ html:not(.is-edit) .card-resize {
   flex: 0 0 auto;
   white-space: nowrap;
   line-height: var(--footer-height);
+}
+
+.led-note-item .note-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: -0.12em;
+  margin: 0 0.08em;
+  color: inherit;
+}
+
+.led-note-item .note-icon svg {
+  display: block;
+  width: 1.15em;
+  height: 0.86em;
+}
+
+.led-note-item .note-icon-rain svg {
+  width: 1.05em;
+  height: 1.05em;
 }
 
 @keyframes led-note-ticker {

@@ -9,13 +9,14 @@ import { renderWeatherIcon } from "./WeatherIcon.js";
 const svgCache = new Map();
 
 export async function loadMapSvg(mapFile) {
-  if (svgCache.has(mapFile)) return svgCache.get(mapFile);
-  const response = await fetch(`src/maps/${mapFile}`);
+  const file = "japan.svg";
+  if (svgCache.has(file)) return svgCache.get(file);
+  const response = await fetch(`maps/${file}`);
   if (!response.ok) {
-    throw new Error(`地図を読み込めません: ${mapFile}`);
+    throw new Error(`地図を読み込めません: ${file}`);
   }
   const text = await response.text();
-  svgCache.set(mapFile, text);
+  svgCache.set(file, text);
   return text;
 }
 

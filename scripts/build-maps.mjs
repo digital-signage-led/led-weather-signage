@@ -147,8 +147,8 @@ const OKINAWA_EXTENT = { lonMin: 122.9, lonMax: 128.5, latMin: 24.0, latMax: 27.
 const OKINAWA_INSET = { x: 88.8, y: 76.2, w: 8.8, h: 9.6 };
 const OKINAWA_INSET_TRANSFORM = "translate(16.2 48) scale(1.75) translate(-16.2 -48) translate(-77 -33)";
 const COS = Math.cos((36 * Math.PI) / 180);
-const NATIONAL_SIMPLIFY = 0.014;
-const REGION_SIMPLIFY = 0.009;
+const NATIONAL_SIMPLIFY = 0.003;
+const REGION_SIMPLIFY = 0.002;
 
 const features = [];
 const source = await open(path.join(shpDir, "polbnda_jpn.shp"), path.join(shpDir, "polbnda_jpn.dbf"));
@@ -350,7 +350,7 @@ function rotatedLocalBounds(extent, rotateDeg) {
 
 function ringToPath(ring, project) {
   const pts = ring.map(([lon, lat]) => project.point(lon, lat));
-  return `M${pts.map((p) => `${p[0].toFixed(2)} ${p[1].toFixed(2)}`).join("L")}Z`;
+  return `M${pts.map((p) => `${p[0].toFixed(3)} ${p[1].toFixed(3)}`).join("L")}Z`;
 }
 
 function polygonsToPath(polygons, project) {
@@ -438,7 +438,7 @@ function polygonsForPref(prefId, minArea, keepPoint = inMainJapan, simplifyTol =
     unionPrefecturePolygons(polygons)
       .filter((polygon) => ringBbox(polygon[0]).area >= minArea * 0.25)
       .map((polygon) => polygon
-        .map((ring) => simplify(ring, prefId === "28" ? Math.max(simplifyTol, 0.016) : simplifyTol))
+        .map((ring) => simplify(ring, simplifyTol))
         .filter((ring) => ring.length >= 4))
       .filter((polygon) => polygon.length)
       .flatMap(cleanSimplifiedPolygon)
@@ -483,6 +483,10 @@ const okinawaProj = makeBoxProjector(OKINAWA_EXTENT, {
   w: OKINAWA_INSET.w - 2.2,
   h: OKINAWA_INSET.h - 3.4
 });
+// ランタイムのピンは inset transform 後のルート座標へ写す。
+// data/map-projection.json の okinawaInset.box はこの変換後の land box と一致させること。
+// transform: translate(16.2 48) scale(1.75) translate(-16.2 -48) translate(-77 -33)
+// → box ≈ { x: 10.43, y: 43.8, w: 11.55, h: 10.85 }
 
 const ISLAND_PREFS = new Set(["15", "42", "46", "38", "34", "28", "01", "47"]);
 
@@ -500,16 +504,10 @@ const regionGroups = REGION_ORDER.filter((id) => id !== "OKINAWA").map((regionId
   return `    <g data-region="${regionId}">\n      ${paths}\n    </g>`;
 }).join("\n");
 
-const okinawaPaths = polygonsToPath(polygonsForPref("47", 0.0004, inMainJapan, 0.012, 4), okinawaProj);
-const nationalLakes = lakesToPath(japanProj, 0.018, inMainland, NATIONAL_SIMPLIFY, JAPAN_EXTENT);
+const okinawaPaths = polygonsToPath(polygonsForPref("47", 0.00025, inMainJapan, 0.0025, 4), okinawaProj);
+const nationalLakes = lakesToPath(japanProj, 0.004, inMainland, NATIONAL_SIMPLIFY, JAPAN_EXTENT);
 
 const japanSvg = svgWrap(`0 0 ${japanVb.w} ${japanVb.h}`, `<g class="map-fills" fill="#76c85a" fill-rule="nonzero" stroke="none">
-${regionGroups}
-  </g>
-  <g class="map-borders" fill="none" stroke="#ffffff" stroke-width="0.75" stroke-linejoin="round" stroke-linecap="round">
-${regionGroups}
-  </g>
-  <g class="map-fills map-fills-cover" fill="#76c85a" fill-rule="nonzero" stroke="none">
 ${regionGroups}
   </g>
   <g class="map-lakes" fill="#c8ebff" fill-rule="evenodd" stroke="none">
@@ -517,7 +515,7 @@ ${regionGroups}
   </g>
   <g class="map-okinawa-inset" transform="${OKINAWA_INSET_TRANSFORM}">
     <rect x="${OKINAWA_INSET.x}" y="${OKINAWA_INSET.y}" width="${OKINAWA_INSET.w}" height="${OKINAWA_INSET.h}" rx="0.25" fill="#dff4ff" stroke="#ffffff" stroke-width="0.45"/>
-    <g data-region="OKINAWA" fill="#76c85a" stroke="#ffffff" stroke-width="0.55" stroke-linejoin="round">
+    <g data-region="OKINAWA" fill="#76c85a" stroke="none">
       <path data-pref="47" d="${okinawaPaths}"/>
     </g>
   </g>`);
@@ -526,84 +524,12 @@ fs.mkdirSync(path.join(root, "maps"), { recursive: true });
 fs.writeFileSync(path.join(root, "src/maps/japan.svg"), japanSvg);
 fs.writeFileSync(path.join(root, "maps/japan.svg"), japanSvg);
 
-const regionExtents = {
-  HOKKAIDO: { lonMin: 138.9, lonMax: 146.2, latMin: 40.7, latMax: 45.7 },
-  TOHOKU: { lonMin: 138.9, lonMax: 142.5, latMin: 36.35, latMax: 41.75 },
-  KANTO: { lonMin: 138.15, lonMax: 141.15, latMin: 34.55, latMax: 37.25 },
-  CHUBU: { lonMin: 134.85, lonMax: 140.45, latMin: 34.15, latMax: 38.75 },
-  KINKI: { lonMin: 133.65, lonMax: 137.05, latMin: 33.05, latMax: 36.2 },
-  CHUGOKU: { lonMin: 130.3, lonMax: 135.35, latMin: 33.35, latMax: 36.55 },
-  SHIKOKU: { lonMin: 131.5, lonMax: 135.25, latMin: 32.35, latMax: 34.85 },
-  KYUSHU: { lonMin: 127.8, lonMax: 132.55, latMin: 30.55, latMax: 34.35 },
-  OKINAWA: { lonMin: 122.6, lonMax: 129.0, latMin: 23.7, latMax: 27.55, rotateDeg: 34 }
-};
-
-const files = {
-  HOKKAIDO: "hokkaido.svg",
-  TOHOKU: "tohoku.svg",
-  KANTO: "kanto.svg",
-  CHUBU: "chubu.svg",
-  KINKI: "kinki.svg",
-  CHUGOKU: "chugoku.svg",
-  SHIKOKU: "shikoku.svg",
-  KYUSHU: "kyushu.svg",
-  OKINAWA: "okinawa.svg"
-};
-
-const positions = { national: {}, regions: {} };
-
+const positions = { national: {} };
 for (const city of CITIES) {
   const project = city.region === "OKINAWA" ? okinawaProj : japanProj;
   const [x, y] = project.point(city.lon, city.lat);
   positions.national[city.id] = { x: +(x / japanVb.w * 100).toFixed(2), y: +(y / japanVb.h * 100).toFixed(2) };
 }
-
-for (const regionId of REGION_ORDER) {
-  const extent = regionExtents[regionId];
-  const proj = extent.rotateDeg
-    ? makeRotatedProjector(extent, 100, 100, 4, extent.rotateDeg)
-    : regionId === "TOHOKU"
-      ? makeContainProjector(extent, 100, 100, 4)
-      : makeProjector(extent, 100, 100, 4);
-  const minArea = regionId === "OKINAWA" ? 0.0004 : 0.0012;
-  const simplifyTol = regionId === "OKINAWA" ? 0.008 : REGION_SIMPLIFY;
-  const focusIds = new Set([regionId]);
-  const dimIds = new Set(REGION_NEIGHBORS[regionId] || []);
-  const dimPaths = prefPaths(proj, dimIds, minArea, simplifyTol, extent, 0.4);
-  const focusPaths = prefPaths(proj, focusIds, minArea, simplifyTol);
-  const lakeKeep = regionId === "OKINAWA" ? inMainJapan : inMainland;
-  const lakePaths = lakesToPath(proj, regionId === "OKINAWA" ? 0.004 : 0.01, lakeKeep, simplifyTol, extent);
-  const svg = svgWrap("0 0 100 100", `<g class="map-fills map-dim" fill="#d0d5db" fill-rule="nonzero" stroke="none">
-      ${dimPaths}
-  </g>
-  <g class="map-borders map-dim" fill="none" stroke="#ffffff" stroke-width="0.45" stroke-linejoin="round" stroke-linecap="round">
-      ${dimPaths}
-  </g>
-  <g class="map-fills map-dim map-fills-cover" fill="#d0d5db" fill-rule="nonzero" stroke="none">
-      ${dimPaths}
-  </g>
-  <g class="map-fills map-focus" data-region="${regionId}" fill="#76c85a" fill-rule="nonzero" stroke="none">
-      ${focusPaths}
-  </g>
-  <g class="map-borders map-focus" fill="none" stroke="#ffffff" stroke-width="0.75" stroke-linejoin="round" stroke-linecap="round">
-      ${focusPaths}
-  </g>
-  <g class="map-fills map-focus map-fills-cover" data-region="${regionId}" fill="#76c85a" fill-rule="nonzero" stroke="none">
-      ${focusPaths}
-  </g>
-  <g class="map-lakes" fill="#c8ebff" fill-rule="evenodd" stroke="none">
-      <path d="${lakePaths}"/>
-  </g>`);
-  fs.writeFileSync(path.join(root, "src/maps", files[regionId]), svg);
-  fs.writeFileSync(path.join(root, "maps", files[regionId]), svg);
-
-  positions.regions[regionId] = {};
-  for (const city of CITIES.filter((item) => item.region === regionId)) {
-    const [x, y] = proj.point(city.lon, city.lat);
-    positions.regions[regionId][city.id] = { x: +x.toFixed(2), y: +y.toFixed(2) };
-  }
-}
-
 fs.writeFileSync(path.join(root, "src/maps/marker-positions.json"), JSON.stringify(positions, null, 2));
-console.log("MAPS_OK", Object.keys(files).length + 1, "svg files");
+console.log("MAPS_OK japan.svg only (common map)");
 console.log(JSON.stringify(positions.national, null, 2));

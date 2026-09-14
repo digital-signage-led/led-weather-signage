@@ -1,33 +1,41 @@
 /**
- * スタジオ用の配置編集。
- * 列島はドラッグで移動、ホイール／ハンドルで拡大。
- * カードはドラッグで移動。大きさは解像度に合わせて自動、倍率は全市・全解像度で共通。
- * 地域ごとに localStorage へ残す。
+ * スタジオ用の配置編雁E��E
+ * 列島はドラチE��で移動、�Eイール�E�ハンドルで拡大、E
+ * カード倍率・タイトル倍率・地図配置は解像度ごとに別管琁E��E
+ * カード倍率はさらに「�E国�E�地方別」で刁E��る（地方どぁE��は共有）、E
+ * 地図4種�E�今日/明日×天氁E降水�E��Eボックス位置は「今日の天気」を親として共有する、E
  */
 
-import { canonicalContent, canonicalRegion, isNational } from "./catalog.js?v=pref174";
+import { canonicalContent, canonicalRegion, isNational } from "./catalog.js?v=pref320";
 
-const STORAGE_KEY = "led-weather-layout-v3";
-const CARD_SIZE_KEY = "led-weather-card-size-v2";
-export const CARD_SCALE_MIN = 0.5;
+const STORAGE_KEY = "led-weather-layout-v5";
+const STORAGE_KEY_LEGACY = "led-weather-layout-v4";
+const CARD_SIZE_KEY = "led-weather-card-size-v4";
+const CARD_SIZE_KEY_LEGACY_V3 = "led-weather-card-size-v3";
+const CARD_SIZE_KEY_LEGACY_V2 = "led-weather-card-size-v2";
+const TITLE_SCALE_KEY = "led-weather-title-scale-v2";
+const TITLE_SCALE_KEY_LEGACY = "led-weather-title-scale-v1";
+export const CARD_SCALE_MIN = 0.28;
 export const CARD_SCALE_MAX = 3;
+export const TITLE_SCALE_MIN = 0.6;
+export const TITLE_SCALE_MAX = 1.8;
 export const CARD_POS_MIN = -40;
 export const CARD_POS_MAX = 140;
 
 function emptyLayout(regionId = "national") {
   regionId = canonicalRegion(regionId);
   return {
-    map: isNational(regionId)
-      ? { scale: 1.12, rotate: 0, x: 2, y: 0 }
-      : { scale: 1, rotate: 0, x: 0, y: 0 },
+    map: { scale: 1, rotate: 0, x: 0, y: 0 },
     okinawa: { x: 20, y: 38, scale: 1 },
+    precipLegend: { x: 3, y: 22 },
     cards: {}
   };
 }
 
-function cardBucket(contentId = "today_weather") {
+/** 地図コンチE��チE�Eカード位置は常に今日の天気！Eards�E�を親にする、E*/
+function isPopContent(contentId = "today_weather") {
   const id = canonicalContent(contentId);
-  return id === "today_precip" || id === "tomorrow_precip" ? "cardsPop" : "cards";
+  return id === "today_precip" || id === "tomorrow_precip";
 }
 
 function layoutStoreKeys(regionId) {
@@ -36,32 +44,84 @@ function layoutStoreKeys(regionId) {
     .filter(Boolean);
 }
 
-export function loadLayout(regionId, contentId = "today_weather") {
+function readLayoutStore() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) return JSON.parse(raw) || {};
+    const legacy = JSON.parse(localStorage.getItem(STORAGE_KEY_LEGACY) || "{}");
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(legacy || {}));
+    return legacy || {};
+  } catch {
+    return {};
+  }
+}
+
+function layoutEntryFrom(source = {}) {
+  const base = emptyLayout();
+  return {
+    map: { ...base.map, ...(source.map || {}) },
+    okinawa: { ...base.okinawa, ...(source.okinawa || {}) },
+    precipLegend: { ...base.precipLegend, ...(source.precipLegend || {}) },
+    cards: { ...(source.cards || {}) },
+    cardsPop: { ...(source.cardsPop || source.cards || {}) }
+  };
+}
+
+function pickLayoutSlice(saved, width = 0, height = 0) {
+  if (!saved) return null;
+  const w = Math.round(Number(width) || 0);
+  const h = Math.round(Number(height) || 0);
+  if (w > 0 && h > 0) {
+    const keyed = saved.viewports?.[viewportSizeKey(w, h)];
+    if (keyed) return keyed;
+  }
+  return saved;
+}
+
+export function loadLayout(regionId, contentId = "today_weather", width = 0, height = 0) {
   regionId = canonicalRegion(regionId);
   try {
-    const all = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+    const all = readLayoutStore();
     const saved = layoutStoreKeys(regionId).map((key) => all[key]).find(Boolean);
     if (!saved) return emptyLayout(regionId);
+    const slice = pickLayoutSlice(saved, width, height) || saved;
+    const entry = layoutEntryFrom(slice);
+    entry.map.scale = clamp(Number(entry.map.scale) || 1, 0.4, 3.6);
+    entry.map.x = clamp(Number(entry.map.x) || 0, -40, 40);
+    entry.map.y = clamp(Number(entry.map.y) || 0, -40, 40);
+    const weatherCards = entry.cards || {};
+    const popCards = entry.cardsPop || {};
+    const cards = Object.keys(weatherCards).length ? weatherCards : popCards;
     return {
-      map: { ...emptyLayout(regionId).map, ...saved.map },
-      okinawa: { ...emptyLayout(regionId).okinawa, ...saved.okinawa },
-      cards: { ...(saved[cardBucket(contentId)] || {}) }
+      map: entry.map,
+      okinawa: entry.okinawa,
+      precipLegend: entry.precipLegend,
+      cards: { ...cards }
     };
   } catch {
     return emptyLayout(regionId);
   }
 }
 
-export function saveLayout(regionId, layout, contentId = "today_weather") {
+export function saveLayout(regionId, layout, contentId = "today_weather", width = 0, height = 0) {
   regionId = canonicalRegion(regionId);
-  const all = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-  const prev = layoutStoreKeys(regionId).map((key) => all[key]).find(Boolean) || {};
-  all[regionId] = {
+  const all = readLayoutStore();
+  const prev = all[regionId] || {};
+  const entry = {
     map: layout.map,
     okinawa: layout.okinawa,
-    cards: prev.cards || {},
-    cardsPop: prev.cardsPop || {},
-    [cardBucket(contentId)]: layout.cards
+    precipLegend: layout.precipLegend || emptyLayout().precipLegend,
+    cards: layout.cards,
+    cardsPop: layout.cards
+  };
+  const viewports = { ...(prev.viewports || {}) };
+  const w = Math.round(Number(width) || 0);
+  const h = Math.round(Number(height) || 0);
+  if (w > 0 && h > 0) viewports[viewportSizeKey(w, h)] = entry;
+  all[regionId] = {
+    ...prev,
+    ...entry,
+    viewports
   };
   localStorage.setItem(STORAGE_KEY, JSON.stringify(all));
 }
@@ -79,38 +139,300 @@ export function applyMapTransform(screen, layoutOrMap) {
   screen.style.setProperty("--oki-scale", String(okinawa.scale));
 }
 
+/**
+ * 地図・ピン・惁E��カードが .map-stage 冁E��収まるよぁEscale / 平行移勁E/ カード位置を�E計算する、E
+ * 初期表示・リサイズ・ズーム�E�パン後に呼ぶ、E
+ *
+ * 地図のセンタリングは geo�E��E島�E�だけを基準にする。カードを含めて中忁E��取ると
+ * 左側カードに引っ張られて地図が右へ寁E��返し、右端が�Eれて見えるため、E
+ * カード�E位置クランプで収め、なお�Eみ出すときだけ地図を縮める�E�平行移動�EしなぁE��、E
+ */
+export function containMapInStage(screen, layout, { marginPct = 2.4, recenter = true } = {}) {
+  if (!screen || !layout?.map) return false;
+  const stage = screen.querySelector(".map-stage");
+  const geo = screen.querySelector(".map-geo");
+  const cardsEl = screen.querySelector(".map-cards");
+  if (!stage || !geo) return false;
+
+  layout.map.scale = clamp(Number(layout.map.scale) || 1, 0.4, 3.6);
+  layout.map.x = clamp(Number(layout.map.x) || 0, -48, 48);
+  layout.map.y = clamp(Number(layout.map.y) || 0, -48, 48);
+
+  const stageBox = stage.getBoundingClientRect();
+  if (stageBox.width < 12 || stageBox.height < 12) return false;
+
+  const padX = stageBox.width * (marginPct / 100);
+  const padY = stageBox.height * (marginPct / 100);
+  const bounds = {
+    left: stageBox.left + padX,
+    right: stageBox.right - padX,
+    top: stageBox.top + padY,
+    bottom: stageBox.bottom - padY,
+    width: Math.max(1, stageBox.width - padX * 2),
+    height: Math.max(1, stageBox.height - padY * 2)
+  };
+  const fitEl = screen.querySelector(".map-fit") || stage;
+  let changed = false;
+
+  const measure = (includeCards) => {
+    let minL = Infinity;
+    let minT = Infinity;
+    let maxR = -Infinity;
+    let maxB = -Infinity;
+    const add = (el) => {
+      if (!el) return;
+      const box = el.getBoundingClientRect();
+      if (box.width <= 0 && box.height <= 0) return;
+      minL = Math.min(minL, box.left);
+      minT = Math.min(minT, box.top);
+      maxR = Math.max(maxR, box.right);
+      maxB = Math.max(maxB, box.bottom);
+    };
+    add(geo);
+    if (includeCards) cardsEl?.querySelectorAll(".city-card").forEach(add);
+    if (!Number.isFinite(minL)) return null;
+    return { minL, minT, maxR, maxB, w: maxR - minL, h: maxB - minT };
+  };
+
+  /** 列島を�E台の余白冁E��。縮小と�E�オプションで�E�センタリング、E*/
+  const fitMap = () => {
+    applyMapTransform(screen, layout);
+    void stage.offsetWidth;
+    const content = measure(false);
+    if (!content) return false;
+    let localChanged = false;
+
+    const scaleNeed = Math.min(bounds.width / content.w, bounds.height / content.h, 1);
+    if (scaleNeed < 0.997) {
+      const next = clamp(layout.map.scale * scaleNeed * 0.97, 0.4, 3.6);
+      if (Math.abs(next - layout.map.scale) > 0.0005) {
+        layout.map.scale = next;
+        localChanged = true;
+        applyMapTransform(screen, layout);
+        void stage.offsetWidth;
+      }
+    }
+
+    if (!recenter) return localChanged;
+
+    const again = measure(false);
+    if (!again) return localChanged;
+    const fitBox = fitEl.getBoundingClientRect();
+    const shiftXpx = (bounds.left + bounds.right - (again.minL + again.maxR)) / 2;
+    const shiftYpx = (bounds.top + bounds.bottom - (again.minT + again.maxB)) / 2;
+    if (fitBox.width > 1 && Math.abs(shiftXpx) > 0.5) {
+      layout.map.x = clamp(layout.map.x + (shiftXpx / fitBox.width) * 100, -48, 48);
+      localChanged = true;
+    }
+    if (fitBox.height > 1 && Math.abs(shiftYpx) > 0.5) {
+      layout.map.y = clamp(layout.map.y + (shiftYpx / fitBox.height) * 100, -48, 48);
+      localChanged = true;
+    }
+    if (localChanged) applyMapTransform(screen, layout);
+    return localChanged;
+  };
+
+  /** カード込みで幁E��足りなぁE��きだけ縮小。カード方向へ地図を寁E��なぁE��E*/
+  const shrinkForCards = () => {
+    applyMapTransform(screen, layout);
+    void stage.offsetWidth;
+    const content = measure(true);
+    if (!content) return false;
+    const scaleNeed = Math.min(bounds.width / content.w, bounds.height / content.h, 1);
+    if (scaleNeed >= 0.997) return false;
+    const next = clamp(layout.map.scale * scaleNeed * 0.97, 0.4, 3.6);
+    if (Math.abs(next - layout.map.scale) <= 0.0005) return false;
+    layout.map.scale = next;
+    applyMapTransform(screen, layout);
+    return true;
+  };
+
+  for (let i = 0; i < 5; i += 1) {
+    if (!fitMap()) break;
+    changed = true;
+  }
+  if (clampCardsToStage(screen, layout)) changed = true;
+  for (let i = 0; i < 5; i += 1) {
+    if (!shrinkForCards()) break;
+    changed = true;
+    clampCardsToStage(screen, layout);
+  }
+  if (clampCardsToStage(screen, layout)) changed = true;
+  applyMapTransform(screen, layout);
+  return changed;
+}
+
+/** 惁E��カードが舞台外にはみ出さなぁE��ぁE% 位置を補正する、E*/
+export function clampCardsToStage(screen, layout) {
+  const stage = screen?.querySelector(".map-stage");
+  const cardsEl = screen?.querySelector(".map-cards");
+  if (!stage || !cardsEl) return false;
+  const stageBox = stage.getBoundingClientRect();
+  const layerBox = cardsEl.getBoundingClientRect();
+  if (stageBox.width < 12 || layerBox.width < 12) return false;
+
+  let changed = false;
+  const pad = Math.max(22, stageBox.width * 0.032);
+  for (const card of cardsEl.querySelectorAll(".city-card")) {
+    const cityId = card.dataset.cityId;
+    const box = card.getBoundingClientRect();
+    if (box.width <= 0 || box.height <= 0) continue;
+    let dx = 0;
+    let dy = 0;
+    if (box.left < stageBox.left + pad) dx = stageBox.left + pad - box.left;
+    if (box.right > stageBox.right - pad) dx = stageBox.right - pad - box.right;
+    if (box.top < stageBox.top + pad) dy = stageBox.top + pad - box.top;
+    if (box.bottom > stageBox.bottom - pad) dy = stageBox.bottom - pad - box.bottom;
+    if (Math.abs(dx) < 0.5 && Math.abs(dy) < 0.5) continue;
+
+    const x = clamp(
+      (Number.parseFloat(card.style.left) || 0) + (dx / layerBox.width) * 100,
+      CARD_POS_MIN,
+      CARD_POS_MAX
+    );
+    const y = clamp(
+      (Number.parseFloat(card.style.top) || 0) + (dy / layerBox.height) * 100,
+      CARD_POS_MIN,
+      CARD_POS_MAX
+    );
+    card.style.left = `${x}%`;
+    card.style.top = `${y}%`;
+    if (cityId && layout?.cards?.[cityId]?.locked) {
+      layout.cards[cityId] = { ...layout.cards[cityId], x, y };
+    }
+    changed = true;
+  }
+  if (changed) centerCityCards(cardsEl);
+  return changed;
+}
+
 export function viewportSizeKey(width, height) {
   return `${Math.round(Number(width) || 0)}x${Math.round(Number(height) || 0)}`;
 }
 
 function cardScaleVariant(contentId = "today_weather") {
-  return cardBucket(contentId) === "cardsPop" ? "pop" : "weather";
+  return isPopContent(contentId) ? "pop" : "weather";
 }
 
-export function loadCardScale(contentId = "today_weather") {
+/** 全国は単体、地方はすべて同じ親キー、E*/
+function cardScaleScope(regionId = "national") {
+  return isNational(canonicalRegion(regionId)) ? "national" : "regional";
+}
+
+/** 侁E regional:weather:1920x1080 */
+function cardScaleKey(contentId = "today_weather", regionId = "national", width = 0, height = 0) {
+  const base = `${cardScaleScope(regionId)}:${cardScaleVariant(contentId)}`;
+  const w = Math.round(Number(width) || 0);
+  const h = Math.round(Number(height) || 0);
+  if (w > 0 && h > 0) return `${base}:${viewportSizeKey(w, h)}`;
+  return base;
+}
+
+function readCardScaleStore() {
   try {
-    const all = JSON.parse(localStorage.getItem(CARD_SIZE_KEY) || "{}");
-    return clamp(Number(all[cardScaleVariant(contentId)]) || 1, CARD_SCALE_MIN, CARD_SCALE_MAX);
+    const raw = localStorage.getItem(CARD_SIZE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === "object") return parsed;
+    }
+    const legacy =
+      JSON.parse(localStorage.getItem(CARD_SIZE_KEY_LEGACY_V3) || "null")
+      || JSON.parse(localStorage.getItem(CARD_SIZE_KEY_LEGACY_V2) || "{}");
+    const migrated = {};
+    for (const [key, value] of Object.entries(legacy || {})) {
+      migrated[key] = clamp(Number(value) || 1, CARD_SCALE_MIN, CARD_SCALE_MAX);
+    }
+    // v2 の weather/pop だけなら�E国・地方の両方へ展開
+    for (const variant of ["weather", "pop"]) {
+      if (legacy?.[variant] == null) continue;
+      const value = clamp(Number(legacy[variant]) || 1, CARD_SCALE_MIN, CARD_SCALE_MAX);
+      if (migrated[`national:${variant}`] == null) migrated[`national:${variant}`] = value;
+      if (migrated[`regional:${variant}`] == null) migrated[`regional:${variant}`] = value;
+    }
+    localStorage.setItem(CARD_SIZE_KEY, JSON.stringify(migrated));
+    return migrated;
+  } catch {
+    return {};
+  }
+}
+
+export function loadCardScale(contentId = "today_weather", regionId = "national", width = 0, height = 0) {
+  try {
+    const all = readCardScaleStore();
+    const sized = cardScaleKey(contentId, regionId, width, height);
+    const base = cardScaleKey(contentId, regionId);
+    const legacyVariant = cardScaleVariant(contentId);
+    const value = Number(all[sized] ?? all[base] ?? all[legacyVariant]) || 1;
+    return clamp(value, CARD_SCALE_MIN, CARD_SCALE_MAX);
   } catch {
     return 1;
   }
 }
 
-export function saveCardScale(contentId, scale) {
-  const variant = cardScaleVariant(contentId);
-  const all = JSON.parse(localStorage.getItem(CARD_SIZE_KEY) || "{}");
-  all[variant] = clamp(scale, CARD_SCALE_MIN, CARD_SCALE_MAX);
+export function saveCardScale(contentId, scale, regionId = "national", width = 0, height = 0) {
+  const key = cardScaleKey(contentId, regionId, width, height);
+  const all = readCardScaleStore();
+  all[key] = clamp(scale, CARD_SCALE_MIN, CARD_SCALE_MAX);
   localStorage.setItem(CARD_SIZE_KEY, JSON.stringify(all));
 }
 
-export function resetCardScale(contentId = "today_weather") {
-  saveCardScale(contentId, 1);
+export function resetCardScale(contentId = "today_weather", regionId = "national", width = 0, height = 0) {
+  saveCardScale(contentId, 1, regionId, width, height);
   return 1;
 }
 
 export function applyCardScale(screen, scale) {
   if (!screen) return;
   screen.style.setProperty("--card-scale", String(clamp(scale, CARD_SCALE_MIN, CARD_SCALE_MAX)));
+}
+
+export function loadTitleScale(width = 0, height = 0) {
+  try {
+    const raw = localStorage.getItem(TITLE_SCALE_KEY);
+    let all = {};
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === "object") all = parsed;
+      else if (Number.isFinite(Number(parsed))) all = { default: Number(parsed) };
+    } else {
+      const legacy = Number(localStorage.getItem(TITLE_SCALE_KEY_LEGACY));
+      if (Number.isFinite(legacy) && legacy > 0) {
+        all = { default: legacy };
+        localStorage.setItem(TITLE_SCALE_KEY, JSON.stringify(all));
+      }
+    }
+    const w = Math.round(Number(width) || 0);
+    const h = Math.round(Number(height) || 0);
+    const key = w > 0 && h > 0 ? viewportSizeKey(w, h) : "default";
+    return clamp(Number(all[key] ?? all.default) || 1, TITLE_SCALE_MIN, TITLE_SCALE_MAX);
+  } catch {
+    return 1;
+  }
+}
+
+export function saveTitleScale(scale, width = 0, height = 0) {
+  let all = {};
+  try {
+    all = JSON.parse(localStorage.getItem(TITLE_SCALE_KEY) || "{}") || {};
+  } catch {
+    all = {};
+  }
+  if (typeof all !== "object" || Array.isArray(all)) all = {};
+  const w = Math.round(Number(width) || 0);
+  const h = Math.round(Number(height) || 0);
+  const key = w > 0 && h > 0 ? viewportSizeKey(w, h) : "default";
+  all[key] = clamp(scale, TITLE_SCALE_MIN, TITLE_SCALE_MAX);
+  localStorage.setItem(TITLE_SCALE_KEY, JSON.stringify(all));
+}
+
+export function resetTitleScale(width = 0, height = 0) {
+  saveTitleScale(1, width, height);
+  return 1;
+}
+
+export function applyTitleScale(screen, scale) {
+  if (!screen) return;
+  screen.style.setProperty("--title-scale", String(clamp(scale, TITLE_SCALE_MIN, TITLE_SCALE_MAX)));
 }
 
 export function applyLockedCards(placed, layout) {
@@ -132,16 +454,27 @@ export function centerCityCards(cardsEl) {
   }
 }
 
-export function resetLayout(regionId, contentId = "today_weather") {
+export function resetLayout(regionId, contentId = "today_weather", width = 0, height = 0) {
   regionId = canonicalRegion(regionId);
   const layout = emptyLayout(regionId);
-  const all = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-  all[regionId] = {
+  const all = readLayoutStore();
+  const prev = all[regionId] || {};
+  const entry = {
     map: layout.map,
     okinawa: layout.okinawa,
+    precipLegend: layout.precipLegend,
     cards: {},
     cardsPop: {}
   };
+  const viewports = { ...(prev.viewports || {}) };
+  const w = Math.round(Number(width) || 0);
+  const h = Math.round(Number(height) || 0);
+  if (w > 0 && h > 0) {
+    viewports[viewportSizeKey(w, h)] = entry;
+    all[regionId] = { ...prev, ...entry, viewports };
+  } else {
+    all[regionId] = { ...entry, viewports: {} };
+  }
   localStorage.setItem(STORAGE_KEY, JSON.stringify(all));
   return layout;
 }
@@ -264,22 +597,36 @@ export function moveLockedCard(cardsEl, layout, regionId, contentId, cityId, x, 
     card.classList.add("is-locked");
     centerCityCards(cardsEl);
   }
-  saveLayout(regionId, layout, contentId);
+  const screen = cardsEl?.closest?.(".led-screen");
+  const w = Number.parseFloat(screen?.style?.getPropertyValue("--led-width")) || screen?.clientWidth || 0;
+  const h = Number.parseFloat(screen?.style?.getPropertyValue("--led-height")) || screen?.clientHeight || 0;
+  saveLayout(regionId, layout, contentId, w, h);
 }
 
 export function bindCardEditor(cardsEl, layout, regionId, contentId = "today_weather", onChange, screen) {
   const layer = cardsEl;
 
-  const persist = () => {
-    saveLayout(regionId, layout, contentId);
-    onChange?.(listCardPositions(layer), loadCardScale(contentId));
+  const screenSize = () => {
+    const w = Number.parseFloat(screen?.style?.getPropertyValue("--led-width")) || screen?.clientWidth || 0;
+    const h = Number.parseFloat(screen?.style?.getPropertyValue("--led-height")) || screen?.clientHeight || 0;
+    return { w, h };
   };
 
-  const currentScale = () => loadCardScale(contentId);
+  const persist = () => {
+    const { w, h } = screenSize();
+    saveLayout(regionId, layout, contentId, w, h);
+    onChange?.(listCardPositions(layer), loadCardScale(contentId, regionId, w, h));
+  };
+
+  const currentScale = () => {
+    const { w, h } = screenSize();
+    return loadCardScale(contentId, regionId, w, h);
+  };
 
   const applySharedScale = (scale) => {
     const next = clamp(scale, CARD_SCALE_MIN, CARD_SCALE_MAX);
-    saveCardScale(contentId, next);
+    const { w, h } = screenSize();
+    saveCardScale(contentId, next, regionId, w, h);
     applyCardScale(screen, next);
     centerCityCards(layer);
     onChange?.(listCardPositions(layer), next);
@@ -407,6 +754,68 @@ export function bindOkinawaEditor(dockEl, layout, onChange) {
     layout.okinawa.scale *= event.deltaY < 0 ? 1.08 : 0.93;
     apply();
   }, { passive: false });
+}
+
+/** 降水確玁E�E朝�E昼・夜�E例位置を適用 */
+export function applyPrecipLegend(screenOrHost, layout) {
+  if (!layout.precipLegend) layout.precipLegend = { ...emptyLayout().precipLegend };
+  const pos = layout.precipLegend;
+  pos.x = clamp(Number(pos.x) || 3, 0, 92);
+  pos.y = clamp(Number(pos.y) || 22, 0, 92);
+  const host = screenOrHost?.querySelector?.(".led-body") || screenOrHost;
+  const el = host?.querySelector?.(".precip-tod-legend") || document.querySelector(".precip-tod-legend");
+  if (!el) return;
+  el.style.left = `${pos.x}%`;
+  el.style.top = `${pos.y}%`;
+}
+
+/** 朝�E昼・夜�E例をドラチE��で移動（編雁E��ード！E*/
+export function bindPrecipLegendEditor(layout, regionId, contentId, onChange) {
+  const el = document.querySelector(".precip-tod-legend");
+  const host = el?.closest(".led-body");
+  if (!el || !host) return;
+  if (!layout.precipLegend) layout.precipLegend = { ...emptyLayout().precipLegend };
+  applyPrecipLegend(host, layout);
+  el.classList.add("is-editable");
+
+  const persist = () => {
+    const screen = el.closest(".led-screen");
+    const w = Number.parseFloat(screen?.style?.getPropertyValue("--led-width")) || screen?.clientWidth || 0;
+    const h = Number.parseFloat(screen?.style?.getPropertyValue("--led-height")) || screen?.clientHeight || 0;
+    saveLayout(regionId, layout, contentId, w, h);
+    onChange?.(layout.precipLegend);
+  };
+
+  el.addEventListener("pointerdown", (event) => {
+    if (event.button !== 0) return;
+    event.preventDefault();
+    event.stopPropagation();
+    const box = host.getBoundingClientRect();
+    const start = {
+      x: layout.precipLegend.x,
+      y: layout.precipLegend.y,
+      px: event.clientX,
+      py: event.clientY
+    };
+    el.classList.add("is-dragging");
+    el.setPointerCapture(event.pointerId);
+
+    const onMove = (moveEvent) => {
+      const dx = ((moveEvent.clientX - start.px) / box.width) * 100;
+      const dy = ((moveEvent.clientY - start.py) / box.height) * 100;
+      layout.precipLegend.x = clamp(start.x + dx, 0, 92);
+      layout.precipLegend.y = clamp(start.y + dy, 0, 92);
+      applyPrecipLegend(host, layout);
+    };
+    const onUp = () => {
+      el.classList.remove("is-dragging");
+      el.removeEventListener("pointermove", onMove);
+      el.removeEventListener("pointerup", onUp);
+      persist();
+    };
+    el.addEventListener("pointermove", onMove);
+    el.addEventListener("pointerup", onUp);
+  });
 }
 
 function clamp(value, min, max) {

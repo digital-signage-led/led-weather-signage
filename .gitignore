@@ -3,3 +3,9 @@ tmp-*.png
 node_modules/
 src/maps/source/
 *.zip
+
+tests/current/
+tmp-head-*
+tmp-*.js
+tmp-*.html
+

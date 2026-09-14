@@ -3,8 +3,8 @@
  * HTML は JMA API を呼ばない。雪など季節外れのコードを循環させない。
  */
 
-import { canonicalContent, getContent as contentFromCatalog } from "./catalog.js?v=pref174";
-import { isWetWeather, jmaLabel, jmaTone, resolveWeatherCode } from "./jma-icons.js?v=pref214";
+import { canonicalContent, getContent as contentFromCatalog } from "./catalog.js?v=pref320";
+import { isWetWeather, jmaLabel, jmaTone, resolveWeatherCode } from "./jma-icons.js?v=pref320";
 
 const WEEKDAYS = ["日", "月", "火", "水", "木", "金", "土"];
 
@@ -29,11 +29,28 @@ export function expandForecast(point, updatedAt) {
     noon: clampPop(point.pop),
     night: clampPop(point.pop + (isWetWeather(todayWx) ? 15 : 5))
   };
+  const tomorrowPeriods = {
+    morning: clampPop(tomorrow.pop - 10),
+    noon: clampPop(tomorrow.pop),
+    night: clampPop(tomorrow.pop + (isWetWeather(tomorrowWx) ? 15 : 5))
+  };
   const weekly = [];
   for (let i = 0; i < 7; i += 1) {
     const date = new Date(start.getFullYear(), start.getMonth(), start.getDate() + i);
     const stored = point.weekly?.[i] || (i === 0 ? point : i === 1 ? tomorrow : point.weekly?.[point.weekly.length - 1]);
     const weather = resolveWeatherCode(stored?.weather || (i === 1 ? tomorrowWx : todayWx));
+    const dayPop = clampPop(
+      stored?.pop
+      ?? (i === 0 ? point.pop : i === 1 ? tomorrow.pop : point.pop)
+    );
+    const popAm = clampPop(
+      stored?.popAm
+      ?? (i === 0 ? periods.morning : i === 1 ? tomorrowPeriods.morning : dayPop)
+    );
+    const popPm = clampPop(
+      stored?.popPm
+      ?? (i === 0 ? periods.noon : i === 1 ? tomorrowPeriods.noon : dayPop)
+    );
     weekly.push({
       date: formatDate(date),
       weekday: WEEKDAYS[date.getDay()],
@@ -43,42 +60,61 @@ export function expandForecast(point, updatedAt) {
       weatherLabel: stored?.weatherLabel || jmaLabel(weather),
       tempMax: stored?.tempMax ?? point.tempMax,
       tempMin: stored?.tempMin ?? point.tempMin,
-      pop: clampPop(
-        stored?.pop
-        ?? (i === 0 ? point.pop : i === 1 ? tomorrow.pop : point.pop)
-      )
+      pop: Math.max(popAm, popPm, dayPop),
+      popAm,
+      popPm
     });
   }
-  const tomorrowPeriods = {
-    morning: clampPop(tomorrow.pop - 10),
-    noon: clampPop(tomorrow.pop),
-    night: clampPop(tomorrow.pop + (isWetWeather(tomorrowWx) ? 15 : 5))
-  };
   return { tomorrow, periods, tomorrowPeriods, weekly };
 }
+
+const LOCAL_CONDITIONS = "現地の気象状況　🌡 28.4℃　💨 北西 6.2m/s　☔ 1時間雨量 0.4mm";
+
+/** ノート用。絵文字の風・傘アイコンを線画へ差し替える */
+export function formatNoteHtml(text) {
+  const raw = String(text || "");
+  const escaped = raw
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+  return escaped
+    .replace(/💨/g, WIND_ICON_HTML)
+    .replace(/☔/g, RAIN_ICON_HTML);
+}
+
+const WIND_ICON_HTML = `<span class="note-icon note-icon-wind" aria-label="風"><svg viewBox="0 0 32 24" width="1.15em" height="0.86em" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" d="M3 7.5h16.5c2.6 0 4.5-1.7 4.5-3.6S22.1.5 19.5.5"/><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" d="M3 12.5h21"/><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" d="M3 17.5h13.5c2.4 0 4 1.5 4 3.2S18.9 24 16.5 24"/></svg></span>`;
+
+const RAIN_ICON_HTML = `<span class="note-icon note-icon-rain" aria-label="雨"><svg viewBox="0 0 28 28" width="1.05em" height="1.05em" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" d="M9 3.5v3M14 2v3M19 3.5v3"/><path fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" d="M4.5 15c0-5.5 4.2-9.5 9.5-9.5S23.5 9.5 23.5 15H4.5z"/><path fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" d="M14 5.5V15"/><path fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" d="M14 15v8c0 1.8-1.3 3-2.8 3"/></svg></span>`;
 
 export function noteFor(contentId, regionId, weather, points) {
   const content = canonicalContent(contentId);
   const fromFile = weather.contentNotes?.[content]?.[regionId]
     || weather.contentNotes?.[content]?.national;
-  if (fromFile) return fromFile;
-  if (content === "today_weather") return weather.notes?.[regionId] || "";
-  if (content === "today_precip" || content === "tomorrow_precip") {
+  let base = "";
+  if (fromFile) base = fromFile;
+  else if (content === "today_weather") base = weather.notes?.[regionId] || "";
+  else if (content === "today_precip" || content === "tomorrow_precip") {
     const maxPop = Math.max(0, ...points.map((item) => Number(item.pop) || 0));
     const prefix = content === "tomorrow_precip" ? "明日は" : "";
-    return maxPop >= 50
+    base = maxPop >= 50
       ? `${prefix}降水の所が多くなります。傘をご用意ください。`
       : `${prefix}降水の可能性は低めです。`;
-  }
-  if (content === "tomorrow_weather") {
+  } else if (content === "tomorrow_weather") {
     const tone = strongestTone(points);
-    if (tone === "is-thunder") return "明日は雷を伴う所があります。";
-    if (tone === "is-snow") return "明日は雪の所があります。";
-    if (tone === "is-rain") return "明日は雨の所があります。傘をご用意ください。";
-    return "明日はおおむね穏やかです。";
-  }
-  if (content === "weekly_precip") return "向こう一週間の降水確率です。";
-  return "向こう一週間の天気です。";
+    if (tone === "is-thunder") base = "明日は雷を伴う所があります。";
+    else if (tone === "is-snow") base = "明日は雪の所があります。";
+    else if (tone === "is-rain") base = "明日は雨の所があります。傘をご用意ください。";
+    else base = "明日はおおむね穏やかです。";
+  } else if (content === "weekly_precip") base = "向こう一週間の降水確率です。";
+  else base = "向こう一週間の天気です。";
+  return appendLocalConditions(base);
+}
+
+function appendLocalConditions(text) {
+  const base = String(text || "").trim();
+  if (!base) return LOCAL_CONDITIONS;
+  if (base.includes("現地の気象状況")) return base;
+  return `${base}　　${LOCAL_CONDITIONS}`;
 }
 
 function strongestTone(points) {

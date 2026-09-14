@@ -13,7 +13,7 @@
     "lonMax": 128.5,
     "latMin": 24.0,
     "latMax": 27.2,
-    "box": { "x": -20.40, "y": 40.66, "w": 42.37, "h": 33.95 }
+    "box": { "x": 10.43, "y": 43.8, "w": 11.55, "h": 10.85 }
   },
   "regions": {
     "HOKKAIDO": { "lonMin": 138.9, "lonMax": 146.2, "latMin": 40.7, "latMax": 45.7, "pad": 4 },

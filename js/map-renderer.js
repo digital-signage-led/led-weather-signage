@@ -3,14 +3,18 @@
  * 緯度経度を同じ投影で地図上の位置へ変換する。
  */
 
-import { canonicalRegion, isNational, projectionKey } from "./catalog.js?v=pref194";
-import { cardSizePct } from "./viewport.js?v=pref192";
-import { MAP_VERSION } from "./version.js?v=pref181";
+import { canonicalRegion, isNational } from "./catalog.js?v=pref320";
+import { cardSizePct } from "./viewport.js?v=pref320";
+import { MAP_VERSION } from "./version.js?v=pref320";
 
-import { jmaIconFile } from "./jma-icons.js?v=pref214";
+import { jmaIconFile } from "./jma-icons.js?v=pref320";
 
 const iconCache = new Map();
 let iconSeq = 0;
+let mapSvgTextPromise = null;
+let mapSvgTemplate = null;
+const viewBoxByRegion = new Map();
+const borderHtmlByRegion = new Map();
 
 function inlineJmaSvg(svgText, prefix) {
   let svg = String(svgText).replace(/^\uFEFF/, "").replace(/<\?xml[^>]*>/, "").trim();
@@ -27,9 +31,34 @@ function inlineJmaSvg(svgText, prefix) {
 }
 
 export async function loadMapSvg(mapFile = "japan.svg") {
-  const response = await fetch(`maps/${mapFile}?v=${MAP_VERSION}`);
-  if (!response.ok) throw new Error(`${mapFile} を読み込めません`);
-  return response.text();
+  // 全国・地方とも共通の japan.svg。1回だけ取得し以降はメモリ再利用。
+  if (!mapSvgTextPromise) {
+    const file = "japan.svg";
+    mapSvgTextPromise = fetch(`maps/${file}?v=${MAP_VERSION}`)
+      .then((response) => {
+        if (!response.ok) throw new Error(`${file} を読み込めません`);
+        return response.text();
+      })
+      .catch((err) => {
+        mapSvgTextPromise = null;
+        throw err;
+      });
+  }
+  return mapSvgTextPromise;
+}
+
+function cloneMapSvg(svgText) {
+  if (!mapSvgTemplate) {
+    const fitted = svgText.replace("<svg ", '<svg preserveAspectRatio="xMidYMid meet" ');
+    const parsed = new DOMParser().parseFromString(fitted, "image/svg+xml");
+    const node = parsed.documentElement;
+    if (node.querySelector("parsererror")) {
+      mapSvgTemplate = null;
+      return null;
+    }
+    mapSvgTemplate = node;
+  }
+  return mapSvgTemplate.cloneNode(true);
 }
 
 export async function loadIcon(weather, night = false) {
@@ -48,7 +77,6 @@ export const MAP_CORE = { left: 0, top: 0, right: 100, bottom: 100 };
 
 export function mountMap(stage, svgText, regionId = "national") {
   regionId = canonicalRegion(regionId);
-  const fitted = svgText.replace("<svg ", '<svg preserveAspectRatio="xMidYMid meet" ');
   stage.innerHTML = `
     <div class="map-fit">
       <div class="map-geo">
@@ -65,18 +93,22 @@ export function mountMap(stage, svgText, regionId = "national") {
     </div>
   `;
   const host = stage.querySelector(".map-svg");
-  const parsed = new DOMParser().parseFromString(fitted, "image/svg+xml");
-  const svgNode = parsed.documentElement;
-  if (svgNode.querySelector("parsererror")) host.innerHTML = fitted;
-  else host.appendChild(document.importNode(svgNode, true));
+  const cloned = cloneMapSvg(svgText);
+  if (cloned) host.appendChild(document.importNode(cloned, true));
+  else {
+    const fitted = svgText.replace("<svg ", '<svg preserveAspectRatio="xMidYMid meet" ');
+    host.innerHTML = fitted;
+  }
   const mapSvg = host.querySelector("svg");
   applyScreenFocus(mapSvg, regionId);
+  prepareCommonMapLayers(mapSvg, regionId);
   dropOutOfFrameTris(mapSvg, regionId);
-  paintNeighborLand(mapSvg);
-  prepareMapStrokes(mapSvg);
+  paintNeighborLand(mapSvg, regionId);
+  prepareMapStrokes(mapSvg, regionId);
   fitRegionalView(mapSvg, stage.querySelector(".map-pins"), regionId);
   const fit = stage.querySelector(".map-fit");
-  const okinawa = detachOkinawaInset(fit, mapSvg);
+  // 沖縄枠の切り離しは全国画面のみ（地方の沖縄は inset を拡大表示）。
+  const okinawa = isNational(regionId) ? detachOkinawaInset(fit, mapSvg) : null;
   return {
     pins: stage.querySelector(".map-pins"),
     leaders: stage.querySelector(".map-leaders"),
@@ -84,7 +116,8 @@ export function mountMap(stage, svgText, regionId = "national") {
     geo: stage.querySelector(".map-geo"),
     fit,
     okinawaDock: okinawa?.dock || null,
-    okinawaPins: okinawa?.pins || null
+    okinawaPins: okinawa?.pins || null,
+    regionId
   };
 }
 
@@ -111,9 +144,30 @@ function detachOkinawaInset(fitEl, mapSvg) {
   return { dock, pins };
 }
 
+/** 地方画面の強調県（JIS 都道府県コード）。共通 japan.svg 上で緑にする。 */
 const SCREEN_FOCUS_PREFS = {
+  hokkaido: ["01"],
+  tohoku: ["02", "03", "04", "05", "06", "07"],
   kanto: ["08", "09", "10", "11", "12", "13", "14", "19", "20"],
-  kinki: ["24", "25", "26", "27", "28", "29", "30"]
+  chubu: ["15", "16", "17", "18", "19", "20", "21", "22", "23", "24"],
+  kinki: ["24", "25", "26", "27", "28", "29", "30"],
+  chugoku: ["31", "32", "33", "34", "35"],
+  shikoku: ["36", "37", "38", "39"],
+  kyushu: ["40", "41", "42", "43", "44", "45", "46"],
+  okinawa: ["47"]
+};
+
+/** 表示枠に含める隣接地方（グレーの周辺陸地）。 */
+const REGION_FRAME_NEIGHBORS = {
+  hokkaido: ["tohoku"],
+  tohoku: ["hokkaido", "kanto"],
+  kanto: ["tohoku", "chubu"],
+  chubu: ["tohoku", "kanto", "kinki"],
+  kinki: ["chubu", "chugoku", "shikoku"],
+  chugoku: ["kinki", "shikoku", "kyushu"],
+  shikoku: ["kinki", "chugoku"],
+  kyushu: ["chugoku", "shikoku"],
+  okinawa: []
 };
 
 const PRESET_CARD_SCREENS = new Set([
@@ -121,37 +175,193 @@ const PRESET_CARD_SCREENS = new Set([
   "kinki", "chugoku", "shikoku", "kyushu", "okinawa"
 ]);
 
-/** 枠外に描いてある周囲県も見えるよう、土地の範囲へ viewBox を広げる。 */
-function fitRegionalView(svg, pinsSvg, regionId) {
+function focusPrefsFor(regionId) {
+  return SCREEN_FOCUS_PREFS[canonicalRegion(regionId)] || [];
+}
+
+/** フォーカス県＋隣接県の pref 群（viewBox 用）。 */
+function framePrefsFor(regionId) {
+  regionId = canonicalRegion(regionId);
+  const prefs = new Set(focusPrefsFor(regionId));
+  for (const neighbor of REGION_FRAME_NEIGHBORS[regionId] || []) {
+    for (const pref of focusPrefsFor(neighbor)) prefs.add(pref);
+  }
+  return prefs;
+}
+
+/** 共通地図を地方表示向けに整える（沖縄枠の扱い・遠方県の抑制）。 */
+function prepareCommonMapLayers(svg, regionId) {
   if (!svg || isNational(regionId)) return;
+  regionId = canonicalRegion(regionId);
+  if (regionId === "okinawa") {
+    svg.querySelectorAll(":scope > .map-fills, :scope > .map-borders, :scope > .map-fills-cover, :scope > .map-lakes")
+      .forEach((el) => el.setAttribute("display", "none"));
+    // 地方沖縄は全国図用の白いインセット枠は不要
+    svg.querySelectorAll(".map-okinawa-inset > rect").forEach((el) => el.setAttribute("display", "none"));
+    return;
+  }
+  const inset = svg.querySelector(".map-okinawa-inset");
+  if (inset) inset.setAttribute("display", "none");
+  const keep = framePrefsFor(regionId);
+  svg.querySelectorAll("[data-pref]").forEach((el) => {
+    const id = el.getAttribute("data-pref");
+    if (id && !keep.has(id)) el.setAttribute("display", "none");
+  });
+}
+
+/**
+ * getBBox() は要素自身の transform を含めない。
+ * 沖縄inset は全国図コーナーへ移動する transform 付きなので、
+ * 頂点を行列で写してルート座標の枠を取る。
+ */
+function transformBoxCorners(box, matrix) {
+  if (!box || !Number.isFinite(box.x) || (box.width <= 0 && box.height <= 0)) return null;
+  const corners = [
+    [box.x, box.y],
+    [box.x + box.width, box.y],
+    [box.x + box.width, box.y + box.height],
+    [box.x, box.y + box.height]
+  ];
   let minX = Infinity;
   let minY = Infinity;
   let maxX = -Infinity;
   let maxY = -Infinity;
-  for (const path of svg.querySelectorAll(".map-fills path[data-pref]")) {
-    if (path.closest(".map-fills-cover")) continue;
-    let box;
-    try {
-      box = path.getBBox();
-    } catch {
-      continue;
-    }
-    if (!Number.isFinite(box.x) || (box.width <= 0 && box.height <= 0)) continue;
-    minX = Math.min(minX, box.x);
-    minY = Math.min(minY, box.y);
-    maxX = Math.max(maxX, box.x + box.width);
-    maxY = Math.max(maxY, box.y + box.height);
+  for (const [x0, y0] of corners) {
+    const x = matrix ? matrix.a * x0 + matrix.c * y0 + matrix.e : x0;
+    const y = matrix ? matrix.b * x0 + matrix.d * y0 + matrix.f : y0;
+    minX = Math.min(minX, x);
+    minY = Math.min(minY, y);
+    maxX = Math.max(maxX, x);
+    maxY = Math.max(maxY, y);
   }
-  if (!Number.isFinite(minX) || maxX - minX < 8 || maxY - minY < 8) return;
-  const pad = 3.2;
+  return { minX, minY, maxX, maxY };
+}
+
+function elementBoxInSvg(el) {
+  if (!el || el.getAttribute("display") === "none") return null;
+  let box;
+  try {
+    box = el.getBBox();
+  } catch {
+    return null;
+  }
+  let matrix = null;
+  try {
+    matrix = el.transform?.baseVal?.consolidate()?.matrix || null;
+  } catch {
+    matrix = null;
+  }
+  return transformBoxCorners(box, matrix);
+}
+
+/** path など子要素の bbox に、親（沖縄inset）の transform を掛ける。 */
+function elementBoxWithParentTransform(el, parent) {
+  if (!el || el.getAttribute("display") === "none") return null;
+  let box;
+  try {
+    box = el.getBBox();
+  } catch {
+    return null;
+  }
+  let matrix = null;
+  try {
+    matrix = parent?.transform?.baseVal?.consolidate()?.matrix || null;
+  } catch {
+    matrix = null;
+  }
+  return transformBoxCorners(box, matrix);
+}
+
+/** 離島まで枠に入れると本島が小さくなる地方。path 中心付近の島だけ枠に使う。 */
+const REGION_FIT_CORE = {
+  // 対馬・種子島以南を外し、九州本島と近傍を大きく見せる
+  kyushu: { minX: 7.2, maxX: 23.2, minY: 73.8, maxY: 93.3 }
+};
+
+function pathInFitCore(regionId, bounds) {
+  const core = REGION_FIT_CORE[regionId];
+  if (!core || !bounds) return true;
+  const cx = (bounds.minX + bounds.maxX) / 2;
+  const cy = (bounds.minY + bounds.maxY) / 2;
+  return cx >= core.minX && cx <= core.maxX && cy >= core.minY && cy <= core.maxY;
+}
+
+/** 枠内の県だけが見えるよう、土地の範囲へ viewBox を合わせる。 */
+function fitRegionalView(svg, pinsSvg, regionId) {
+  if (!svg) return;
+  regionId = canonicalRegion(regionId);
+  const cached = viewBoxByRegion.get(regionId);
+  if (cached) {
+    svg.setAttribute("viewBox", cached);
+    if (pinsSvg) pinsSvg.setAttribute("viewBox", cached);
+    return;
+  }
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+
+  const addBox = (el) => {
+    const bounds = elementBoxInSvg(el);
+    if (!bounds) return;
+    if (!pathInFitCore(regionId, bounds)) return;
+    minX = Math.min(minX, bounds.minX);
+    minY = Math.min(minY, bounds.minY);
+    maxX = Math.max(maxX, bounds.maxX);
+    maxY = Math.max(maxY, bounds.maxY);
+  };
+
+  if (isNational(regionId)) {
+    svg.querySelectorAll(".map-fills path[data-pref], .map-okinawa-inset path").forEach(addBox);
+  } else if (regionId === "okinawa") {
+    // 島の path だけを、inset の transform 後座標で枠に入れる�E�枠 rect は含めなぁE��E
+    const inset = svg.querySelector(".map-okinawa-inset");
+    const paths = inset?.querySelectorAll("path") || [];
+    if (inset && paths.length) {
+      paths.forEach((path) => {
+        const bounds = elementBoxWithParentTransform(path, inset);
+        if (!bounds) return;
+        minX = Math.min(minX, bounds.minX);
+        minY = Math.min(minY, bounds.minY);
+        maxX = Math.max(maxX, bounds.maxX);
+        maxY = Math.max(maxY, bounds.maxY);
+      });
+    } else if (inset) {
+      addBox(inset);
+    }
+  } else {
+    // 対象地方だけを枠に入れ、地図を大きく見せる（隣接県は余白に少し見える）。
+    const keep = new Set(focusPrefsFor(regionId));
+    svg.querySelectorAll(".map-fills path[data-pref]").forEach((path) => {
+      if (path.closest(".map-fills-cover")) return;
+      const pref = path.getAttribute("data-pref");
+      if (!pref || !keep.has(pref)) return;
+      addBox(path);
+    });
+  }
+
+  if (!Number.isFinite(minX) || maxX - minX < 4 || maxY - minY < 4) {
+    // 沖縄inset の transform 後おおよその枠（全国ドックと同系統）。
+    const fallback = isNational(regionId)
+      ? "-2 -1.5 104.5 103"
+      : regionId === "okinawa"
+        ? OKINAWA_DOCK_VIEWBOX
+        : "0 0 100 100";
+    svg.setAttribute("viewBox", fallback);
+    if (pinsSvg) pinsSvg.setAttribute("viewBox", fallback);
+    viewBoxByRegion.set(regionId, fallback);
+    return;
+  }
+  const pad = isNational(regionId) ? 1.8 : regionId === "okinawa" ? 1.2 : regionId === "kyushu" ? 1.1 : 1.5;
   const view = `${minX - pad} ${minY - pad} ${maxX - minX + pad * 2} ${maxY - minY + pad * 2}`;
   svg.setAttribute("viewBox", view);
   if (pinsSvg) pinsSvg.setAttribute("viewBox", view);
+  viewBoxByRegion.set(regionId, view);
 }
 
 function applyScreenFocus(svg, regionId) {
-  const prefs = SCREEN_FOCUS_PREFS[canonicalRegion(regionId)];
-  if (!svg || !prefs) return;
+  const prefs = focusPrefsFor(regionId);
+  if (!svg || !prefs.length) return;
   const focusSet = new Set(prefs);
   svg.querySelectorAll("[data-pref]").forEach((el) => {
     const id = el.getAttribute("data-pref");
@@ -168,48 +378,74 @@ const OUT_OF_FRAME_PREFS = {
 };
 
 /** ピックアップ以外の周辺県は色を付けず、白のまま残す。 */
-function paintNeighborLand(svg) {
+function paintNeighborLand(svg, regionId = "") {
   if (!svg) return;
+  regionId = canonicalRegion(regionId);
+  const national = isNational(regionId);
+  const focusPrefs = new Set(focusPrefsFor(regionId));
+  const focusStroke = national
+    ? `stroke: none !important;`
+    : `stroke: #ffffff !important;
+      stroke-width: 0.07 !important;
+      stroke-linejoin: round !important;
+      stroke-linecap: round !important;
+      paint-order: fill stroke;
+      vector-effect: none;`;
   const style = document.createElementNS("http://www.w3.org/2000/svg", "style");
   style.textContent = `
-    .map-land-tris {
-      display: none;
-    }
     .map-fills.map-focus > path:not(.map-as-dim),
-    .map-fills.map-focus.map-fills-cover:not(.map-dim) path {
+    .map-fills .map-as-focus {
       fill: #76c85a !important;
       fill-rule: nonzero !important;
+      ${focusStroke}
     }
     .map-fills.map-dim > path,
-    .map-fills.map-dim.map-fills-cover path,
     .map-fills .map-as-dim {
       fill: #d0d5db !important;
       fill-rule: nonzero !important;
       stroke: none !important;
     }
-    .map-borders path,
-    .map-borders-inner path,
-    .map-borders-coast path {
-      fill: none !important;
-    }
   `;
   svg.insertBefore(style, svg.firstChild);
-  const nodes = svg.querySelectorAll(".map-fills.map-dim path, .map-fills .map-as-dim");
-  for (const el of nodes) {
-    if (el.closest(".map-borders, .map-borders-inner, .map-borders-coast")) continue;
-    el.setAttribute("fill", "#d0d5db");
-    el.setAttribute("fill-rule", "nonzero");
-    el.style.setProperty("fill", "#d0d5db", "important");
-    el.style.setProperty("fill-rule", "nonzero", "important");
-  }
-  const focus = svg.querySelectorAll(".map-fills.map-focus path, .map-fills-cover.map-focus:not(.map-dim) path");
-  for (const el of focus) {
-    if (el.classList.contains("map-as-dim") || el.closest(".map-dim")) continue;
-    if (el.closest(".map-borders, .map-borders-inner, .map-borders-coast")) continue;
+  const applyFocusPaint = (el) => {
     el.setAttribute("fill", "#76c85a");
     el.setAttribute("fill-rule", "nonzero");
     el.style.setProperty("fill", "#76c85a", "important");
     el.style.setProperty("fill-rule", "nonzero", "important");
+    if (national) {
+      el.style.setProperty("stroke", "none", "important");
+    } else {
+      el.style.setProperty("stroke", "#ffffff", "important");
+      el.style.setProperty("stroke-width", "0.07", "important");
+      el.style.setProperty("stroke-linejoin", "round", "important");
+      el.style.setProperty("stroke-linecap", "round", "important");
+      el.style.removeProperty("vector-effect");
+    }
+  };
+  const nodes = svg.querySelectorAll(".map-fills.map-dim path, .map-fills .map-as-dim");
+  for (const el of nodes) {
+    if (el.closest(".map-borders, .map-borders-inner, .map-borders-coast, .map-fills-cover")) continue;
+    const pref = el.getAttribute("data-pref");
+    if (pref && focusPrefs.has(pref)) continue;
+    el.setAttribute("fill", "#d0d5db");
+    el.setAttribute("fill-rule", "nonzero");
+    el.style.setProperty("fill", "#d0d5db", "important");
+    el.style.setProperty("fill-rule", "nonzero", "important");
+    el.style.setProperty("stroke", "none", "important");
+  }
+  const focus = svg.querySelectorAll(".map-fills.map-focus path, .map-fills .map-as-focus");
+  for (const el of focus) {
+    if (el.classList.contains("map-as-dim") || el.closest(".map-dim")) continue;
+    if (el.closest(".map-borders, .map-borders-inner, .map-borders-coast, .map-fills-cover")) continue;
+    applyFocusPaint(el);
+  }
+  for (const pref of focusPrefs) {
+    svg.querySelectorAll(`.map-fills [data-pref="${pref}"]`).forEach((el) => {
+      if (el.closest(".map-borders, .map-borders-inner, .map-borders-coast, .map-fills-cover")) return;
+      el.classList.add("map-as-focus");
+      el.classList.remove("map-as-dim");
+      applyFocusPaint(el);
+    });
   }
 }
 
@@ -229,56 +465,72 @@ function dropOutOfFrameTris(svg, regionId) {
   }
 }
 
-/** 県境だけを1本描く。海岸線は描かない。 */
-function prepareMapStrokes(svg) {
+/** 県境だけを細い線で1本描く。古い二重線レイヤは削除する。 */
+function prepareMapStrokes(svg, regionId = "national") {
   if (!svg) return;
-  if (svg.querySelector(".map-borders-inner")) return;
-  addPrefectureBoundaries(svg);
+  regionId = canonicalRegion(regionId);
+  svg.querySelectorAll(":scope > .map-borders, :scope > .map-borders-coast, :scope > .map-fills-cover, :scope > .map-borders-inner, .map-land-tris")
+    .forEach((el) => el.remove());
+  const cached = borderHtmlByRegion.get(regionId);
+  if (cached) {
+    const wrap = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    wrap.innerHTML = cached;
+    while (wrap.firstChild) svg.appendChild(wrap.firstChild);
+    return;
+  }
+  addPrefectureBoundaries(svg, regionId);
+  const inner = svg.querySelector(":scope > .map-borders-inner");
+  if (inner) borderHtmlByRegion.set(regionId, inner.outerHTML);
 }
 
-function addPrefectureBoundaries(svg) {
+function addPrefectureBoundaries(svg, screenRegion = "national") {
+  screenRegion = canonicalRegion(screenRegion);
+  const national = isNational(screenRegion);
   const items = [];
   for (const path of svg.querySelectorAll(".map-fills [data-pref]")) {
-    if (path.closest(".map-fills-cover")) continue;
+    if (path.getAttribute("display") === "none") continue;
+    if (path.closest("[display='none']")) continue;
     const rings = pathRings(path.getAttribute("d") || "");
     if (!rings.length) continue;
     const dim = path.classList.contains("map-as-dim")
       || (!path.classList.contains("map-as-focus") && Boolean(path.closest(".map-dim")));
-    const region = path.closest("[data-region]")?.getAttribute("data-region") || "";
-    items.push({ kind: dim ? "dim" : "focus", rings, region, pref: path.getAttribute("data-pref") });
+    items.push({
+      kind: dim ? "dim" : "focus",
+      rings,
+      pref: path.getAttribute("data-pref"),
+      region: path.closest("[data-region]")?.getAttribute("data-region") || ""
+    });
   }
   if (!items.length) return;
 
   const innerFocus = svgEl("g", "map-borders-inner map-focus");
-  const innerDim = svgEl("g", "map-borders-inner map-dim");
-  const regional = Boolean(svg.querySelector(".map-focus, .map-dim"));
-  const maxDist = regional ? 1.15 : 0.7;
+  // 隣県の頂点ずれに対する許容（高精度パス向け）。
+  const maxDist = national ? 0.28 : 0.18;
 
   for (let i = 0; i < items.length; i += 1) {
     for (let j = i + 1; j < items.length; j += 1) {
-      if (!regional && items[i].region && items[i].region === items[j].region) continue;
+      if (items[i].kind !== "focus" || items[j].kind !== "focus") continue;
+      // 全国は地方墁E��け。地方画面は対象県同士の県墁E��E
+      if (national) {
+        if (!items[i].region || items[i].region === items[j].region) continue;
+      }
       const lines = sharedPolylines(items[i].rings, items[j].rings, maxDist);
-      const parent = items[i].kind === "dim" && items[j].kind === "dim" ? innerDim : innerFocus;
-      for (const line of lines) appendLine(parent, line, regional);
+      for (const line of lines) appendLine(innerFocus, line, national);
     }
   }
 
-  const after = [...svg.querySelectorAll(".map-fills, .map-borders")].pop();
-  if (!after) return;
-  after.after(innerFocus);
-  if (innerDim.childElementCount) innerFocus.after(innerDim);
+  if (!innerFocus.childElementCount) return;
   svg.appendChild(innerFocus);
-  if (innerDim.childElementCount) svg.appendChild(innerDim);
 }
 
-function appendLine(parent, line, regional = false) {
+function appendLine(parent, line, national = false) {
   if (line.length < 3) return;
   const first = line[0];
   const last = line[line.length - 1];
   const span = Math.hypot(last[0] - first[0], last[1] - first[1]);
-  const minSpan = regional ? 1.6 : 2.2;
+  const minSpan = national ? 1.0 : 1.2;
   if (span < minSpan) return;
-  if (line.length < 5 && span < (regional ? 2.4 : 3.2)) return;
+  if (line.length < 5 && span < (national ? 1.6 : 2.0)) return;
   const path = svgEl("path");
   path.setAttribute("d", `M${line.map((pt) => `${pt[0].toFixed(2)} ${pt[1].toFixed(2)}`).join("L")}`);
   parent.appendChild(path);
@@ -352,43 +604,9 @@ function closestOnSeg(px, py, ax, ay, bx, by) {
   return [ax + t * dx, ay + t * dy];
 }
 
-function containBox(extent, vbW, vbH, cosLatDeg) {
-  const pad = Number(extent.pad) || 0;
-  const cos = Math.cos((cosLatDeg * Math.PI) / 180);
-  const geoW = (extent.lonMax - extent.lonMin) * cos;
-  const geoH = extent.latMax - extent.latMin;
-  const innerW = vbW - pad * 2;
-  const innerH = vbH - pad * 2;
-  const scale = Math.min(innerW / geoW, innerH / geoH);
-  const w = geoW * scale;
-  const h = geoH * scale;
-  return {
-    x: pad + (innerW - w) / 2,
-    y: pad + (innerH - h) / 2,
-    w,
-    h
-  };
-}
 
 export function projectCity(city, projection, regionId = "national") {
-  regionId = canonicalRegion(regionId);
-  if (!isNational(regionId)) {
-    const extent = projection.regions[projectionKey(regionId)];
-    const box = extent.fit === "contain"
-      ? containBox(extent, projection.viewBox.width, projection.viewBox.height, projection.cosLat)
-      : {
-          x: extent.pad,
-          y: extent.pad,
-          w: projection.viewBox.width - extent.pad * 2,
-          h: projection.viewBox.height - extent.pad * 2
-        };
-    const [x, y] = projectPoint(city.longitude, city.latitude, extent, box, projection.cosLat);
-    return {
-      pinX: (x / projection.viewBox.width) * 100,
-      pinY: (y / projection.viewBox.height) * 100
-    };
-  }
-
+  // 共通 japan.svg 座標系（全国 mainland / 沖縄inset）でピンを置く
   const extent = city.useOkinawaInset ? projection.okinawaInset : projection.mainland;
   const box = city.useOkinawaInset
     ? projection.okinawaInset.box
@@ -457,7 +675,7 @@ const CARD_SLOTS = {
     gifu: { x: 16, y: 66 },
     nagoya: { x: 84, y: 66 },
     shizuoka: { x: 84, y: 82 },
-    tsu: { x: 16, y: 84 }
+    tsu: { x: 48, y: 88 }
   },
   kyushu: {
     fukuoka: { x: 64, y: 16 },
@@ -577,12 +795,12 @@ const CARD_SLOTS_POP = {
     gifu: { x: 16, y: 66 },
     nagoya: { x: 84, y: 66 },
     shizuoka: { x: 84, y: 82 },
-    tsu: { x: 16, y: 84 }
+    tsu: { x: 48, y: 88 }
   }
 };
 
 /**
- * 箱は観測地点（緯度経度のピン）の上へ置く。重なるときだけ少しずらす。
+ * 箱は観測地点�E�緯度経度のピン�E��E上へ置く。重なるときだけ少しずらす、E
  */
 export function placeCardsAroundMap(items, cardSize, regionId = "national", variant = "weather") {
   regionId = canonicalRegion(regionId);
@@ -639,7 +857,8 @@ export function placeCardsAroundMap(items, cardSize, regionId = "national", vari
     item.x2 = item.x;
     item.y2 = item.y;
   }
-  collapseClosePins(placed);
+  // 全国のみ近接ピンを間引く。地方は地名カード上の赤い点をすべて出す
+  if (isNational(regionId)) collapseClosePins(placed);
   return placed;
 }
 

@@ -208,12 +208,8 @@ export { bakeSvg };
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const requested = process.argv.slice(2);
-  const files = (requested.length ? requested : readdirSync(mapsDir).filter((name) => name.endsWith(".svg")));
+  const files = requested.length ? requested : ["japan.svg"];
   for (const file of files) {
-    if (file === "japan.svg") {
-      console.log("skip", file);
-      continue;
-    }
     const full = path.join(mapsDir, file);
     const next = bakeSvg(readFileSync(full, "utf8"));
     writeFileSync(full, next);
