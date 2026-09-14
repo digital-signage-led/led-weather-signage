@@ -331,6 +331,19 @@ html.is-edit .map-cards {
   z-index: 5;
 }
 
+html.is-edit .map-cards {
+  z-index: 10;
+}
+
+html.is-edit .city-card {
+  cursor: grab;
+}
+
+html.is-edit .city-card.is-dragging {
+  cursor: grabbing;
+  z-index: 20;
+}
+
 .map-pins {
   z-index: 4;
   width: 100%;
@@ -650,7 +663,7 @@ html.is-edit .city-card.is-dragging {
   z-index: 6;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
   gap: var(--precip-legend-gap, 6px);
   pointer-events: none;
   line-height: 1;
@@ -674,6 +687,7 @@ html.is-edit .precip-tod-legend.is-dragging {
   font-size: var(--precip-legend-title, 12px);
   font-weight: 800;
   color: #1a3350;
+  text-align: center;
 }
 
 .precip-tod-legend-row {
@@ -727,15 +741,19 @@ html.is-edit .precip-tod-legend.is-dragging {
   color: #ffffff;
 }
 
-.led-screen[data-content="weekly_weather"] {
-  background: var(--bg-sea) url("../img/weekly-frame.svg?v=pref320") no-repeat center / 100% 100%;
+.led-screen[data-content="weekly_weather"],
+.led-screen[data-content="weekly_precip"] {
+  background: var(--bg-sea) url("../img/weekly-frame.svg?v=pref344") no-repeat center / 100% 100%;
 }
 
-.led-screen[data-content="weekly_weather"] .map-stage {
+.led-screen[data-content="weekly_weather"] .map-stage,
+.led-screen[data-content="weekly_precip"] .map-stage {
   background: transparent;
 }
 
 .forecast-table {
+  --forecast-line: #7eb8d8;
+  --forecast-gap: 3px;
   position: absolute;
   left: var(--footer-gap);
   right: var(--footer-gap);
@@ -747,47 +765,39 @@ html.is-edit .precip-tod-legend.is-dragging {
   min-height: 0;
   overflow: hidden;
   z-index: 3;
+  padding: 6px;
+  border-radius: 14px;
+  background: rgba(210, 230, 245, 0.42);
+  box-sizing: border-box;
 }
 
-.forecast-head,
-.forecast-row {
+/* 罫線は border ではなく gap＋背景色で描く（サイネージの scale / 古いブラウザでも消えない） */
+.forecast-grid {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
   display: grid;
   grid-template-columns: minmax(3.6em, 16%) repeat(7, minmax(0, 1fr));
-  align-items: stretch;
-  column-gap: 0;
-  min-width: 0;
-}
-
-.forecast-head {
-  flex: 0 0 auto;
-  margin-bottom: 0.12em;
-}
-
-.forecast-body {
-  flex: 1 1 auto;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  gap: 0.12em;
-}
-
-.forecast-row {
-  flex: 1 1 0;
-  min-height: 0;
-  background: none;
-  border: none;
-  overflow: visible;
+  grid-template-rows: auto repeat(var(--forecast-rows, 5), minmax(0, 1fr));
+  gap: var(--forecast-gap);
+  padding: var(--forecast-gap);
+  background: var(--forecast-line);
+  border-radius: 10px;
+  box-sizing: border-box;
 }
 
 .forecast-day-h,
 .forecast-city,
-.forecast-city-h {
+.forecast-city-h,
+.forecast-cell {
   display: flex;
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
   min-width: 0;
   min-height: 0;
+  border: 0;
+  border-radius: 0;
   font-size: var(--font-week);
   font-weight: 900;
   color: var(--text-primary);
@@ -795,11 +805,11 @@ html.is-edit .precip-tod-legend.is-dragging {
   white-space: nowrap;
 }
 
-.forecast-day-h,
-.forecast-city {
-  padding: 0.12em 0.2em;
-  border-radius: 0;
-  border: 1px solid color-mix(in srgb, var(--text-primary) 40%, var(--line));
+.forecast-city-h {
+  padding: 0;
+  background: rgba(210, 230, 245, 0.96);
+  overflow: visible;
+  white-space: normal;
 }
 
 .forecast-day-h {
@@ -807,7 +817,8 @@ html.is-edit .precip-tod-legend.is-dragging {
   align-items: baseline;
   justify-content: center;
   gap: 0.08em;
-  background: color-mix(in srgb, var(--bg-header) 92%, #ffffff);
+  padding: 0.12em 0.2em;
+  background: #f2e08a;
   line-height: 1;
 }
 
@@ -825,27 +836,9 @@ html.is-edit .precip-tod-legend.is-dragging {
 
 .forecast-city {
   font-size: var(--font-city);
-  background: color-mix(in srgb, #7eb8d8 34%, #ffffff);
-  border-radius: calc(var(--box-radius) * 0.7) 0 0 calc(var(--box-radius) * 0.7);
-}
-
-.forecast-head .forecast-day-h:nth-child(2) {
-  border-radius: calc(var(--box-radius) * 0.7) 0 0 calc(var(--box-radius) * 0.7);
-}
-
-.forecast-head .forecast-day-h:last-child {
-  border-radius: 0 calc(var(--box-radius) * 0.7) calc(var(--box-radius) * 0.7) 0;
-}
-
-.forecast-day-h + .forecast-day-h {
-  border-left: none;
-}
-
-.forecast-city-h {
-  padding: 0;
-  background: none;
-  overflow: visible;
-  white-space: normal;
+  padding: 0.12em 0.2em;
+  background: #d7e8f4;
+  color: var(--text-primary);
 }
 
 .forecast-day-h.is-sunday {
@@ -861,26 +854,23 @@ html.is-edit .precip-tod-legend.is-dragging {
 }
 
 .forecast-cell.is-today {
-  background: color-mix(in srgb, #ffffff 88%, var(--bg-header));
+  background: #eef6ff;
 }
 
 .forecast-cell {
-  display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  box-sizing: border-box;
-  min-width: 0;
-  min-height: 0;
   padding: 0.06em 0.04em 0.1em;
-  border: 1px solid color-mix(in srgb, var(--text-primary) 40%, var(--line));
-  border-left: none;
-  border-radius: 0;
-  background: color-mix(in srgb, #ffffff 92%, transparent);
+  background: #f7fbfe;
 }
 
-.forecast-cell:last-child {
-  border-radius: 0 calc(var(--box-radius) * 0.7) calc(var(--box-radius) * 0.7) 0;
+.forecast-grid > .forecast-day-h:nth-child(2),
+.forecast-grid > .forecast-city {
+  border-radius: 6px 0 0 6px;
+}
+
+.forecast-grid > .forecast-day-h:nth-child(8),
+.forecast-grid > .forecast-cell:nth-child(8n) {
+  border-radius: 0 6px 6px 0;
 }
 
 .forecast-cell.is-weather {

@@ -352,6 +352,13 @@ html:not(.is-edit) .map-resize {
   min-width: 0;
 }
 
+/* 編集時: タイトル/フッターが上のカード操作を奪わない */
+html.is-edit .led-header,
+html.is-edit .led-footer {
+  pointer-events: none;
+  z-index: 3;
+}
+
 .led-header {
   top: var(--footer-gap);
   left: 0;

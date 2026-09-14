@@ -4,8 +4,8 @@
  */
 
 import { canonicalRegion, isNational } from "./catalog.js?v=pref320";
-import { cardSizePct } from "./viewport.js?v=pref340";
-import { MAP_VERSION } from "./version.js?v=pref340";
+import { cardSizePct } from "./viewport.js?v=pref344";
+import { MAP_VERSION } from "./version.js?v=pref344";
 
 import { jmaIconFile } from "./jma-icons.js?v=pref320";
 
@@ -148,7 +148,7 @@ function detachOkinawaInset(fitEl, mapSvg) {
 const SCREEN_FOCUS_PREFS = {
   hokkaido: ["01"],
   tohoku: ["02", "03", "04", "05", "06", "07"],
-  kanto: ["08", "09", "10", "11", "12", "13", "14", "19"],
+  kanto: ["08", "09", "10", "11", "12", "13", "14"],
   chubu: ["15", "16", "17", "18", "19", "20", "21", "22", "23", "24"],
   kinki: ["24", "25", "26", "27", "28", "29", "30"],
   chugoku: ["31", "32", "33", "34", "35"],
@@ -668,13 +668,13 @@ const CARD_SLOTS = {
     mito: { x: 84, y: 34 },
     saitama: { x: 16, y: 62 },
     tokyo: { x: 84, y: 52 },
-    kofu: { x: 16, y: 76 },
     yokohama: { x: 40, y: 86 },
     chiba: { x: 84, y: 72 }
   },
   chubu: {
     niigata: { x: 82, y: 14 },
     nagano: { x: 78, y: 28 },
+    kofu: { x: 88, y: 46 },
     toyama: { x: 78, y: 38 },
     kanazawa: { x: 18, y: 36 },
     fukui: { x: 16, y: 50 },
@@ -758,7 +758,6 @@ const CARD_SLOTS_POP = {
     mito: { x: 80, y: 36 },
     saitama: { x: 18, y: 66 },
     tokyo: { x: 80, y: 54 },
-    kofu: { x: 18, y: 82 },
     yokohama: { x: 46, y: 86 },
     chiba: { x: 80, y: 72 }
   },
@@ -798,6 +797,7 @@ const CARD_SLOTS_POP = {
   chubu: {
     niigata: { x: 82, y: 14 },
     nagano: { x: 78, y: 28 },
+    kofu: { x: 88, y: 46 },
     toyama: { x: 78, y: 38 },
     kanazawa: { x: 18, y: 36 },
     fukui: { x: 16, y: 50 },

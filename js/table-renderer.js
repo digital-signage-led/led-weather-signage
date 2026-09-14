@@ -2,41 +2,46 @@
  * 週間天気 / 週間降水確率の表。地図の上には7日分を置けないので表にする。
  */
 
-import { canonicalContent } from "./catalog.js?v=pref320";
-import { loadIcon } from "./map-renderer.js?v=pref320";
-import { weatherTone } from "./weather-renderer.js?v=pref320";
-import { popTone } from "./forecast.js?v=pref320";
-import { isNightHours, jmaLabel } from "./jma-icons.js?v=pref320";
+import { canonicalContent } from "./catalog.js?v=pref344";
+import { loadIcon } from "./map-renderer.js?v=pref344";
+import { weatherTone } from "./weather-renderer.js?v=pref344";
+import { popTone } from "./forecast.js?v=pref344";
+import { isNightHours, jmaLabel } from "./jma-icons.js?v=pref344";
 
 export async function renderWeeklyTable(cities, contentId) {
   const days = cities[0]?.weekly || [];
-  const head = `
-    <div class="forecast-head">
-      <span class="forecast-city-h"></span>
-      ${days.map((day) => `
-        <span class="forecast-day-h${day.weekend ? " is-weekend" : ""}${day.today ? " is-today" : ""}">${day.weekday}</span>
-      `).join("")}
-    </div>
-  `;
-  const rows = await Promise.all(cities.map((city) => renderRow(city, contentId)));
+  const head = [
+    `<span class="forecast-city-h" aria-hidden="true"></span>`,
+    ...days.map((day) => `
+      <span class="forecast-day-h${day.weekend ? " is-weekend" : ""}${day.today ? " is-today" : ""}${weekdayClass(day.weekday)}">${day.weekday}</span>
+    `)
+  ];
+
+  const body = [];
+  for (const city of cities) {
+    body.push(`<span class="forecast-city">${city.cityName}</span>`);
+    const cells = await Promise.all((city.weekly || []).map((day) => (
+      canonicalContent(contentId) === "weekly_precip"
+        ? Promise.resolve(renderPopCell(day))
+        : renderWeatherCell(day)
+    )));
+    body.push(...cells);
+  }
+
   return `
-    <div class="forecast-table" data-content="${contentId}">
-      ${head}
-      <div class="forecast-body">${rows.join("")}</div>
+    <div class="forecast-table" data-content="${contentId}" style="--forecast-rows:${Math.max(1, cities.length)}">
+      <div class="forecast-grid">
+        ${head.join("")}
+        ${body.join("")}
+      </div>
     </div>
   `;
 }
 
-async function renderRow(city, contentId) {
-  const cells = await Promise.all((city.weekly || []).map((day) => (
-    canonicalContent(contentId) === "weekly_precip" ? Promise.resolve(renderPopCell(day)) : renderWeatherCell(day)
-  )));
-  return `
-    <div class="forecast-row">
-      <span class="forecast-city">${city.cityName}</span>
-      ${cells.join("")}
-    </div>
-  `;
+function weekdayClass(label) {
+  if (label === "日") return " is-sunday";
+  if (label === "土") return " is-saturday";
+  return "";
 }
 
 async function renderWeatherCell(day) {
