@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ja" class="is-boot">
 <head>
   <meta charset="UTF-8">
@@ -23,33 +23,27 @@
       letter-spacing: 0.06em;
     }
     html.is-boot #boot-status { display: flex; }
-    /* 機種差で外部CSSが欠けても週間表が崩壊しない最低限の保険 */
+    /* 外部CSS未読込時の最低限フォールバック（本定義は weather.css） */
     .forecast-grid {
-      display: grid !important;
-      grid-template-columns: minmax(3.8em, 15%) repeat(7, minmax(0, 1fr));
-      grid-template-rows: auto repeat(var(--forecast-rows, 4), minmax(0, 1fr));
-      gap: 2px;
+      display: grid;
+      grid-template-columns: var(--city-col-width, 14%) repeat(7, minmax(0, 1fr));
+      grid-template-rows: var(--day-head-height, auto) repeat(var(--forecast-rows, 5), minmax(0, 1fr));
+      gap: var(--forecast-gap, 2px);
       min-width: 0;
       min-height: 0;
-      overflow: hidden;
-    }
-    .forecast-cell.is-weather .wx-icon,
-    .wx-icon {
-      max-width: 4.2em;
-      max-height: 3.2em;
     }
     .wx-icon svg,
     svg.jma-icon,
     .led-title-mark svg {
-      max-width: 100% !important;
-      max-height: 100% !important;
+      max-width: 100%;
+      max-height: 100%;
     }
   </style>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/base.css?v=pref365">
-  <link rel="stylesheet" href="css/weather.css?v=pref365">
+  <link rel="stylesheet" href="css/base.css?v=pref366">
+  <link rel="stylesheet" href="css/weather.css?v=pref366">
 </head>
 <body>
   <p id="boot-status" role="status">読込中</p>
@@ -65,11 +59,11 @@
       </label>
       <label>
         幅
-        <input id="viewport-width" name="vw" type="number" min="160" max="7680" step="1" value="1920">
+        <input id="viewport-width" name="vw" type="number" min="160" max="7680" step="1" value="576">
       </label>
       <label>
         高さ
-        <input id="viewport-height" name="vh" type="number" min="120" max="4320" step="1" value="1080">
+        <input id="viewport-height" name="vh" type="number" min="120" max="4320" step="1" value="432">
       </label>
       <div class="studio-presets" id="viewport-presets" aria-label="確認用サイズ"></div>
       <div id="studio-map-tools" class="studio-map-tools">
@@ -158,6 +152,6 @@
     </article>
     <aside id="debug-overlay" hidden></aside>
   </div>
-  <script type="module" src="js/app.js?v=pref365"></script>
+  <script type="module" src="js/app.js?v=pref366"></script>
 </body>
 </html>

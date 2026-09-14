@@ -1,4 +1,4 @@
-.map-stage {
+﻿.map-stage {
   position: relative;
   width: 100%;
   height: 100%;
@@ -742,7 +742,7 @@ html.is-edit .precip-tod-legend.is-dragging {
 
 .led-screen[data-content="weekly_weather"],
 .led-screen[data-content="weekly_precip"] {
-  background: var(--bg-sea) url("../img/weekly-frame.svg?v=pref365") no-repeat center / 100% 100%;
+  background: var(--bg-sea) url("../img/weekly-frame.svg?v=pref366") no-repeat center / 100% 100%;
 }
 
 .led-screen[data-content="weekly_weather"] .led-header,
@@ -763,11 +763,9 @@ html.is-edit .precip-tod-legend.is-dragging {
 
 .forecast-table {
   --forecast-line: #8eb8d6;
-  --forecast-gap: 2px;
   --forecast-head: #fff3b2;
   --forecast-city-bg: #cfe6f5;
   --forecast-cell-bg: rgba(255, 255, 255, 0.94);
-  --forecast-radius: 12px;
   position: absolute;
   left: var(--footer-gap);
   right: var(--footer-gap);
@@ -777,28 +775,25 @@ html.is-edit .precip-tod-legend.is-dragging {
   flex-direction: column;
   min-width: 0;
   min-height: 0;
-  overflow: hidden;
   z-index: 3;
   padding: 0;
-  border-radius: 0;
   background: transparent;
   box-sizing: border-box;
 }
 
-/* 罫線は gap＋背景色（サイネージでも消えにくい）。見た目は参照の細い水色ラインに合わせる */
+/* セル基準トークン（JS の applyTableLayout）で列・行・文字を統一 */
 .forecast-grid {
   flex: 1 1 auto;
   min-width: 0;
   min-height: 0;
   display: grid;
-  grid-template-columns: minmax(3.8em, 15%) repeat(7, minmax(0, 1fr));
-  grid-template-rows: auto repeat(var(--forecast-rows, 5), minmax(0, 1fr));
-  gap: var(--forecast-gap);
-  padding: var(--forecast-gap);
+  grid-template-columns: var(--city-col-width, 14%) repeat(7, minmax(0, 1fr));
+  grid-template-rows: var(--day-head-height, 1.6em) repeat(var(--forecast-rows, 5), minmax(0, 1fr));
+  gap: var(--forecast-gap, 2px);
+  padding: var(--forecast-gap, 2px);
   background: var(--forecast-line);
-  border-radius: var(--forecast-radius);
+  border-radius: var(--forecast-radius, 10px);
   box-sizing: border-box;
-  overflow: hidden;
 }
 
 .forecast-day-h,
@@ -813,49 +808,43 @@ html.is-edit .precip-tod-legend.is-dragging {
   min-height: 0;
   border: 0;
   border-radius: 0;
-  font-size: max(16px, var(--font-week));
   font-weight: 900;
   color: var(--text-primary);
   text-align: center;
   white-space: nowrap;
-  overflow: hidden;
 }
 
 .forecast-city-h {
   padding: 0;
   background: var(--bg-sea);
-  overflow: visible;
   white-space: normal;
-  border-radius: calc(var(--forecast-radius) - var(--forecast-gap)) 0 0 0;
+  border-radius: calc(var(--forecast-radius, 10px) - var(--forecast-gap, 2px)) 0 0 0;
 }
 
 .forecast-day-h {
   flex-direction: row;
-  align-items: center;
-  justify-content: center;
   gap: 0.08em;
-  padding: 0.18em 0.12em;
+  padding: 0;
   background: var(--forecast-head);
   line-height: 1;
-  font-weight: 900;
+  font-size: var(--font-week-day, var(--font-week));
 }
 
-/* 表の四隅を丸くする */
 .forecast-grid > .forecast-day-h:nth-child(8) {
-  border-radius: 0 calc(var(--forecast-radius) - var(--forecast-gap)) 0 0;
+  border-radius: 0 calc(var(--forecast-radius, 10px) - var(--forecast-gap, 2px)) 0 0;
 }
 
 .forecast-grid > .forecast-city:nth-last-child(8) {
-  border-radius: 0 0 0 calc(var(--forecast-radius) - var(--forecast-gap));
+  border-radius: 0 0 0 calc(var(--forecast-radius, 10px) - var(--forecast-gap, 2px));
 }
 
 .forecast-grid > .forecast-cell:last-child {
-  border-radius: 0 0 calc(var(--forecast-radius) - var(--forecast-gap)) 0;
+  border-radius: 0 0 calc(var(--forecast-radius, 10px) - var(--forecast-gap, 2px)) 0;
 }
 
 .forecast-day-num {
   font-family: var(--font-number);
-  font-size: 1.35em;
+  font-size: 1.2em;
   font-weight: 800;
   line-height: 1;
 }
@@ -866,13 +855,11 @@ html.is-edit .precip-tod-legend.is-dragging {
 }
 
 .forecast-city {
-  font-size: max(16px, var(--font-city));
-  padding: 0.12em 0.16em;
+  font-size: var(--font-week-city, var(--font-city));
+  padding: 0 var(--week-pad-x, 0.2em);
   background: var(--forecast-city-bg);
   color: var(--text-primary);
   font-weight: 900;
-  overflow: hidden;
-  text-overflow: clip;
 }
 
 .forecast-day-h.is-sunday {
@@ -883,34 +870,27 @@ html.is-edit .precip-tod-legend.is-dragging {
   color: #0b6fbf;
 }
 
-.forecast-day-h.is-today {
-  box-shadow: none;
-}
-
 .forecast-cell.is-today {
   background: rgba(238, 246, 255, 0.96);
 }
 
 .forecast-cell {
   flex-direction: column;
-  padding: 0.06em 0.04em 0.1em;
+  padding: var(--week-pad-y, 0.08em) var(--week-pad-x, 0.08em);
   background: var(--forecast-cell-bg);
 }
 
 .forecast-cell.is-weather {
-  justify-content: space-between;
-  gap: 0.04em;
-  padding: 0.08em 0.04em 0.1em;
-  overflow: hidden;
+  justify-content: space-evenly;
+  gap: 0.06em;
 }
 
-/* cqw/cqh は機種によって表セルを崩壊させるので使わない */
 .forecast-cell.is-weather .wx-icon {
-  width: 56%;
-  max-width: 2.8em;
+  width: var(--icon-week, 40%);
+  max-width: 70%;
   height: auto;
   aspect-ratio: 1.12 / 1;
-  max-height: 48%;
+  max-height: 52%;
   flex: 0 1 auto;
   min-width: 0;
   min-height: 0;
@@ -925,7 +905,7 @@ html.is-edit .precip-tod-legend.is-dragging {
 
 .forecast-temps {
   font-family: var(--font-main);
-  font-size: max(16px, calc(var(--font-temp) * 0.58));
+  font-size: var(--font-week-temp, var(--font-temp));
   font-weight: 700;
   letter-spacing: -0.02em;
   display: flex;
@@ -934,14 +914,8 @@ html.is-edit .precip-tod-legend.is-dragging {
   flex: 0 0 auto;
   gap: 0.02em;
   max-width: 100%;
-  overflow: hidden;
   white-space: nowrap;
-}
-
-.forecast-cell.is-weather .forecast-temps {
-  font-size: max(16px, calc(var(--font-temp) * 0.52));
   line-height: 1;
-  flex: 0 0 auto;
 }
 
 .forecast-temps .temp-max {
@@ -958,24 +932,18 @@ html.is-edit .precip-tod-legend.is-dragging {
 }
 
 .forecast-cell.is-pop {
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  gap: 0.04em;
   font-family: var(--font-number);
   color: var(--pop-color);
 }
 
 .forecast-cell.is-pop-metrics {
-  display: grid !important;
+  display: grid;
   grid-template-columns: max-content minmax(0, 1fr);
   grid-template-rows: 1fr 1fr;
   align-items: center;
-  justify-items: stretch;
-  column-gap: 0.35em;
+  column-gap: calc(var(--cell-min, 40px) * 0.08);
   row-gap: 0;
-  padding: 0.18em 0.4em;
-  overflow: hidden;
+  padding: var(--week-pad-y, 0.1em) var(--week-pad-x, 0.2em);
   color: var(--text-primary);
   box-sizing: border-box;
   white-space: normal;
@@ -987,13 +955,12 @@ html.is-edit .precip-tod-legend.is-dragging {
   grid-column: 1;
   justify-self: start;
   align-self: center;
-  width: 2.4em;
+  width: 2.2em;
   font-family: var(--font-main);
-  font-size: clamp(14px, calc(var(--font-week) * 1.05), 22px);
+  font-size: var(--font-week-label, 12px);
   font-weight: 800;
   line-height: 1;
   white-space: nowrap;
-  overflow: visible;
   text-align: left;
   position: static;
   transform: none;
@@ -1002,7 +969,6 @@ html.is-edit .precip-tod-legend.is-dragging {
 .forecast-cell.is-pop-metrics .pop-metric-label.is-pop-chance {
   grid-row: 1;
   color: #0b6fbf;
-  border-bottom: 1px dotted transparent;
 }
 
 .forecast-cell.is-pop-metrics .pop-metric-label.is-humidity {
@@ -1018,17 +984,16 @@ html.is-edit .precip-tod-legend.is-dragging {
   gap: 0.04em;
   min-width: 0;
   color: #123b5c;
-  overflow: hidden;
   position: static;
   transform: none;
 }
 
 .forecast-cell.is-pop-metrics .pop-metric-value.is-pop-chance {
   grid-row: 1;
-  align-self: center;
+  align-self: stretch;
+  align-items: center;
   border-bottom: 1px dotted #9bb8cc;
-  height: 100%;
-  padding-bottom: 0.08em;
+  padding-bottom: 0.06em;
 }
 
 .forecast-cell.is-pop-metrics .pop-metric-value.is-humidity {
@@ -1036,14 +1001,14 @@ html.is-edit .precip-tod-legend.is-dragging {
 }
 
 .forecast-cell.is-pop-metrics .pop-metric-value b {
-  font-size: clamp(18px, calc(var(--font-pop-lg) * 0.42), 34px);
+  font-size: var(--font-week-value, 18px);
   font-weight: 900;
   line-height: 1;
   color: #123b5c;
 }
 
 .forecast-cell.is-pop-metrics .pop-metric-value small {
-  font-size: 0.48em;
+  font-size: var(--font-week-unit, 10px);
   font-weight: 800;
   line-height: 1;
   align-self: flex-end;
@@ -1058,8 +1023,15 @@ html.is-edit .precip-tod-legend.is-dragging {
   pointer-events: none;
 }
 
+.forecast-cell.is-pop:not(.is-pop-metrics) {
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 0.04em;
+}
+
 .forecast-cell.is-pop:not(.is-pop-metrics) b {
-  font-size: var(--font-pop-lg);
+  font-size: var(--font-week-value, var(--font-pop-lg));
   font-weight: 800;
   line-height: 1;
   display: inline-flex;
@@ -1067,7 +1039,7 @@ html.is-edit .precip-tod-legend.is-dragging {
 }
 
 .forecast-cell.is-pop:not(.is-pop-metrics) small {
-  font-size: 0.55em;
+  font-size: var(--font-week-unit, 0.55em);
   line-height: 1;
   align-self: flex-end;
   margin-bottom: 0.12em;
@@ -1075,11 +1047,7 @@ html.is-edit .precip-tod-legend.is-dragging {
 
 .forecast-cell.is-pop-split {
   flex-direction: column;
-  align-items: stretch;
-  justify-content: stretch;
-  gap: 0;
-  padding: 0;
-  overflow: hidden;
+  gap: 0.04em;
 }
 
 .forecast-cell.is-pop-split .pop-half {
@@ -1087,21 +1055,20 @@ html.is-edit .precip-tod-legend.is-dragging {
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 0.1em;
   min-height: 0;
-  line-height: 1;
 }
 
 .forecast-cell.is-pop-split .pop-half.is-am {
-  background: color-mix(in srgb, #5aa0d8 22%, #ffffff);
-  border-bottom: 1px solid color-mix(in srgb, var(--text-primary) 28%, var(--line));
+  border-bottom: 1px dotted #9bb8cc;
 }
 
 .forecast-cell.is-pop-split .pop-half.is-pm {
-  background: color-mix(in srgb, #2f6fad 18%, #ffffff);
+  /* noop */
 }
 
 .forecast-cell.is-pop-split b {
-  font-size: calc(var(--font-pop-lg) * 0.92);
+  font-size: var(--font-week-value, var(--font-pop-lg));
 }
 
 .forecast-cell.is-pop-low,
@@ -1110,11 +1077,6 @@ html.is-edit .precip-tod-legend.is-dragging {
 .pop-half.is-pop-mid { color: #0b6fbf; }
 .forecast-cell.is-pop-high,
 .pop-half.is-pop-high { color: #0a4ea8; }
-
-.led-screen[data-density="minimal"] .forecast-temps,
-.led-screen[data-size="tiny"] .forecast-temps {
-  display: none;
-}
 
 .led-screen[data-density="minimal"] .city-card-pop,
 .led-screen[data-density="compact"] .city-card-pop {

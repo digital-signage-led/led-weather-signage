@@ -2,7 +2,7 @@
  * Studio / signage bootstrap. Studio drives the iframe viewport.
  */
 
-import { APP_VERSION, DATA_VERSION, MAP_VERSION } from "./version.js?v=pref365";
+import { APP_VERSION, DATA_VERSION, MAP_VERSION } from "./version.js?v=pref366";
 import {
   canonicalContent,
   canonicalRegion,
@@ -12,30 +12,30 @@ import {
   listContents,
   listRegions,
   loadCatalog
-} from "./catalog.js?v=pref365";
-import { adaptWeather, aggregateRegion } from "./weather-data.js?v=pref365";
-import { loadMapSvg, mountMap, placeCardsAroundMap, projectCity } from "./map-renderer.js?v=pref365";
-import { formatStamp, renderCityCard, renderPin, pinRadiusForViewBox, pinRadiusForMatchingScreen, pickNoteWeather, weatherTone, renderNoteIcon, renderPrecipTodLegend } from "./weather-renderer.js?v=pref365";
-import { applyCardScale, applyLockedCards, applyMapTransform, applyPrecipLegend, applyTitleScale, bindCardEditor, bindMapControls, bindMapEditor, bindOkinawaEditor, bindPrecipLegendEditor, CARD_POS_MAX, CARD_POS_MIN, CARD_SCALE_MAX, CARD_SCALE_MIN, TITLE_SCALE_MAX, TITLE_SCALE_MIN, centerCityCards, containMapInStage, freezeCardLayout, initLayoutDefaults, isCustomLayout, listCardPositions, loadCardScale, loadLayout, loadTitleScale, moveLockedCard, resetCardScale, resetLayout, resetTitleScale, saveCardScale, saveLayout, saveTitleScale, snapshotLayoutDefaults } from "./studio-layout.js?v=pref365";
-import { expandForecast, formatNoteHtml, noteFor } from "./forecast.js?v=pref365";
-import { renderWeeklyTable } from "./table-renderer.js?v=pref365";
+} from "./catalog.js?v=pref366";
+import { adaptWeather, aggregateRegion } from "./weather-data.js?v=pref366";
+import { loadMapSvg, mountMap, placeCardsAroundMap, projectCity } from "./map-renderer.js?v=pref366";
+import { formatStamp, renderCityCard, renderPin, pinRadiusForViewBox, pinRadiusForMatchingScreen, pickNoteWeather, weatherTone, renderNoteIcon, renderPrecipTodLegend } from "./weather-renderer.js?v=pref366";
+import { applyCardScale, applyLockedCards, applyMapTransform, applyPrecipLegend, applyTitleScale, bindCardEditor, bindMapControls, bindMapEditor, bindOkinawaEditor, bindPrecipLegendEditor, CARD_POS_MAX, CARD_POS_MIN, CARD_SCALE_MAX, CARD_SCALE_MIN, TITLE_SCALE_MAX, TITLE_SCALE_MIN, centerCityCards, containMapInStage, freezeCardLayout, initLayoutDefaults, isCustomLayout, listCardPositions, loadCardScale, loadLayout, loadTitleScale, moveLockedCard, resetCardScale, resetLayout, resetTitleScale, saveCardScale, saveLayout, saveTitleScale, snapshotLayoutDefaults } from "./studio-layout.js?v=pref366";
+import { expandForecast, formatNoteHtml, noteFor } from "./forecast.js?v=pref366";
+import { renderWeeklyTable } from "./table-renderer.js?v=pref366";
 import {
-  FIXED_DESIGN,
+  DEFAULT_STUDIO_VIEWPORT,
   VIEWPORT_PRESETS,
+  applyTableLayout,
   applyViewport,
   cardBoxPx,
   cardSizePct,
   cityLimit,
-  fitFixedScreen,
   fitTitleBars,
   fitCityCardNames,
   partitionTablePages,
   readViewport,
   showAuxiliary
-} from "./viewport.js?v=pref365";
-import { msUntilIconPhaseChange } from "./jma-icons.js?v=pref365";
-import { fetchJmaWeather } from "./jma-live.js?v=pref365";
-import { buildWeekPoints, fetchWeekAlert, renderWeekPointsHtml } from "./week-points.js?v=pref365";
+} from "./viewport.js?v=pref366";
+import { msUntilIconPhaseChange } from "./jma-icons.js?v=pref366";
+import { fetchJmaWeather } from "./jma-live.js?v=pref366";
+import { buildWeekPoints, fetchWeekAlert, renderWeekPointsHtml } from "./week-points.js?v=pref366";
 
 /** 府県天気予報の発表時刻（JST）。発表反映待ちで +5 分後に取りに行く。 */
 const JMA_PUBLISH_HOURS_JST = [5, 11, 17];
@@ -195,9 +195,9 @@ async function bootStudio() {
   try {
     const saved = JSON.parse(sessionStorage.getItem(VIEWPORT_STORE) || "null");
     if (saved?.width && saved?.height) state.viewport = readViewport(saved.width, saved.height);
-    else state.viewport = readViewport(FIXED_DESIGN.width, FIXED_DESIGN.height);
+    else state.viewport = readViewport(DEFAULT_STUDIO_VIEWPORT.width, DEFAULT_STUDIO_VIEWPORT.height);
   } catch {
-    state.viewport = readViewport(FIXED_DESIGN.width, FIXED_DESIGN.height);
+    state.viewport = readViewport(DEFAULT_STUDIO_VIEWPORT.width, DEFAULT_STUDIO_VIEWPORT.height);
   }
   const layout = loadLayout(state.regionId, state.contentId, state.viewport.width, state.viewport.height);
   const vpSize = () => ({
@@ -627,9 +627,11 @@ async function bootSignage() {
   const measure = () => {
     const fromW = Number(params.get("vw"));
     const fromH = Number(params.get("vh"));
-    // 明示指定がなければ設計解像度で固定（ウインドウ実寸には追従しない）
     if (fromW > 0 && fromH > 0) return readViewport(fromW, fromH);
-    return readViewport(FIXED_DESIGN.width, FIXED_DESIGN.height);
+    return readViewport(
+      window.innerWidth || document.documentElement.clientWidth,
+      window.innerHeight || document.documentElement.clientHeight
+    );
   };
   const initialVp = measure();
   state.viewport = initialVp;
@@ -757,7 +759,7 @@ async function bootSignage() {
     const content = getContent(state.contentId);
     const vp = measure();
     state.viewport = vp;
-    applyViewport(screen, vp, region.id, content, { fixedScale: true });
+    applyViewport(screen, vp, region.id, content);
     if (content.id !== "weekly_weather") hideWeekPoints();
 
     // 解像度ごとの保存レイアウトを読み直す
@@ -827,6 +829,7 @@ async function bootSignage() {
       }
 
       if (content.kind === "table") {
+        applyTableLayout(screen, vp, Math.max(selected.length, selected.length === 1 ? 2 : selected.length || 5));
         stage.innerHTML = await renderWeeklyTable(selected, content.id);
         syncPrecipTodLegend(content, stage, layout, region.id, false);
         if (content.id === "weekly_weather") refreshWeekAlert(selected, weekPoints);
@@ -1019,10 +1022,8 @@ async function bootSignage() {
   });
 
   window.addEventListener("resize", () => {
-    // 設計解像度は変えず、表示スケールだけ合わせる
-    fitFixedScreen(screen, state.viewport.width, state.viewport.height);
-    window.clearTimeout(tickerLayoutTimer);
-    tickerLayoutTimer = window.setTimeout(() => layoutNoteTicker(), 40);
+    window.clearTimeout(renderTimer);
+    renderTimer = window.setTimeout(() => render(), 80);
   });
   if (typeof ResizeObserver === "function") {
     new ResizeObserver(() => {
