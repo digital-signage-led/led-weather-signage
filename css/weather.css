@@ -931,10 +931,26 @@ html.is-edit .precip-tod-legend.is-dragging {
 
 .forecast-cell.is-pop {
   flex-direction: row;
-  align-items: baseline;
+  align-items: center;
+  justify-content: center;
   gap: 0.04em;
   font-family: var(--font-number);
   color: var(--pop-color);
+}
+
+.forecast-cell.is-pop b {
+  font-size: var(--font-pop-lg);
+  font-weight: 800;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+}
+
+.forecast-cell.is-pop small {
+  font-size: 0.55em;
+  line-height: 1;
+  align-self: flex-end;
+  margin-bottom: 0.12em;
 }
 
 .forecast-cell.is-pop-split {
@@ -964,18 +980,8 @@ html.is-edit .precip-tod-legend.is-dragging {
   background: color-mix(in srgb, #2f6fad 18%, #ffffff);
 }
 
-.forecast-cell.is-pop b {
-  font-size: var(--font-pop-lg);
-  font-weight: 800;
-  line-height: 1;
-}
-
 .forecast-cell.is-pop-split b {
   font-size: calc(var(--font-pop-lg) * 0.92);
-}
-
-.forecast-cell.is-pop small {
-  font-size: 0.55em;
 }
 
 .forecast-cell.is-pop-low,
