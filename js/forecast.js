@@ -1,10 +1,10 @@
-/**
+﻿/**
  * 地点の今日データから明日・時間帯降水・週間を組み立てる。
  * HTML は JMA API を呼ばない。雪など季節外れのコードを循環させない。
  */
 
-import { canonicalContent, getContent as contentFromCatalog } from "./catalog.js?v=pref356";
-import { isWetWeather, jmaLabel, jmaTone, resolveWeatherCode } from "./jma-icons.js?v=pref356";
+import { canonicalContent, getContent as contentFromCatalog } from "./catalog.js?v=pref357";
+import { isWetWeather, jmaLabel, jmaTone, resolveWeatherCode } from "./jma-icons.js?v=pref357";
 
 const WEEKDAYS = ["日", "月", "火", "水", "木", "金", "土"];
 

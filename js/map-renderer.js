@@ -1,13 +1,13 @@
-/**
+﻿/**
  * 国土地理院「地球地図日本」から生成した SVG をインライン描画し、
  * 緯度経度を同じ投影で地図上の位置へ変換する。
  */
 
-import { canonicalRegion, isNational } from "./catalog.js?v=pref356";
-import { cardSizePct } from "./viewport.js?v=pref356";
-import { MAP_VERSION } from "./version.js?v=pref356";
+import { canonicalRegion, isNational } from "./catalog.js?v=pref357";
+import { cardSizePct } from "./viewport.js?v=pref357";
+import { MAP_VERSION } from "./version.js?v=pref357";
 
-import { jmaIconFile } from "./jma-icons.js?v=pref356";
+import { jmaIconFile } from "./jma-icons.js?v=pref357";
 
 const iconCache = new Map();
 let iconSeq = 0;

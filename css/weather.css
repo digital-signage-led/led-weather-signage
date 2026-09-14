@@ -742,7 +742,18 @@ html.is-edit .precip-tod-legend.is-dragging {
 
 .led-screen[data-content="weekly_weather"],
 .led-screen[data-content="weekly_precip"] {
-  background: var(--bg-sea) url("../img/weekly-frame.svg?v=pref356") no-repeat center / 100% 100%;
+  background: var(--bg-sea) url("../img/weekly-frame.svg?v=pref357") no-repeat center / 100% 100%;
+}
+
+.led-screen[data-content="weekly_weather"] .led-header,
+.led-screen[data-content="weekly_precip"] .led-header {
+  z-index: 8;
+}
+
+.led-screen[data-content="weekly_weather"] .led-title-stack,
+.led-screen[data-content="weekly_precip"] .led-title-stack {
+  position: relative;
+  z-index: 9;
 }
 
 .led-screen[data-content="weekly_weather"] .map-stage,

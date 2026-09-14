@@ -401,7 +401,7 @@ html.is-edit .led-footer {
   min-width: 0;
   gap: 0.3em;
   padding: 0 calc(var(--header-title-height) * 0.28) 0 calc(var(--header-title-height) * 0.16);
-  background: color-mix(in srgb, var(--bg-header) 80%, transparent);
+  background: var(--bg-header);
   border-radius: 0 var(--box-radius) var(--box-radius) 0;
   overflow: hidden;
   box-sizing: border-box;

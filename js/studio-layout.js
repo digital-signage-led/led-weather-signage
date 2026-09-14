@@ -1,10 +1,10 @@
-/**
+﻿/**
  * スタジオ用の配置編集。
  * 地図・カード位置は地域×解像度で1つ（今日/明日×天気/降水の4種で共有）。
  * カード倍率もその4種で共有。全国は単体、地方は地方同士で倍率を共有。
  */
 
-import { canonicalContent, canonicalRegion, isNational } from "./catalog.js?v=pref356";
+import { canonicalContent, canonicalRegion, isNational } from "./catalog.js?v=pref357";
 
 const STORAGE_KEY = "led-weather-layout-v5";
 const STORAGE_KEY_LEGACY = "led-weather-layout-v4";

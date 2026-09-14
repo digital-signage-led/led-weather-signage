@@ -1,12 +1,12 @@
-/**
+﻿/**
  * Weekly weather / precip table renderer.
  */
 
-import { canonicalContent } from "./catalog.js?v=pref356";
-import { loadIcon } from "./map-renderer.js?v=pref356";
-import { weatherTone } from "./weather-renderer.js?v=pref356";
-import { popTone } from "./forecast.js?v=pref356";
-import { isNightHours, jmaLabel } from "./jma-icons.js?v=pref356";
+import { canonicalContent } from "./catalog.js?v=pref357";
+import { loadIcon } from "./map-renderer.js?v=pref357";
+import { weatherTone } from "./weather-renderer.js?v=pref357";
+import { popTone } from "./forecast.js?v=pref357";
+import { isNightHours, jmaLabel } from "./jma-icons.js?v=pref357";
 
 export async function renderWeeklyTable(cities, contentId) {
   const days = cities[0]?.weekly || [];
