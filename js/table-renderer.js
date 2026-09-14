@@ -1,12 +1,12 @@
-﻿/**
+/**
  * Weekly weather / precip table renderer.
  */
 
-import { canonicalContent } from "./catalog.js?v=pref364";
-import { loadIcon } from "./map-renderer.js?v=pref364";
-import { weatherTone } from "./weather-renderer.js?v=pref364";
-import { popTone } from "./forecast.js?v=pref364";
-import { isNightHours, jmaLabel } from "./jma-icons.js?v=pref364";
+import { canonicalContent } from "./catalog.js?v=pref365";
+import { loadIcon } from "./map-renderer.js?v=pref365";
+import { weatherTone } from "./weather-renderer.js?v=pref365";
+import { popTone } from "./forecast.js?v=pref365";
+import { isNightHours, jmaLabel } from "./jma-icons.js?v=pref365";
 
 /** 1ページの上限行。ページ都市数がこれ未満ならその数で描く（1行だけは避ける） */
 const TABLE_ROW_MAX = 5;
@@ -87,14 +87,10 @@ function renderPopCell(day) {
   const humidity = Math.round(Number(day.humidity) || 0);
   return `
     <div class="forecast-cell is-pop is-pop-metrics ${popTone(pop)}${day.today ? " is-today" : ""}">
-      <div class="pop-metric is-pop-chance">
-        <span class="pop-metric-label">\u964d\u6c34</span>
-        <span class="pop-metric-value"><b>${pop}</b><small>%</small></span>
-      </div>
-      <div class="pop-metric is-humidity">
-        <span class="pop-metric-label">\u6e7f\u5ea6</span>
-        <span class="pop-metric-value"><b>${humidity}</b><small>%</small></span>
-      </div>
+      <span class="pop-metric-label is-pop-chance">\u964d\u6c34</span>
+      <span class="pop-metric-value is-pop-chance"><b>${pop}</b><small>%</small></span>
+      <span class="pop-metric-label is-humidity">\u6e7f\u5ea6</span>
+      <span class="pop-metric-value is-humidity"><b>${humidity}</b><small>%</small></span>
     </div>
   `;
 }

@@ -2,9 +2,9 @@
  * 天気カードとアイコン描画。気象JSONだけを受け取り、元データAPIには依存しない。
  */
 
-import { loadIcon } from "./map-renderer.js?v=pref364";
-import { popTone } from "./forecast.js?v=pref364";
-import { isNightHours, jmaLabel, jmaRank, jmaTone } from "./jma-icons.js?v=pref364";
+import { loadIcon } from "./map-renderer.js?v=pref365";
+import { popTone } from "./forecast.js?v=pref365";
+import { isNightHours, jmaLabel, jmaRank, jmaTone } from "./jma-icons.js?v=pref365";
 
 export function pickNoteWeather(points) {
   return points.reduce((best, point) => (

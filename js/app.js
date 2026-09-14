@@ -2,7 +2,7 @@
  * Studio / signage bootstrap. Studio drives the iframe viewport.
  */
 
-import { APP_VERSION, DATA_VERSION, MAP_VERSION } from "./version.js?v=pref364";
+import { APP_VERSION, DATA_VERSION, MAP_VERSION } from "./version.js?v=pref365";
 import {
   canonicalContent,
   canonicalRegion,
@@ -12,13 +12,13 @@ import {
   listContents,
   listRegions,
   loadCatalog
-} from "./catalog.js?v=pref364";
-import { adaptWeather, aggregateRegion } from "./weather-data.js?v=pref364";
-import { loadMapSvg, mountMap, placeCardsAroundMap, projectCity } from "./map-renderer.js?v=pref364";
-import { formatStamp, renderCityCard, renderPin, pinRadiusForViewBox, pinRadiusForMatchingScreen, pickNoteWeather, weatherTone, renderNoteIcon, renderPrecipTodLegend } from "./weather-renderer.js?v=pref364";
-import { applyCardScale, applyLockedCards, applyMapTransform, applyPrecipLegend, applyTitleScale, bindCardEditor, bindMapControls, bindMapEditor, bindOkinawaEditor, bindPrecipLegendEditor, CARD_POS_MAX, CARD_POS_MIN, CARD_SCALE_MAX, CARD_SCALE_MIN, TITLE_SCALE_MAX, TITLE_SCALE_MIN, centerCityCards, containMapInStage, freezeCardLayout, initLayoutDefaults, isCustomLayout, listCardPositions, loadCardScale, loadLayout, loadTitleScale, moveLockedCard, resetCardScale, resetLayout, resetTitleScale, saveCardScale, saveLayout, saveTitleScale, snapshotLayoutDefaults } from "./studio-layout.js?v=pref364";
-import { expandForecast, formatNoteHtml, noteFor } from "./forecast.js?v=pref364";
-import { renderWeeklyTable } from "./table-renderer.js?v=pref364";
+} from "./catalog.js?v=pref365";
+import { adaptWeather, aggregateRegion } from "./weather-data.js?v=pref365";
+import { loadMapSvg, mountMap, placeCardsAroundMap, projectCity } from "./map-renderer.js?v=pref365";
+import { formatStamp, renderCityCard, renderPin, pinRadiusForViewBox, pinRadiusForMatchingScreen, pickNoteWeather, weatherTone, renderNoteIcon, renderPrecipTodLegend } from "./weather-renderer.js?v=pref365";
+import { applyCardScale, applyLockedCards, applyMapTransform, applyPrecipLegend, applyTitleScale, bindCardEditor, bindMapControls, bindMapEditor, bindOkinawaEditor, bindPrecipLegendEditor, CARD_POS_MAX, CARD_POS_MIN, CARD_SCALE_MAX, CARD_SCALE_MIN, TITLE_SCALE_MAX, TITLE_SCALE_MIN, centerCityCards, containMapInStage, freezeCardLayout, initLayoutDefaults, isCustomLayout, listCardPositions, loadCardScale, loadLayout, loadTitleScale, moveLockedCard, resetCardScale, resetLayout, resetTitleScale, saveCardScale, saveLayout, saveTitleScale, snapshotLayoutDefaults } from "./studio-layout.js?v=pref365";
+import { expandForecast, formatNoteHtml, noteFor } from "./forecast.js?v=pref365";
+import { renderWeeklyTable } from "./table-renderer.js?v=pref365";
 import {
   FIXED_DESIGN,
   VIEWPORT_PRESETS,
@@ -32,10 +32,10 @@ import {
   partitionTablePages,
   readViewport,
   showAuxiliary
-} from "./viewport.js?v=pref364";
-import { msUntilIconPhaseChange } from "./jma-icons.js?v=pref364";
-import { fetchJmaWeather } from "./jma-live.js?v=pref364";
-import { buildWeekPoints, fetchWeekAlert, renderWeekPointsHtml } from "./week-points.js?v=pref364";
+} from "./viewport.js?v=pref365";
+import { msUntilIconPhaseChange } from "./jma-icons.js?v=pref365";
+import { fetchJmaWeather } from "./jma-live.js?v=pref365";
+import { buildWeekPoints, fetchWeekAlert, renderWeekPointsHtml } from "./week-points.js?v=pref365";
 
 /** 府県天気予報の発表時刻（JST）。発表反映待ちで +5 分後に取りに行く。 */
 const JMA_PUBLISH_HOURS_JST = [5, 11, 17];
@@ -777,7 +777,10 @@ async function bootSignage() {
       const weather = adaptWeather(weatherDoc);
       weatherStamp = weather.updatedAt;
 
-      const candidates = aggregateRegion(locations.cities, weather, region);
+      const candidates = aggregateRegion(locations.cities, weather, region, {
+        // 週間表は地域の全地点を出す（欠測でも行を落とさない）
+        requirePoint: content.kind !== "table"
+      });
       const tablePages = content.kind === "table"
         ? partitionTablePages(candidates, 5)
         : [candidates.slice(0, cityLimit(vp, region.id, content, candidates.length))];
@@ -790,7 +793,12 @@ async function bootSignage() {
       if (tablePageIndex >= pageCount) tablePageIndex = 0;
       const pageCities = tablePages[tablePageIndex] || [];
       const selected = pageCities
-        .map((city) => attachForecast(city, weather.pointsByCity.get(city.cityId), content, weather.updatedAt));
+        .map((city) => attachForecast(
+          city,
+          weather.pointsByCity.get(city.cityId) || { cityId: city.cityId, weather: "100", pop: 0, weekly: [] },
+          content,
+          weather.updatedAt
+        ));
 
       window.clearTimeout(tablePageTimer);
       if (content.kind === "table" && pageCount > 1 && !tableRotateOff) {

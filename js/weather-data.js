@@ -2,7 +2,7 @@
  * 螟夜Κ豌苓ｱ｡ 竊・蜈ｱ騾壹Δ繝・Ν縲３enderer 縺ｯ縺薙％縺縺代ｒ隕九ｋ縲・
  */
 
-import { citiesForRegion } from "./catalog.js?v=pref364";
+import { citiesForRegion } from "./catalog.js?v=pref365";
 
 export function adaptWeather(doc) {
   return {
@@ -13,8 +13,9 @@ export function adaptWeather(doc) {
   };
 }
 
-export function aggregateRegion(cities, weather, region) {
+export function aggregateRegion(cities, weather, region, options = {}) {
+  const requirePoint = options.requirePoint !== false;
   return citiesForRegion(cities, region)
-    .filter((city) => weather.pointsByCity.has(city.cityId))
+    .filter((city) => !requirePoint || weather.pointsByCity.has(city.cityId))
     .sort((a, b) => a.priority - b.priority);
 }
