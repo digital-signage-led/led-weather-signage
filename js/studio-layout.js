@@ -1,12 +1,10 @@
 /**
- * スタジオ用の配置編雁E��E
- * 列島はドラチE��で移動、�Eイール�E�ハンドルで拡大、E
- * カード倍率・タイトル倍率・地図配置は解像度ごとに別管琁E��E
- * カード倍率はさらに「�E国�E�地方別」で刁E��る（地方どぁE��は共有）、E
- * 地図4種�E�今日/明日×天氁E降水�E��Eボックス位置は「今日の天気」を親として共有する、E
+ * スタジオ用の配置編集。
+ * 地図・カード位置は地域×解像度で1つ（今日/明日×天気/降水の4種で共有）。
+ * カード倍率もその4種で共有。全国は単体、地方は地方同士で倍率を共有。
  */
 
-import { canonicalContent, canonicalRegion, isNational } from "./catalog.js?v=pref320";
+import { canonicalContent, canonicalRegion, isNational } from "./catalog.js?v=pref329";
 
 const STORAGE_KEY = "led-weather-layout-v5";
 const STORAGE_KEY_LEGACY = "led-weather-layout-v4";
@@ -21,7 +19,7 @@ let shippedDefaults = { layouts: {}, cardScales: {}, titleScales: {} };
 export const CARD_SCALE_MIN = 0.28;
 export const CARD_SCALE_MAX = 3;
 export const TITLE_SCALE_MIN = 0.6;
-export const TITLE_SCALE_MAX = 1.8;
+export const TITLE_SCALE_MAX = 2.8;
 export const CARD_POS_MIN = -40;
 export const CARD_POS_MAX = 140;
 
@@ -35,7 +33,15 @@ function emptyLayout(regionId = "national") {
   };
 }
 
-/** 地図コンチE��チE�Eカード位置は常に今日の天気！Eards�E�を親にする、E*/
+/** 地図4種（今日/明日 × 天気/降水）は配置・倍率を共有する。 */
+function isSharedMapContent(contentId = "today_weather") {
+  const id = canonicalContent(contentId);
+  return id === "today_weather"
+    || id === "today_precip"
+    || id === "tomorrow_weather"
+    || id === "tomorrow_precip";
+}
+
 function isPopContent(contentId = "today_weather") {
   const id = canonicalContent(contentId);
   return id === "today_precip" || id === "tomorrow_precip";
@@ -75,10 +81,34 @@ function pickLayoutSlice(saved, width = 0, height = 0) {
   const w = Math.round(Number(width) || 0);
   const h = Math.round(Number(height) || 0);
   if (w > 0 && h > 0) {
-    const keyed = saved.viewports?.[viewportSizeKey(w, h)];
-    if (keyed) return keyed;
+    const exact = saved.viewports?.[viewportSizeKey(w, h)];
+    if (exact) return exact;
+    const nearest = nearestViewportSlice(saved.viewports, w, h);
+    if (nearest) return nearest;
   }
-  return saved;
+  if (saved.map || saved.cards) return saved;
+  return null;
+}
+
+function nearestViewportSlice(viewports, width, height) {
+  if (!viewports || typeof viewports !== "object") return null;
+  const keys = Object.keys(viewports);
+  if (!keys.length) return null;
+  const targetArea = Math.max(1, width * height);
+  let best = null;
+  let bestScore = Infinity;
+  for (const key of keys) {
+    const parts = key.split("x");
+    const ww = Number(parts[0]);
+    const hh = Number(parts[1]);
+    if (!(ww > 0 && hh > 0)) continue;
+    const score = Math.abs(Math.log((ww * hh) / targetArea)) + Math.abs(ww / hh - width / height) * 0.35;
+    if (score < bestScore) {
+      bestScore = score;
+      best = viewports[key];
+    }
+  }
+  return best;
 }
 
 export async function initLayoutDefaults() {
@@ -96,6 +126,7 @@ export async function initLayoutDefaults() {
 
 function seedLocalStorageFromDefaults() {
   try {
+    const shippedRev = Number(shippedDefaults.rev) || 0;
     const all = readLayoutStore();
     let changed = false;
     for (const [regionId, regionDef] of Object.entries(shippedDefaults.layouts || {})) {
@@ -104,7 +135,10 @@ function seedLocalStorageFromDefaults() {
       const viewports = { ...(prev.viewports || {}) };
       let regionChanged = false;
       for (const [vpKey, entry] of Object.entries(regionDef.viewports || {})) {
-        if (!viewports[vpKey]) {
+        const localRev = Number(viewports[vpKey]?.rev) || 0;
+        const entryRev = Number(entry?.rev) || shippedRev;
+        // 同梱の方が新しければ上書き（全国・明日などで直した配置をデプロイ後に反映）
+        if (!viewports[vpKey] || entryRev > localRev) {
           viewports[vpKey] = entry;
           regionChanged = true;
         }
@@ -118,11 +152,18 @@ function seedLocalStorageFromDefaults() {
 
     const cardAll = readCardScaleStore();
     let cardChanged = false;
+    const localScaleRev = Number(cardAll.__rev) || 0;
+    const forceScales = shippedRev > localScaleRev;
     for (const [key, scale] of Object.entries(shippedDefaults.cardScales || {})) {
-      if (cardAll[key] == null && Number.isFinite(Number(scale))) {
+      if (key === "__rev") continue;
+      if ((forceScales || cardAll[key] == null) && Number.isFinite(Number(scale))) {
         cardAll[key] = clamp(Number(scale), CARD_SCALE_MIN, CARD_SCALE_MAX);
         cardChanged = true;
       }
+    }
+    if (forceScales) {
+      cardAll.__rev = shippedRev;
+      cardChanged = true;
     }
     if (cardChanged) localStorage.setItem(CARD_SIZE_KEY, JSON.stringify(cardAll));
 
@@ -134,11 +175,18 @@ function seedLocalStorageFromDefaults() {
     }
     if (typeof titleAll !== "object" || Array.isArray(titleAll)) titleAll = {};
     let titleChanged = false;
+    const localTitleRev = Number(titleAll.__rev) || 0;
+    const forceTitles = shippedRev > localTitleRev;
     for (const [key, scale] of Object.entries(shippedDefaults.titleScales || {})) {
-      if (titleAll[key] == null && Number.isFinite(Number(scale))) {
+      if (key === "__rev") continue;
+      if ((forceTitles || titleAll[key] == null) && Number.isFinite(Number(scale))) {
         titleAll[key] = clamp(Number(scale), TITLE_SCALE_MIN, TITLE_SCALE_MAX);
         titleChanged = true;
       }
+    }
+    if (forceTitles) {
+      titleAll.__rev = shippedRev;
+      titleChanged = true;
     }
     if (titleChanged) localStorage.setItem(TITLE_SCALE_KEY, JSON.stringify(titleAll));
   } catch {
@@ -155,9 +203,12 @@ export function loadLayout(regionId, contentId = "today_weather", width = 0, hei
     const h = Math.round(Number(height) || 0);
     const vpKey = w > 0 && h > 0 ? viewportSizeKey(w, h) : "";
     const shippedRegion = shippedDefaults.layouts?.[regionId];
-    const shippedSlice = vpKey ? shippedRegion?.viewports?.[vpKey] : null;
-    const localSlice = saved ? (vpKey ? saved.viewports?.[vpKey] : null) : null;
-    const slice = localSlice || shippedSlice || (saved ? pickLayoutSlice(saved, width, height) : null) || shippedSlice;
+    const shippedExact = vpKey ? shippedRegion?.viewports?.[vpKey] : null;
+    const shippedNear = !shippedExact && w > 0 && h > 0
+      ? nearestViewportSlice(shippedRegion?.viewports, w, h)
+      : null;
+    const localSlice = saved ? pickLayoutSlice(saved, width, height) : null;
+    const slice = localSlice || shippedExact || shippedNear;
     if (!slice && !saved) return emptyLayout(regionId);
     const entry = layoutEntryFrom(slice || saved || {});
     entry.map.scale = clamp(Number(entry.map.scale) || 1, 0.4, 3.6);
@@ -181,17 +232,26 @@ export function saveLayout(regionId, layout, contentId = "today_weather", width 
   regionId = canonicalRegion(regionId);
   const all = readLayoutStore();
   const prev = all[regionId] || {};
-  const entry = {
-    map: layout.map,
-    okinawa: layout.okinawa,
-    precipLegend: layout.precipLegend || emptyLayout().precipLegend,
-    cards: layout.cards,
-    cardsPop: layout.cards
-  };
-  const viewports = { ...(prev.viewports || {}) };
   const w = Math.round(Number(width) || 0);
   const h = Math.round(Number(height) || 0);
-  if (w > 0 && h > 0) viewports[viewportSizeKey(w, h)] = entry;
+  const vpKey = w > 0 && h > 0 ? viewportSizeKey(w, h) : "";
+  const prevSlice = (vpKey && prev.viewports?.[vpKey])
+    || pickLayoutSlice(prev, w, h)
+    || prev
+    || {};
+  const nextCards = Object.keys(layout.cards || {}).length
+    ? layout.cards
+    : (prevSlice.cards || {});
+  const entry = {
+    map: layout.map || prevSlice.map || emptyLayout().map,
+    okinawa: layout.okinawa || prevSlice.okinawa || emptyLayout().okinawa,
+    precipLegend: layout.precipLegend || prevSlice.precipLegend || emptyLayout().precipLegend,
+    cards: { ...nextCards },
+    cardsPop: { ...nextCards },
+    rev: Date.now()
+  };
+  const viewports = { ...(prev.viewports || {}) };
+  if (vpKey) viewports[vpKey] = entry;
   all[regionId] = {
     ...prev,
     ...entry,
@@ -384,22 +444,43 @@ export function viewportSizeKey(width, height) {
   return `${Math.round(Number(width) || 0)}x${Math.round(Number(height) || 0)}`;
 }
 
+/** 地図4種は map。それ以外は weather / pop。 */
 function cardScaleVariant(contentId = "today_weather") {
+  if (isSharedMapContent(contentId)) return "map";
   return isPopContent(contentId) ? "pop" : "weather";
 }
 
-/** 全国は単体、地方はすべて同じ親キー、E*/
+/** 全国は単体、地方はすべて同じ親キー。 */
 function cardScaleScope(regionId = "national") {
   return isNational(canonicalRegion(regionId)) ? "national" : "regional";
 }
 
-/** 侁E regional:weather:1920x1080 */
+/** 例: regional:map:1920x1080 */
 function cardScaleKey(contentId = "today_weather", regionId = "national", width = 0, height = 0) {
   const base = `${cardScaleScope(regionId)}:${cardScaleVariant(contentId)}`;
   const w = Math.round(Number(width) || 0);
   const h = Math.round(Number(height) || 0);
   if (w > 0 && h > 0) return `${base}:${viewportSizeKey(w, h)}`;
   return base;
+}
+
+/** 旧 weather/pop キーからも読めるようにする。 */
+function cardScaleLookupKeys(contentId = "today_weather", regionId = "national", width = 0, height = 0) {
+  const scope = cardScaleScope(regionId);
+  const w = Math.round(Number(width) || 0);
+  const h = Math.round(Number(height) || 0);
+  const sized = w > 0 && h > 0;
+  const vp = sized ? `:${viewportSizeKey(w, h)}` : "";
+  const variants = isSharedMapContent(contentId)
+    ? ["map", "weather", "pop"]
+    : [cardScaleVariant(contentId), "weather", "pop"];
+  const keys = [];
+  for (const variant of variants) {
+    keys.push(`${scope}:${variant}${vp}`);
+    if (sized) keys.push(`${scope}:${variant}`);
+    keys.push(variant);
+  }
+  return [...new Set(keys)];
 }
 
 function readCardScaleStore() {
@@ -433,21 +514,36 @@ function readCardScaleStore() {
 export function loadCardScale(contentId = "today_weather", regionId = "national", width = 0, height = 0) {
   try {
     const all = readCardScaleStore();
-    const sized = cardScaleKey(contentId, regionId, width, height);
-    const base = cardScaleKey(contentId, regionId);
-    const legacyVariant = cardScaleVariant(contentId);
-    const shipped = Number(shippedDefaults.cardScales?.[sized] ?? shippedDefaults.cardScales?.[base]);
-    const value = Number(all[sized] ?? all[base] ?? all[legacyVariant] ?? shipped) || 1;
-    return clamp(value, CARD_SCALE_MIN, CARD_SCALE_MAX);
+    const keys = cardScaleLookupKeys(contentId, regionId, width, height);
+    let value;
+    for (const key of keys) {
+      if (all[key] != null) {
+        value = Number(all[key]);
+        break;
+      }
+      if (shippedDefaults.cardScales?.[key] != null) {
+        value = Number(shippedDefaults.cardScales[key]);
+        break;
+      }
+    }
+    return clamp(Number(value) || 1, CARD_SCALE_MIN, CARD_SCALE_MAX);
   } catch {
     return 1;
   }
 }
 
 export function saveCardScale(contentId, scale, regionId = "national", width = 0, height = 0) {
-  const key = cardScaleKey(contentId, regionId, width, height);
+  const next = clamp(scale, CARD_SCALE_MIN, CARD_SCALE_MAX);
   const all = readCardScaleStore();
-  all[key] = clamp(scale, CARD_SCALE_MIN, CARD_SCALE_MAX);
+  const scope = cardScaleScope(regionId);
+  const w = Math.round(Number(width) || 0);
+  const h = Math.round(Number(height) || 0);
+  const vp = w > 0 && h > 0 ? `:${viewportSizeKey(w, h)}` : "";
+  // 地図4種は map/weather/pop を同時更新して切り替えでも同じ倍率にする
+  const variants = isSharedMapContent(contentId) ? ["map", "weather", "pop"] : [cardScaleVariant(contentId)];
+  for (const variant of variants) {
+    all[`${scope}:${variant}${vp}`] = next;
+  }
   localStorage.setItem(CARD_SIZE_KEY, JSON.stringify(all));
 }
 
@@ -461,7 +557,7 @@ export function applyCardScale(screen, scale) {
   screen.style.setProperty("--card-scale", String(clamp(scale, CARD_SCALE_MIN, CARD_SCALE_MAX)));
 }
 
-export function loadTitleScale(width = 0, height = 0) {
+export function loadTitleScale(width = 0, height = 0, regionId = "national") {
   try {
     const raw = localStorage.getItem(TITLE_SCALE_KEY);
     let all = {};
@@ -478,14 +574,26 @@ export function loadTitleScale(width = 0, height = 0) {
     }
     const w = Math.round(Number(width) || 0);
     const h = Math.round(Number(height) || 0);
-    const key = w > 0 && h > 0 ? viewportSizeKey(w, h) : "default";
-    return clamp(Number(all[key] ?? all.default ?? shippedDefaults.titleScales?.[key]) || 1, TITLE_SCALE_MIN, TITLE_SCALE_MAX);
+    const region = canonicalRegion(regionId);
+    const vpKey = w > 0 && h > 0 ? viewportSizeKey(w, h) : "default";
+    const regionKey = `${region}:${vpKey}`;
+    return clamp(
+      Number(
+        all[regionKey]
+        ?? all[vpKey]
+        ?? all.default
+        ?? shippedDefaults.titleScales?.[regionKey]
+        ?? shippedDefaults.titleScales?.[vpKey]
+      ) || 1,
+      TITLE_SCALE_MIN,
+      TITLE_SCALE_MAX
+    );
   } catch {
     return 1;
   }
 }
 
-export function saveTitleScale(scale, width = 0, height = 0) {
+export function saveTitleScale(scale, width = 0, height = 0, regionId = "national") {
   let all = {};
   try {
     all = JSON.parse(localStorage.getItem(TITLE_SCALE_KEY) || "{}") || {};
@@ -495,13 +603,15 @@ export function saveTitleScale(scale, width = 0, height = 0) {
   if (typeof all !== "object" || Array.isArray(all)) all = {};
   const w = Math.round(Number(width) || 0);
   const h = Math.round(Number(height) || 0);
-  const key = w > 0 && h > 0 ? viewportSizeKey(w, h) : "default";
+  const region = canonicalRegion(regionId);
+  const vpKey = w > 0 && h > 0 ? viewportSizeKey(w, h) : "default";
+  const key = `${region}:${vpKey}`;
   all[key] = clamp(scale, TITLE_SCALE_MIN, TITLE_SCALE_MAX);
   localStorage.setItem(TITLE_SCALE_KEY, JSON.stringify(all));
 }
 
-export function resetTitleScale(width = 0, height = 0) {
-  saveTitleScale(1, width, height);
+export function resetTitleScale(width = 0, height = 0, regionId = "national") {
+  saveTitleScale(1, width, height, regionId);
   return 1;
 }
 
@@ -512,19 +622,20 @@ export function applyTitleScale(screen, scale) {
 
 export function applyLockedCards(placed, layout) {
   for (const item of placed) {
-    const locked = layout.cards[item.cityId];
-    if (!locked?.locked) continue;
-    item.x = locked.x;
-    item.y = locked.y;
+    const locked = layout.cards?.[item.cityId];
+    if (!locked || !Number.isFinite(Number(locked.x)) || !Number.isFinite(Number(locked.y))) continue;
+    item.x = Number(locked.x);
+    item.y = Number(locked.y);
     item.locked = true;
   }
   return placed;
 }
 
-/** 1つでも手動配置があれば、表示中の全カードを固定して再描画で動かないようにする。 */
-export function freezeCardLayout(laidOut, layout) {
+/** 手動配置・手動縮尺があるとき、表示中の全カードを固定する。 */
+export function freezeCardLayout(laidOut, layout, { force = false } = {}) {
   if (!layout || !Array.isArray(laidOut) || !laidOut.length) return false;
-  const hasCustom = Object.keys(layout.cards || {}).length > 0;
+  const hasCards = Object.keys(layout.cards || {}).length > 0;
+  const hasCustom = force || hasCards || isCustomLayout(layout);
   if (!hasCustom) return false;
   layout.cards = layout.cards || {};
   for (const item of laidOut) {
@@ -560,10 +671,23 @@ export function snapshotLayoutDefaults(regionId, layout, contentId, width, heigh
     okinawa: { ...(layout.okinawa || emptyLayout().okinawa) },
     precipLegend: { ...(layout.precipLegend || emptyLayout().precipLegend) },
     cards: { ...(layout.cards || {}) },
-    cardsPop: { ...(layout.cards || {}) }
+    cardsPop: { ...(layout.cards || {}) },
+    rev: Date.now()
   };
-  const cardKey = cardScaleKey(contentId, regionId, w, h);
+  const scale = clamp(Number(cardScale) || 1, CARD_SCALE_MIN, CARD_SCALE_MAX);
+  const scope = cardScaleScope(regionId);
+  const cardScales = isSharedMapContent(contentId)
+    ? {
+      [`${scope}:map:${vpKey}`]: scale,
+      [`${scope}:weather:${vpKey}`]: scale,
+      [`${scope}:pop:${vpKey}`]: scale
+    }
+    : {
+      [cardScaleKey(contentId, regionId, w, h)]: scale
+    };
+  const titleKey = `${canonicalRegion(regionId)}:${vpKey}`;
   return {
+    rev: entry.rev,
     layouts: {
       [regionId]: {
         viewports: {
@@ -571,11 +695,9 @@ export function snapshotLayoutDefaults(regionId, layout, contentId, width, heigh
         }
       }
     },
-    cardScales: {
-      [cardKey]: clamp(Number(cardScale) || 1, CARD_SCALE_MIN, CARD_SCALE_MAX)
-    },
+    cardScales,
     titleScales: {
-      [vpKey]: clamp(Number(titleScale) || 1, TITLE_SCALE_MIN, TITLE_SCALE_MAX)
+      [titleKey]: clamp(Number(titleScale) || 1, TITLE_SCALE_MIN, TITLE_SCALE_MAX)
     }
   };
 }

@@ -27,6 +27,7 @@ function readJson(file, fallback) {
 
 function mergeDefaults(base, patch) {
   const out = {
+    rev: Math.max(Number(base.rev) || 0, Number(patch.rev) || 0, Date.now()),
     layouts: { ...(base.layouts || {}) },
     cardScales: { ...(base.cardScales || {}) },
     titleScales: { ...(base.titleScales || {}) }

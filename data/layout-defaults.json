@@ -27,9 +27,14 @@
     }
   },
   "cardScales": {
-    "national:weather:576x432": 0.52
+    "national:map:576x432": 0.52,
+    "national:weather:576x432": 0.52,
+    "national:pop:576x432": 0.52
   },
   "titleScales": {
-    "576x432": 1
+    "576x432": 1,
+    "hokkaido:576x432": 2.2,
+    "hokkaido:1920x1080": 2.2,
+    "hokkaido:1024x600": 2.2
   }
 }

@@ -86,9 +86,13 @@ html.is-edit .map-cards {
 .led-screen[data-region="chubu"],
 .led-screen[data-region="kanto"],
 .led-screen[data-region="chugoku"],
-.led-screen[data-region="shikoku"],
-.led-screen[data-region="hokkaido"] {
+.led-screen[data-region="shikoku"] {
   --map-fit: 0.98;
+}
+
+.led-screen[data-region="hokkaido"] {
+  --map-fit: 1.14;
+  --header-title-height: calc(var(--header-height) * 1.6);
 }
 
 .led-screen[data-region="okinawa"] {
@@ -456,6 +460,9 @@ html.is-edit .card-resize {
 }
 
 .city-card-name {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
   font-size: clamp(9px, min(40cqw, 16cqh), var(--font-city));
   font-weight: 900;
   color: var(--text-primary);
@@ -463,7 +470,7 @@ html.is-edit .card-resize {
   min-width: 0;
   max-width: 100%;
   overflow: hidden;
-  text-overflow: ellipsis;
+  text-overflow: clip;
   white-space: nowrap;
   text-align: center;
   line-height: 1.15;
@@ -512,11 +519,11 @@ html.is-edit .card-resize {
 /* 繧｢繧､繧ｳ繝ｳ縺ｨ蜷後§菴咲ｽｮ縺ｮ繝懊ャ繧ｯ繧ｹ縲ゅΞ繧､繝､繝ｼ縺ｯ繧｢繧､繧ｳ繝ｳ縺御ｸ翫ゆｸ九・蝨ｰ蜷阪・豌玲ｸｩ繧呈ｽｰ縺輔↑縺・*/
 .city-card-icon-stack {
   position: relative;
-  width: min(100%, 72cqh);
+  width: min(100%, 88cqh);
   height: auto;
   aspect-ratio: 1 / 1;
   max-width: 100%;
-  max-height: 52%;
+  max-height: 62%;
   display: inline-flex;
   flex: 1 1 auto;
   min-width: 0;

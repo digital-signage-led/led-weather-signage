@@ -83,7 +83,8 @@ export function tokensFor(vp, content = { id: "today_weather", name: "今日の�
   const longTitle = `${content.name || ""}`.length >= 6;
   const titleRatio = longTitle ? 0.046 : 0.06;
   const popTight = content.card === "pop";
-  const box = cardBoxPx(vp, popTight ? "pop" : "weather");
+  // 地図4種（今日/明日×天気/降水）は外枠サイズを揃えて配置を共有する
+  const box = cardBoxPx(vp, content.kind === "map" ? "weather" : (popTight ? "pop" : "weather"));
   return {
     "--led-width": `${vp.width}px`,
     "--led-height": `${vp.height}px`,
@@ -102,7 +103,7 @@ export function tokensFor(vp, content = { id: "today_weather", name: "今日の�
     "--footer-height": `${fluidPx(s, 0.146, 36, 112)}px`,
     "--footer-gap": `${fluidPx(s, 0.035, 8, 32)}px`,
     "--safe-inset": `${fluidPx(s, 0.056, 10, 42)}px`,
-    "--icon-card": `${fluidPx(s, popTight ? 0.05 : 0.09, 20, 96)}px`,
+    "--icon-card": `${fluidPx(s, popTight ? 0.05 : 0.11, 22, 112)}px`,
     "--icon-note": `${fluidPx(s, 0.076, 18, 64)}px`,
     "--card-pad-y": `${fluidPx(s, 0.014, 4, 14)}px`,
     "--card-pad-x": `${fluidPx(s, 0.016, 4, 16)}px`,
@@ -181,7 +182,9 @@ export function fitTitleBars(screen) {
   const gap = parseFloat(getComputedStyle(screen).getPropertyValue("--footer-gap")) || 8;
   const points = screen.querySelector(".week-points:not([hidden])");
   const reserve = points ? points.getBoundingClientRect().width + gap : 0;
-  const maxW = Math.max(72, screen.clientWidth - gap - reserve);
+  const titleScale = Math.max(0.6, Number.parseFloat(getComputedStyle(screen).getPropertyValue("--title-scale")) || 1);
+  // transform scale 後も収まるよう、計測幅をスケールで割る
+  const maxW = Math.max(72, (screen.clientWidth - gap - reserve) / titleScale);
 
   const shrinkToFit = (el, bar, ratio) => {
     if (!el || !bar) return;
@@ -204,13 +207,29 @@ export function fitTitleBars(screen) {
   shrinkToFit(
     screen.querySelector(".led-title"),
     screen.querySelector(".led-title-bar:not(.led-sub-bar)"),
-    0.5
+    0.62
   );
   shrinkToFit(
     screen.querySelector(".led-stamp"),
     screen.querySelector(".led-sub-bar"),
-    0.46
+    0.5
   );
+}
+
+/** 地点名（会津若松など）を「…」にせず、カード幅に収まるまで小さくする。 */
+export function fitCityCardNames(root) {
+  const names = root?.querySelectorAll?.(".city-card-name");
+  if (!names?.length) return;
+  for (const el of names) {
+    el.style.fontSize = "";
+    let size = parseFloat(getComputedStyle(el).fontSize) || 12;
+    let steps = 0;
+    while (steps < 48 && size > 8 && el.scrollWidth > el.clientWidth + 0.5) {
+      size -= 0.5;
+      el.style.fontSize = `${size}px`;
+      steps += 1;
+    }
+  }
 }
 
 export function showAuxiliary(vp, key) {
