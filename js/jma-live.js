@@ -174,8 +174,8 @@ function extractPoint(forecast, city, mapping) {
       weeklyDays.push({
         weather: todayCode,
         weatherLabel: labelOf(todayCode),
-        tempMax: tempMax ?? num(weeklyTempArea?.tempsMax?.[0]) ?? 0,
-        tempMin: tempMin ?? num(weeklyTempArea?.tempsMin?.[0]) ?? 0,
+        tempMax: tempMax ?? num(weeklyTempArea?.tempsMax?.[0]),
+        tempMin: tempMin ?? num(weeklyTempArea?.tempsMin?.[0]),
         pop: todayPop,
         popAm: todayAm ?? todayPop,
         popPm: todayPm ?? todayPop,
@@ -186,11 +186,12 @@ function extractPoint(forecast, city, mapping) {
     const weeklyIndex = i - 1;
     const code = String((i === 1 ? tomorrowCode : null) || weeklyCodes[weeklyIndex] || tomorrowCode);
     const dayPop = weeklyPops[weeklyIndex] ?? (i === 1 ? tomorrowPop : todayPop);
+    // 週間の欠測は今日気温で埋めず null のまま（同値の偽データを出さない）
     weeklyDays.push({
       weather: code,
       weatherLabel: labelOf(code),
-      tempMax: num(weeklyTempArea?.tempsMax?.[weeklyIndex]) ?? tempMax ?? 0,
-      tempMin: num(weeklyTempArea?.tempsMin?.[weeklyIndex]) ?? tempMin ?? 0,
+      tempMax: num(weeklyTempArea?.tempsMax?.[weeklyIndex]),
+      tempMin: num(weeklyTempArea?.tempsMin?.[weeklyIndex]),
       pop: dayPop,
       popAm: i === 1 ? (tomorrowAm ?? dayPop) : dayPop,
       popPm: i === 1 ? (tomorrowPm ?? dayPop) : dayPop,

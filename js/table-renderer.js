@@ -2,11 +2,11 @@
  * Weekly weather / precip table renderer.
  */
 
-import { canonicalContent } from "./catalog.js?v=pref355";
-import { loadIcon } from "./map-renderer.js?v=pref355";
-import { weatherTone } from "./weather-renderer.js?v=pref355";
-import { popTone } from "./forecast.js?v=pref355";
-import { isNightHours, jmaLabel } from "./jma-icons.js?v=pref355";
+import { canonicalContent } from "./catalog.js?v=pref356";
+import { loadIcon } from "./map-renderer.js?v=pref356";
+import { weatherTone } from "./weather-renderer.js?v=pref356";
+import { popTone } from "./forecast.js?v=pref356";
+import { isNightHours, jmaLabel } from "./jma-icons.js?v=pref356";
 
 export async function renderWeeklyTable(cities, contentId) {
   const days = cities[0]?.weekly || [];
@@ -52,12 +52,18 @@ async function renderWeatherCell(day) {
     <div class="forecast-cell is-weather${day.today ? " is-today" : ""}">
       <span class="wx-icon ${weatherTone(day.weather)}" aria-label="${when} ${day.weatherLabel || jmaLabel(day.weather)}">${icon}</span>
       <span class="forecast-temps">
-        <b class="temp-max">${Math.round(day.tempMax)}</b>
+        <b class="temp-max">${formatTemp(day.tempMax)}</b>
         <span class="temp-slash">/</span>
-        <b class="temp-min">${Math.round(day.tempMin)}</b>
+        <b class="temp-min">${formatTemp(day.tempMin)}</b>
       </span>
     </div>
   `;
+}
+
+function formatTemp(value) {
+  if (value === "" || value == null) return "--";
+  const n = Number(value);
+  return Number.isFinite(n) ? String(Math.round(n)) : "--";
 }
 
 function renderPopCell(day) {

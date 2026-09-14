@@ -96,7 +96,7 @@ export function tokensFor(vp, content = { id: "today_weather", name: "今日の�
     "--font-temp": `${fluidPx(s, popTight ? 0.056 : 0.074, 18, 70)}px`,
     "--font-pop": `${fluidPx(s, 0.04, 13, 34)}px`,
     "--font-pop-lg": `${fluidPx(s, popTight ? 0.068 : 0.058, 18, 64)}px`,
-    "--font-week": `${fluidPx(s, 0.028, 10, 26)}px`,
+    "--font-week": `${fluidPx(s, 0.028, 16, 26)}px`,
     "--font-attr": `${fluidPx(s, 0.023, 8, 18)}px`,
     "--header-height": `${fluidPx(s, 0.062, 18, 44)}px`,
     "--header-title-height": `${fluidPx(s, 0.092, 28, 64)}px`,

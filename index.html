@@ -9,6 +9,20 @@
   <style>
     html.is-boot { background: #c8ebff; }
     html.is-boot .led-screen { visibility: hidden; }
+    #boot-status {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      align-items: center;
+      justify-content: center;
+      margin: 0;
+      background: #c8ebff;
+      color: #0a2f7a;
+      font: 700 28px/1.4 "Noto Sans JP", "Hiragino Sans", "Yu Gothic UI", sans-serif;
+      letter-spacing: 0.06em;
+    }
+    html.is-boot #boot-status { display: flex; }
     /* 機種差で外部CSSが欠けても週間表が崩壊しない最低限の保険 */
     .forecast-grid {
       display: grid !important;
@@ -34,10 +48,11 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/base.css?v=pref355">
-  <link rel="stylesheet" href="css/weather.css?v=pref355">
+  <link rel="stylesheet" href="css/base.css?v=pref356">
+  <link rel="stylesheet" href="css/weather.css?v=pref356">
 </head>
 <body>
+  <p id="boot-status" role="status">読込中</p>
   <div id="studio-root" hidden>
     <form class="studio-bar" id="studio-bar">
       <label>
@@ -143,6 +158,6 @@
     </article>
     <aside id="debug-overlay" hidden></aside>
   </div>
-  <script type="module" src="js/app.js?v=pref355"></script>
+  <script type="module" src="js/app.js?v=pref356"></script>
 </body>
 </html>

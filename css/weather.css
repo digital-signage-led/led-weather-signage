@@ -1,4 +1,4 @@
-.map-stage {
+﻿.map-stage {
   position: relative;
   width: 100%;
   height: 100%;
@@ -742,7 +742,7 @@ html.is-edit .precip-tod-legend.is-dragging {
 
 .led-screen[data-content="weekly_weather"],
 .led-screen[data-content="weekly_precip"] {
-  background: var(--bg-sea) url("../img/weekly-frame.svg?v=pref355") no-repeat center / 100% 100%;
+  background: var(--bg-sea) url("../img/weekly-frame.svg?v=pref356") no-repeat center / 100% 100%;
 }
 
 .led-screen[data-content="weekly_weather"] .map-stage,
@@ -760,7 +760,7 @@ html.is-edit .precip-tod-legend.is-dragging {
   position: absolute;
   left: var(--footer-gap);
   right: var(--footer-gap);
-  top: calc(var(--header-title-height) + var(--header-height) + var(--footer-gap) + 8px);
+  top: calc(var(--header-title-height) + var(--header-height) + var(--footer-gap) + 10px);
   bottom: calc(var(--footer-height) + 14px);
   display: flex;
   flex-direction: column;
@@ -802,11 +802,12 @@ html.is-edit .precip-tod-legend.is-dragging {
   min-height: 0;
   border: 0;
   border-radius: 0;
-  font-size: var(--font-week);
+  font-size: max(16px, var(--font-week));
   font-weight: 900;
   color: var(--text-primary);
   text-align: center;
   white-space: nowrap;
+  overflow: hidden;
 }
 
 .forecast-city-h {
@@ -854,11 +855,13 @@ html.is-edit .precip-tod-legend.is-dragging {
 }
 
 .forecast-city {
-  font-size: var(--font-city);
+  font-size: max(16px, var(--font-city));
   padding: 0.12em 0.16em;
   background: var(--forecast-city-bg);
   color: var(--text-primary);
   font-weight: 900;
+  overflow: hidden;
+  text-overflow: clip;
 }
 
 .forecast-day-h.is-sunday {
@@ -892,12 +895,12 @@ html.is-edit .precip-tod-legend.is-dragging {
 
 /* cqw/cqh は機種によって表セルを崩壊させるので使わない */
 .forecast-cell.is-weather .wx-icon {
-  width: 72%;
-  max-width: 4.2em;
+  width: 56%;
+  max-width: 2.8em;
   height: auto;
   aspect-ratio: 1.12 / 1;
-  max-height: 58%;
-  flex: 1 1 auto;
+  max-height: 48%;
+  flex: 0 1 auto;
   min-width: 0;
   min-height: 0;
 }
@@ -911,7 +914,7 @@ html.is-edit .precip-tod-legend.is-dragging {
 
 .forecast-temps {
   font-family: var(--font-main);
-  font-size: calc(var(--font-temp) * 0.68);
+  font-size: max(16px, calc(var(--font-temp) * 0.58));
   font-weight: 700;
   letter-spacing: -0.02em;
   display: flex;
@@ -919,10 +922,13 @@ html.is-edit .precip-tod-legend.is-dragging {
   justify-content: center;
   flex: 0 0 auto;
   gap: 0.02em;
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 .forecast-cell.is-weather .forecast-temps {
-  font-size: calc(var(--font-temp) * 0.58);
+  font-size: max(16px, calc(var(--font-temp) * 0.52));
   line-height: 1;
   flex: 0 0 auto;
 }
@@ -978,7 +984,7 @@ html.is-edit .precip-tod-legend.is-dragging {
   flex: 0 1 auto;
   min-width: 0;
   font-family: var(--font-main);
-  font-size: calc(var(--font-week) * 0.52);
+  font-size: max(16px, calc(var(--font-week) * 0.85));
   font-weight: 800;
   color: #0b6fbf;
   white-space: nowrap;
@@ -994,7 +1000,7 @@ html.is-edit .precip-tod-legend.is-dragging {
   gap: 0.06em;
   white-space: normal;
   line-height: 1.05;
-  font-size: calc(var(--font-week) * 0.46);
+  font-size: max(16px, calc(var(--font-week) * 0.78));
 }
 
 .forecast-cell.is-pop-metrics .pop-metric-label.is-two-line > span {
@@ -1014,19 +1020,20 @@ html.is-edit .precip-tod-legend.is-dragging {
 }
 
 .forecast-cell.is-pop-metrics .pop-metric-value b {
-  font-size: calc(var(--font-pop-lg) * 0.68);
+  font-size: max(16px, calc(var(--font-pop-lg) * 0.62));
   font-weight: 900;
   line-height: 1;
   color: #123b5c;
 }
 
 .forecast-cell.is-pop-metrics .pop-metric-value small {
-  font-size: 0.48em;
+  font-size: 0.7em;
   font-weight: 800;
   line-height: 1;
   align-self: flex-end;
   margin-bottom: 0.08em;
   color: #3d6b8c;
+  flex: 0 0 auto;
 }
 
 .forecast-cell.is-pop b {
@@ -1103,28 +1110,30 @@ html.is-edit .precip-tod-legend.is-dragging {
   z-index: 7;
   display: flex;
   align-items: center;
-  gap: 0.55em;
+  gap: 0.4em;
   width: max-content;
-  max-width: calc(100% - 9em);
-  min-height: var(--header-title-height);
+  max-width: min(46%, calc(100% - 11em));
+  min-height: 0;
+  max-height: calc(var(--header-title-height) + var(--header-height) + 4px);
   margin: 0;
-  padding: 0.22em 0.85em 0.22em 0.22em;
+  padding: 0.12em 0.55em 0.12em 0.12em;
   background: #ffffff;
   border-radius: calc(var(--box-radius) * 1.6);
   box-shadow: 0 4px 14px rgba(10, 47, 122, 0.18), 0 1px 4px rgba(10, 47, 122, 0.1);
   color: var(--text-primary);
   box-sizing: border-box;
   pointer-events: none;
+  overflow: hidden;
 }
 
 .week-points-badge {
   flex: 0 0 auto;
   margin: 0;
-  padding: 0.55em 0.8em;
+  padding: 0.35em 0.55em;
   background: #0a2f7a;
   color: #ffffff;
   border-radius: calc(var(--box-radius) * 1.2);
-  font-size: calc(var(--font-week) * 0.9);
+  font-size: max(16px, calc(var(--font-week) * 0.9));
   font-weight: 900;
   line-height: 1.15;
   letter-spacing: 0.02em;
@@ -1155,8 +1164,8 @@ html.is-edit .precip-tod-legend.is-dragging {
 }
 
 .week-points-icon {
-  width: clamp(48px, calc(var(--header-title-height) * 0.7), 76px);
-  height: clamp(48px, calc(var(--header-title-height) * 0.7), 76px);
+  width: clamp(28px, calc(var(--header-title-height) * 0.48), 44px);
+  height: clamp(28px, calc(var(--header-title-height) * 0.48), 44px);
   flex: 0 0 auto;
   display: block;
 }
@@ -1176,7 +1185,7 @@ html.is-edit .precip-tod-legend.is-dragging {
   justify-content: center;
   gap: 0.08em;
   min-width: 0;
-  font-size: calc(var(--font-week) * 0.88);
+  font-size: max(16px, calc(var(--font-week) * 0.88));
   font-weight: 800;
   line-height: 1.15;
   white-space: nowrap;
