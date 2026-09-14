@@ -4,7 +4,7 @@
  * カード倍率もその4種で共有。全国は単体、地方は地方同士で倍率を共有。
  */
 
-import { canonicalContent, canonicalRegion, isNational } from "./catalog.js?v=pref333";
+import { canonicalContent, canonicalRegion, isNational } from "./catalog.js?v=pref334";
 
 const STORAGE_KEY = "led-weather-layout-v5";
 const STORAGE_KEY_LEGACY = "led-weather-layout-v4";
@@ -884,8 +884,29 @@ export function bindMapEditor(fitEl, layout, onMapChange) {
     if (event.target.closest(".city-card")) return;
     if (event.target.closest(".map-okinawa-dock")) return;
     event.preventDefault();
-    const factor = event.deltaY < 0 ? 1.08 : 0.93;
-    layout.map.scale *= factor;
+    // 通常のホイール／トラックパッドは上下移動。拡大縮小は Ctrl（または Meta）＋ホイールのみ。
+    // 「上に直したい」操作で列島が勝手に大きくならないようにする。
+    if (event.ctrlKey || event.metaKey) {
+      const factor = event.deltaY < 0 ? 1.08 : 0.93;
+      layout.map.scale *= factor;
+      apply();
+      return;
+    }
+    const box = fitEl.getBoundingClientRect();
+    if (box.height > 1 && Math.abs(event.deltaY) > 0.1) {
+      layout.map.y = clamp(
+        layout.map.y - (event.deltaY / box.height) * 28,
+        -48,
+        48
+      );
+    }
+    if (box.width > 1 && Math.abs(event.deltaX) > 0.1) {
+      layout.map.x = clamp(
+        layout.map.x - (event.deltaX / box.width) * 28,
+        -48,
+        48
+      );
+    }
     apply();
   }, { passive: false });
 }
