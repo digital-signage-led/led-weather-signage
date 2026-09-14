@@ -15,6 +15,9 @@ const CARD_SIZE_KEY_LEGACY_V3 = "led-weather-card-size-v3";
 const CARD_SIZE_KEY_LEGACY_V2 = "led-weather-card-size-v2";
 const TITLE_SCALE_KEY = "led-weather-title-scale-v2";
 const TITLE_SCALE_KEY_LEGACY = "led-weather-title-scale-v1";
+
+/** リポジトリ同梱の完成配置。localStorage に無い解像度だけ補完する。 */
+let shippedDefaults = { layouts: {}, cardScales: {}, titleScales: {} };
 export const CARD_SCALE_MIN = 0.28;
 export const CARD_SCALE_MAX = 3;
 export const TITLE_SCALE_MIN = 0.6;
@@ -78,14 +81,85 @@ function pickLayoutSlice(saved, width = 0, height = 0) {
   return saved;
 }
 
+export async function initLayoutDefaults() {
+  try {
+    const response = await fetch("data/layout-defaults.json", { cache: "no-store" });
+    if (response.ok) {
+      const doc = await response.json();
+      if (doc && typeof doc === "object") shippedDefaults = doc;
+    }
+  } catch {
+    /* ignore */
+  }
+  seedLocalStorageFromDefaults();
+}
+
+function seedLocalStorageFromDefaults() {
+  try {
+    const all = readLayoutStore();
+    let changed = false;
+    for (const [regionId, regionDef] of Object.entries(shippedDefaults.layouts || {})) {
+      const id = canonicalRegion(regionId);
+      const prev = all[id] || {};
+      const viewports = { ...(prev.viewports || {}) };
+      let regionChanged = false;
+      for (const [vpKey, entry] of Object.entries(regionDef.viewports || {})) {
+        if (!viewports[vpKey]) {
+          viewports[vpKey] = entry;
+          regionChanged = true;
+        }
+      }
+      if (regionChanged) {
+        all[id] = { ...prev, viewports };
+        changed = true;
+      }
+    }
+    if (changed) localStorage.setItem(STORAGE_KEY, JSON.stringify(all));
+
+    const cardAll = readCardScaleStore();
+    let cardChanged = false;
+    for (const [key, scale] of Object.entries(shippedDefaults.cardScales || {})) {
+      if (cardAll[key] == null && Number.isFinite(Number(scale))) {
+        cardAll[key] = clamp(Number(scale), CARD_SCALE_MIN, CARD_SCALE_MAX);
+        cardChanged = true;
+      }
+    }
+    if (cardChanged) localStorage.setItem(CARD_SIZE_KEY, JSON.stringify(cardAll));
+
+    let titleAll = {};
+    try {
+      titleAll = JSON.parse(localStorage.getItem(TITLE_SCALE_KEY) || "{}") || {};
+    } catch {
+      titleAll = {};
+    }
+    if (typeof titleAll !== "object" || Array.isArray(titleAll)) titleAll = {};
+    let titleChanged = false;
+    for (const [key, scale] of Object.entries(shippedDefaults.titleScales || {})) {
+      if (titleAll[key] == null && Number.isFinite(Number(scale))) {
+        titleAll[key] = clamp(Number(scale), TITLE_SCALE_MIN, TITLE_SCALE_MAX);
+        titleChanged = true;
+      }
+    }
+    if (titleChanged) localStorage.setItem(TITLE_SCALE_KEY, JSON.stringify(titleAll));
+  } catch {
+    /* ignore */
+  }
+}
+
 export function loadLayout(regionId, contentId = "today_weather", width = 0, height = 0) {
   regionId = canonicalRegion(regionId);
   try {
     const all = readLayoutStore();
     const saved = layoutStoreKeys(regionId).map((key) => all[key]).find(Boolean);
-    if (!saved) return emptyLayout(regionId);
-    const slice = pickLayoutSlice(saved, width, height) || saved;
-    const entry = layoutEntryFrom(slice);
+    const w = Math.round(Number(width) || 0);
+    const h = Math.round(Number(height) || 0);
+    const vpKey = w > 0 && h > 0 ? viewportSizeKey(w, h) : "";
+    const shippedRegion = shippedDefaults.layouts?.[regionId];
+    const shippedSlice = vpKey ? shippedRegion?.viewports?.[vpKey] : null;
+    const localSlice = saved ? (vpKey ? saved.viewports?.[vpKey] : null) : null;
+    const slice = localSlice || shippedSlice || (saved ? pickLayoutSlice(saved, width, height) : null) || shippedSlice;
+    if (!slice && !saved) return emptyLayout(regionId);
+    const entry = layoutEntryFrom(slice || saved || {});
     entry.map.scale = clamp(Number(entry.map.scale) || 1, 0.4, 3.6);
     entry.map.x = clamp(Number(entry.map.x) || 0, -40, 40);
     entry.map.y = clamp(Number(entry.map.y) || 0, -40, 40);
@@ -362,7 +436,8 @@ export function loadCardScale(contentId = "today_weather", regionId = "national"
     const sized = cardScaleKey(contentId, regionId, width, height);
     const base = cardScaleKey(contentId, regionId);
     const legacyVariant = cardScaleVariant(contentId);
-    const value = Number(all[sized] ?? all[base] ?? all[legacyVariant]) || 1;
+    const shipped = Number(shippedDefaults.cardScales?.[sized] ?? shippedDefaults.cardScales?.[base]);
+    const value = Number(all[sized] ?? all[base] ?? all[legacyVariant] ?? shipped) || 1;
     return clamp(value, CARD_SCALE_MIN, CARD_SCALE_MAX);
   } catch {
     return 1;
@@ -404,7 +479,7 @@ export function loadTitleScale(width = 0, height = 0) {
     const w = Math.round(Number(width) || 0);
     const h = Math.round(Number(height) || 0);
     const key = w > 0 && h > 0 ? viewportSizeKey(w, h) : "default";
-    return clamp(Number(all[key] ?? all.default) || 1, TITLE_SCALE_MIN, TITLE_SCALE_MAX);
+    return clamp(Number(all[key] ?? all.default ?? shippedDefaults.titleScales?.[key]) || 1, TITLE_SCALE_MIN, TITLE_SCALE_MAX);
   } catch {
     return 1;
   }
@@ -444,6 +519,65 @@ export function applyLockedCards(placed, layout) {
     item.locked = true;
   }
   return placed;
+}
+
+/** 1つでも手動配置があれば、表示中の全カードを固定して再描画で動かないようにする。 */
+export function freezeCardLayout(laidOut, layout) {
+  if (!layout || !Array.isArray(laidOut) || !laidOut.length) return false;
+  const hasCustom = Object.keys(layout.cards || {}).length > 0;
+  if (!hasCustom) return false;
+  layout.cards = layout.cards || {};
+  for (const item of laidOut) {
+    if (!item?.cityId) continue;
+    layout.cards[item.cityId] = {
+      x: Number(item.x) || 0,
+      y: Number(item.y) || 0,
+      locked: true
+    };
+  }
+  return true;
+}
+
+export function isCustomLayout(layout) {
+  if (!layout) return false;
+  return Math.abs(Number(layout.map?.x) || 0) > 0.05
+    || Math.abs(Number(layout.map?.y) || 0) > 0.05
+    || Math.abs((Number(layout.map?.scale) || 1) - 1) > 0.02
+    || Math.abs(Number(layout.map?.rotate) || 0) > 0.5
+    || Object.keys(layout.cards || {}).length > 0
+    || (layout.precipLegend
+      && (Math.abs((layout.precipLegend.x ?? 3) - 3) > 0.5
+        || Math.abs((layout.precipLegend.y ?? 22) - 22) > 0.5));
+}
+
+export function snapshotLayoutDefaults(regionId, layout, contentId, width, height, cardScale, titleScale) {
+  regionId = canonicalRegion(regionId);
+  const w = Math.round(Number(width) || 0);
+  const h = Math.round(Number(height) || 0);
+  const vpKey = viewportSizeKey(w, h);
+  const entry = {
+    map: { ...(layout.map || emptyLayout().map) },
+    okinawa: { ...(layout.okinawa || emptyLayout().okinawa) },
+    precipLegend: { ...(layout.precipLegend || emptyLayout().precipLegend) },
+    cards: { ...(layout.cards || {}) },
+    cardsPop: { ...(layout.cards || {}) }
+  };
+  const cardKey = cardScaleKey(contentId, regionId, w, h);
+  return {
+    layouts: {
+      [regionId]: {
+        viewports: {
+          [vpKey]: entry
+        }
+      }
+    },
+    cardScales: {
+      [cardKey]: clamp(Number(cardScale) || 1, CARD_SCALE_MIN, CARD_SCALE_MAX)
+    },
+    titleScales: {
+      [vpKey]: clamp(Number(titleScale) || 1, TITLE_SCALE_MIN, TITLE_SCALE_MAX)
+    }
+  };
 }
 
 export function centerCityCards(cardsEl) {

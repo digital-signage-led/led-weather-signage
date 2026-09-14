@@ -1,4 +1,4 @@
-.map-stage {
+﻿.map-stage {
   position: relative;
   width: 100%;
   height: 100%;
@@ -660,7 +660,7 @@ html.is-edit .precip-tod-legend.is-editable {
   pointer-events: auto;
   cursor: grab;
   outline: 1px dashed #3d7eff;
-  outline-offset: 4px;
+  outline-offset: 2px;
 }
 
 html.is-edit .precip-tod-legend.is-dragging {
@@ -671,8 +671,8 @@ html.is-edit .precip-tod-legend.is-dragging {
 
 .precip-tod-legend-title {
   font-family: var(--font-main);
-  font-size: var(--precip-legend-title, 16px);
-  font-weight: 900;
+  font-size: var(--precip-legend-title, 12px);
+  font-weight: 800;
   color: #1a3350;
 }
 
@@ -686,8 +686,8 @@ html.is-edit .precip-tod-legend.is-dragging {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  border-radius: var(--precip-legend-radius, 6px);
-  min-width: var(--precip-legend-min-w, 64px);
+  border-radius: var(--precip-legend-radius, 4px);
+  min-width: var(--precip-legend-min-w, 40px);
   box-shadow: 0 1px 2px rgba(8, 28, 64, 0.18);
 }
 
@@ -695,10 +695,10 @@ html.is-edit .precip-tod-legend.is-dragging {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--precip-legend-pad-y, 6px) var(--precip-legend-pad-x, 10px);
+  padding: var(--precip-legend-pad-y, 3px) var(--precip-legend-pad-x, 6px);
   font-family: var(--font-main);
-  font-size: var(--precip-legend-label, 14px);
-  font-weight: 800;
+  font-size: var(--precip-legend-label, 11px);
+  font-weight: 700;
   color: #fff;
 }
 

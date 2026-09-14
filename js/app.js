@@ -2,7 +2,7 @@
  * Studio / signage bootstrap. Studio drives the iframe viewport.
  */
 
-import { APP_VERSION, DATA_VERSION, MAP_VERSION } from "./version.js?v=pref320";
+import { APP_VERSION, DATA_VERSION, MAP_VERSION } from "./version.js?v=pref322";
 import {
   canonicalContent,
   canonicalRegion,
@@ -12,13 +12,13 @@ import {
   listContents,
   listRegions,
   loadCatalog
-} from "./catalog.js?v=pref320";
-import { adaptWeather, aggregateRegion } from "./weather-data.js?v=pref320";
-import { loadMapSvg, mountMap, placeCardsAroundMap, projectCity } from "./map-renderer.js?v=pref320";
-import { formatStamp, renderCityCard, renderPin, pinRadiusForViewBox, pinRadiusForMatchingScreen, pickNoteWeather, weatherTone, renderNoteIcon, renderPrecipTodLegend } from "./weather-renderer.js?v=pref320";
-import { applyCardScale, applyLockedCards, applyMapTransform, applyPrecipLegend, applyTitleScale, bindCardEditor, bindMapControls, bindMapEditor, bindOkinawaEditor, bindPrecipLegendEditor, CARD_POS_MAX, CARD_POS_MIN, CARD_SCALE_MAX, CARD_SCALE_MIN, TITLE_SCALE_MAX, TITLE_SCALE_MIN, centerCityCards, containMapInStage, listCardPositions, loadCardScale, loadLayout, loadTitleScale, moveLockedCard, resetCardScale, resetLayout, resetTitleScale, saveCardScale, saveLayout, saveTitleScale } from "./studio-layout.js?v=pref320";
-import { expandForecast, formatNoteHtml, noteFor } from "./forecast.js?v=pref320";
-import { renderWeeklyTable } from "./table-renderer.js?v=pref320";
+} from "./catalog.js?v=pref322";
+import { adaptWeather, aggregateRegion } from "./weather-data.js?v=pref322";
+import { loadMapSvg, mountMap, placeCardsAroundMap, projectCity } from "./map-renderer.js?v=pref322";
+import { formatStamp, renderCityCard, renderPin, pinRadiusForViewBox, pinRadiusForMatchingScreen, pickNoteWeather, weatherTone, renderNoteIcon, renderPrecipTodLegend } from "./weather-renderer.js?v=pref322";
+import { applyCardScale, applyLockedCards, applyMapTransform, applyPrecipLegend, applyTitleScale, bindCardEditor, bindMapControls, bindMapEditor, bindOkinawaEditor, bindPrecipLegendEditor, CARD_POS_MAX, CARD_POS_MIN, CARD_SCALE_MAX, CARD_SCALE_MIN, TITLE_SCALE_MAX, TITLE_SCALE_MIN, centerCityCards, containMapInStage, freezeCardLayout, initLayoutDefaults, isCustomLayout, listCardPositions, loadCardScale, loadLayout, loadTitleScale, moveLockedCard, resetCardScale, resetLayout, resetTitleScale, saveCardScale, saveLayout, saveTitleScale, snapshotLayoutDefaults } from "./studio-layout.js?v=pref322";
+import { expandForecast, formatNoteHtml, noteFor } from "./forecast.js?v=pref322";
+import { renderWeeklyTable } from "./table-renderer.js?v=pref322";
 import {
   VIEWPORT_PRESETS,
   applyViewport,
@@ -28,10 +28,10 @@ import {
   fitTitleBars,
   readViewport,
   showAuxiliary
-} from "./viewport.js?v=pref320";
-import { msUntilIconPhaseChange } from "./jma-icons.js?v=pref320";
-import { fetchJmaWeather } from "./jma-live.js?v=pref320";
-import { buildWeekPoints, fetchWeekAlert, renderWeekPointsHtml } from "./week-points.js?v=pref320";
+} from "./viewport.js?v=pref322";
+import { msUntilIconPhaseChange } from "./jma-icons.js?v=pref322";
+import { fetchJmaWeather } from "./jma-live.js?v=pref322";
+import { buildWeekPoints, fetchWeekAlert, renderWeekPointsHtml } from "./week-points.js?v=pref322";
 
 const LIVE_WEATHER_TTL_MS = 10 * 60 * 1000;
 let liveWeatherCache = { at: 0, doc: null };
@@ -94,6 +94,7 @@ function productionUrl(regionId, contentId, extra = {}) {
 
 async function bootStudio() {
   await loadCatalog();
+  await initLayoutDefaults();
   state.regionId = canonicalRegion(state.regionId);
   state.contentId = canonicalContent(state.contentId);
 
@@ -301,6 +302,9 @@ async function bootStudio() {
     syncMapControls();
     loadFrame();
   });
+  document.getElementById("layout-commit")?.addEventListener("click", () => {
+    postToFrame({ type: "freeze-layout" });
+  });
   syncTitleScaleUi();
   regionSelect.addEventListener("change", () => {
     state.regionId = regionSelect.value;
@@ -406,6 +410,53 @@ async function bootStudio() {
       if (event.data.okinawa) Object.assign(layout.okinawa, event.data.okinawa);
       syncMapControls();
     }
+    if (event.data.type === "layout-frozen" && event.data.layout) {
+      Object.assign(layout, {
+        map: event.data.layout.map,
+        okinawa: event.data.layout.okinawa,
+        precipLegend: event.data.layout.precipLegend,
+        cards: event.data.layout.cards
+      });
+      const w = event.data.width || state.viewport.width;
+      const h = event.data.height || state.viewport.height;
+      saveLayout(state.regionId, layout, state.contentId, w, h);
+      if (Number.isFinite(event.data.cardScale)) {
+        saveCardScale(state.contentId, event.data.cardScale, state.regionId, w, h);
+        syncCardScaleUi(event.data.cardScale);
+      }
+      if (Number.isFinite(event.data.titleScale)) {
+        saveTitleScale(event.data.titleScale, w, h);
+        syncTitleScaleUi(event.data.titleScale);
+      }
+      const snapshot = snapshotLayoutDefaults(
+        state.regionId,
+        layout,
+        state.contentId,
+        w,
+        h,
+        event.data.cardScale,
+        event.data.titleScale
+      );
+      fetch("/api/layout-defaults", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(snapshot)
+      }).then(async (response) => {
+        if (!response.ok) throw new Error("save failed");
+        const hintEl = studioBar.querySelector(".studio-hint");
+        if (hintEl) hintEl.textContent = `配置を固定しました（${w}x${h}）。更新してもこの配置を維持します。`;
+      }).catch(() => {
+        const hintEl = studioBar.querySelector(".studio-hint");
+        if (hintEl) hintEl.textContent = "ブラウザ内には固定しました。ファイル保存はプレビューサーバー起動時のみできます。";
+      });
+      fillCardEditors(Object.entries(layout.cards || {}).map(([cityId, pos]) => ({
+        cityId,
+        cityName: cityId,
+        x: pos.x,
+        y: pos.y
+      })));
+      syncMapControls();
+    }
   });
 
   persistStudio();
@@ -418,6 +469,7 @@ async function bootStudio() {
 async function bootSignage() {
   window.setTimeout(() => document.documentElement.classList.remove("is-boot"), 6000);
   await loadCatalog();
+  await initLayoutDefaults();
   state.regionId = getRegion(state.regionId).id;
   state.contentId = getContent(state.contentId).id;
 
@@ -630,6 +682,9 @@ async function bootSignage() {
         ),
         layout
       );
+      if (freezeCardLayout(laidOut, layout)) {
+        saveLayout(region.id, layout, content.id, vp.width, vp.height);
+      }
 
       const noteWeather = pickNoteWeather(laidOut);
       noteIconEl.className = `wx-icon ${weatherTone(noteWeather)}`;
@@ -689,16 +744,13 @@ async function bootSignage() {
       }
       applyMapTransform(screen, layout);
       centerCityCards(layers.cards);
-      const hasCustomLayout = Math.abs(layout.map.x) > 0.05
-        || Math.abs(layout.map.y) > 0.05
-        || Math.abs((Number(layout.map.scale) || 1) - 1) > 0.02
-        || Math.abs(Number(layout.map.rotate) || 0) > 0.5
-        || Object.keys(layout.cards || {}).length > 0
-        || (layout.precipLegend
-          && (Math.abs((layout.precipLegend.x ?? 3) - 3) > 0.5
-            || Math.abs((layout.precipLegend.y ?? 22) - 22) > 0.5));
-      containMapInStage(screen, layout, { recenter: !hasCustomLayout });
-      paintMapPins();
+      const custom = isCustomLayout(layout);
+      if (!custom) {
+        containMapInStage(screen, layout, { recenter: true });
+        paintMapPins();
+      } else {
+        paintMapPins();
+      }
       if (canEdit) {
         notifyStudio({ type: "map", map: { ...layout.map }, okinawa: { ...layout.okinawa } });
         notifyStudio({ type: "cards", cards: listCardPositions(layers.cards), cardScale });
@@ -754,6 +806,31 @@ async function bootSignage() {
       applyTitleScale(screen, scale);
       fitTitleBars(screen);
       layoutNoteTicker();
+    }
+    if (event.data.type === "freeze-layout") {
+      const vp = measure();
+      const cards = listCardPositions(cardsLayer);
+      for (const item of cards) {
+        layout.cards[item.cityId] = { x: item.x, y: item.y, locked: true };
+      }
+      saveLayout(state.regionId, layout, state.contentId, vp.width, vp.height);
+      const cardScale = loadCardScale(state.contentId, state.regionId, vp.width, vp.height);
+      const titleScale = loadTitleScale(vp.width, vp.height);
+      notifyStudio({
+        type: "layout-frozen",
+        regionId: state.regionId,
+        contentId: state.contentId,
+        width: vp.width,
+        height: vp.height,
+        layout: {
+          map: { ...layout.map },
+          okinawa: { ...layout.okinawa },
+          precipLegend: { ...layout.precipLegend },
+          cards: { ...layout.cards }
+        },
+        cardScale,
+        titleScale
+      });
     }
   });
 
