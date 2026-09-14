@@ -1,12 +1,12 @@
 {
-  "rev": 1757823600000,
+  "rev": 1757824800000,
   "layouts": {
     "national": {
       "viewports": {
         "576x432": {
           "map": { "scale": 1, "rotate": 0, "x": 0, "y": 0 },
           "okinawa": { "x": 20, "y": 38, "scale": 1 },
-          "precipLegend": { "x": 3, "y": 22 },
+          "precipLegend": { "x": 86, "y": 68 },
           "cards": {
             "sapporo": { "x": 58.1, "y": 13.4, "locked": true },
             "sendai": { "x": 77.7, "y": 34.6, "locked": true },
@@ -23,7 +23,7 @@
             "fukuoka": { "x": 8.3, "y": 72.1, "locked": true },
             "naha": { "x": -5.1, "y": 35.1, "locked": true }
           },
-          "rev": 1757823600000
+          "rev": 1757824800000
         }
       }
     }

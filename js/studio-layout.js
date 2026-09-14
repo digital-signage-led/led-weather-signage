@@ -4,7 +4,7 @@
  * カード倍率もその4種で共有。全国は単体、地方は地方同士で倍率を共有。
  */
 
-import { canonicalContent, canonicalRegion, isNational } from "./catalog.js?v=pref332";
+import { canonicalContent, canonicalRegion, isNational } from "./catalog.js?v=pref333";
 
 const STORAGE_KEY = "led-weather-layout-v5";
 const STORAGE_KEY_LEGACY = "led-weather-layout-v4";
@@ -22,14 +22,30 @@ export const TITLE_SCALE_MIN = 0.6;
 export const TITLE_SCALE_MAX = 2.8;
 export const CARD_POS_MIN = -40;
 export const CARD_POS_MAX = 140;
+/** 降水確率レジェンド（朝/昼/夜）の既定位置＝画面右下 */
+export const PRECIP_LEGEND_DEFAULT = { x: 86, y: 68 };
 
 function emptyLayout(regionId = "national") {
   regionId = canonicalRegion(regionId);
   return {
     map: { scale: 1, rotate: 0, x: 0, y: 0 },
     okinawa: { x: 20, y: 38, scale: 1 },
-    precipLegend: { x: 3, y: 22 },
+    precipLegend: { ...PRECIP_LEGEND_DEFAULT },
     cards: {}
+  };
+}
+
+function normalizePrecipLegend(pos = {}) {
+  const x = Number(pos.x);
+  const y = Number(pos.y);
+  // 旧デフォルト（左上 3,22）は右下へ移す
+  if (!Number.isFinite(x) || !Number.isFinite(y)
+    || (Math.abs(x - 3) < 0.51 && Math.abs(y - 22) < 0.51)) {
+    return { ...PRECIP_LEGEND_DEFAULT };
+  }
+  return {
+    x: clamp(x, 0, 92),
+    y: clamp(y, 0, 92)
   };
 }
 
@@ -70,7 +86,7 @@ function layoutEntryFrom(source = {}) {
   return {
     map: { ...base.map, ...(source.map || {}) },
     okinawa: { ...base.okinawa, ...(source.okinawa || {}) },
-    precipLegend: { ...base.precipLegend, ...(source.precipLegend || {}) },
+    precipLegend: normalizePrecipLegend(source.precipLegend),
     cards: { ...(source.cards || {}) },
     cardsPop: { ...(source.cardsPop || source.cards || {}) }
   };
@@ -703,8 +719,8 @@ export function isCustomLayout(layout) {
     || Math.abs(Number(layout.map?.rotate) || 0) > 0.5
     || Object.keys(layout.cards || {}).length > 0
     || (layout.precipLegend
-      && (Math.abs((layout.precipLegend.x ?? 3) - 3) > 0.5
-        || Math.abs((layout.precipLegend.y ?? 22) - 22) > 0.5));
+      && (Math.abs((layout.precipLegend.x ?? PRECIP_LEGEND_DEFAULT.x) - PRECIP_LEGEND_DEFAULT.x) > 0.5
+        || Math.abs((layout.precipLegend.y ?? PRECIP_LEGEND_DEFAULT.y) - PRECIP_LEGEND_DEFAULT.y) > 0.5));
 }
 
 export function snapshotLayoutDefaults(regionId, layout, contentId, width, height, cardScale, titleScale) {
@@ -1058,12 +1074,11 @@ export function bindOkinawaEditor(dockEl, layout, onChange) {
   }, { passive: false });
 }
 
-/** 降水確玁E�E朝�E昼・夜�E例位置を適用 */
+/** 降水確率（朝・昼・夜）凡例位置を適用 */
 export function applyPrecipLegend(screenOrHost, layout) {
-  if (!layout.precipLegend) layout.precipLegend = { ...emptyLayout().precipLegend };
+  if (!layout.precipLegend) layout.precipLegend = { ...PRECIP_LEGEND_DEFAULT };
+  layout.precipLegend = normalizePrecipLegend(layout.precipLegend);
   const pos = layout.precipLegend;
-  pos.x = clamp(Number(pos.x) || 3, 0, 92);
-  pos.y = clamp(Number(pos.y) || 22, 0, 92);
   const host = screenOrHost?.querySelector?.(".led-body") || screenOrHost;
   const el = host?.querySelector?.(".precip-tod-legend") || document.querySelector(".precip-tod-legend");
   if (!el) return;
