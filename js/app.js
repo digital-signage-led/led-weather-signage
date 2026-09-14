@@ -2,7 +2,7 @@
  * Studio / signage bootstrap. Studio drives the iframe viewport.
  */
 
-import { APP_VERSION, DATA_VERSION, MAP_VERSION } from "./version.js?v=pref370";
+import { APP_VERSION, DATA_VERSION, MAP_VERSION } from "./version.js?v=pref371";
 import {
   canonicalContent,
   canonicalRegion,
@@ -12,30 +12,32 @@ import {
   listContents,
   listRegions,
   loadCatalog
-} from "./catalog.js?v=pref370";
-import { adaptWeather, aggregateRegion } from "./weather-data.js?v=pref370";
-import { loadMapSvg, mountMap, placeCardsAroundMap, projectCity } from "./map-renderer.js?v=pref370";
-import { formatStamp, renderCityCard, renderPin, pinRadiusForViewBox, pinRadiusForMatchingScreen, pickNoteWeather, weatherTone, renderNoteIcon, renderPrecipTodLegend } from "./weather-renderer.js?v=pref370";
-import { applyCardScale, applyLockedCards, applyMapTransform, applyPrecipLegend, applyTitleScale, bindCardEditor, bindMapControls, bindMapEditor, bindOkinawaEditor, bindPrecipLegendEditor, CARD_POS_MAX, CARD_POS_MIN, CARD_SCALE_MAX, CARD_SCALE_MIN, TITLE_SCALE_MAX, TITLE_SCALE_MIN, centerCityCards, containMapInStage, freezeCardLayout, initLayoutDefaults, isCustomLayout, listCardPositions, loadCardScale, loadLayout, loadTitleScale, moveLockedCard, resetCardScale, resetLayout, resetTitleScale, saveCardScale, saveLayout, saveTitleScale, snapshotLayoutDefaults } from "./studio-layout.js?v=pref370";
-import { expandForecast, formatNoteHtml, noteFor } from "./forecast.js?v=pref370";
-import { renderWeeklyTable } from "./table-renderer.js?v=pref370";
+} from "./catalog.js?v=pref371";
+import { adaptWeather, aggregateRegion } from "./weather-data.js?v=pref371";
+import { loadMapSvg, mountMap, placeCardsAroundMap, projectCity } from "./map-renderer.js?v=pref371";
+import { formatStamp, renderCityCard, renderPin, pinRadiusForViewBox, pinRadiusForMatchingScreen, pickNoteWeather, weatherTone, renderNoteIcon, renderPrecipTodLegend } from "./weather-renderer.js?v=pref371";
+import { applyCardScale, applyLockedCards, applyMapTransform, applyPrecipLegend, applyTitleScale, bindCardEditor, bindMapControls, bindMapEditor, bindOkinawaEditor, bindPrecipLegendEditor, CARD_POS_MAX, CARD_POS_MIN, CARD_SCALE_MAX, CARD_SCALE_MIN, TITLE_SCALE_MAX, TITLE_SCALE_MIN, centerCityCards, containMapInStage, freezeCardLayout, initLayoutDefaults, isCustomLayout, listCardPositions, loadCardScale, loadLayout, loadTitleScale, moveLockedCard, resetCardScale, resetLayout, resetTitleScale, saveCardScale, saveLayout, saveTitleScale, snapshotLayoutDefaults } from "./studio-layout.js?v=pref371";
+import { expandForecast, formatNoteHtml, noteFor } from "./forecast.js?v=pref371";
+import { renderWeeklyTable } from "./table-renderer.js?v=pref371";
 import {
   DEFAULT_STUDIO_VIEWPORT,
+  FIXED_DESIGN,
   VIEWPORT_PRESETS,
   applyTableLayout,
   applyViewport,
   cardBoxPx,
   cardSizePct,
   cityLimit,
+  fitFixedScreen,
   fitTitleBars,
   fitCityCardNames,
   partitionTablePages,
   readViewport,
   showAuxiliary
-} from "./viewport.js?v=pref370";
-import { msUntilIconPhaseChange } from "./jma-icons.js?v=pref370";
-import { fetchJmaWeather } from "./jma-live.js?v=pref370";
-import { buildWeekPoints, fetchWeekAlert, renderWeekPointsHtml } from "./week-points.js?v=pref370";
+} from "./viewport.js?v=pref371";
+import { msUntilIconPhaseChange } from "./jma-icons.js?v=pref371";
+import { fetchJmaWeather } from "./jma-live.js?v=pref371";
+import { buildWeekPoints, fetchWeekAlert, renderWeekPointsHtml } from "./week-points.js?v=pref371";
 
 /** 府県天気予報の発表時刻（JST）。発表反映待ちで +5 分後に取りに行く。 */
 const JMA_PUBLISH_HOURS_JST = [5, 11, 17];
@@ -134,7 +136,7 @@ const canEdit = params.get("edit") === "1";
 const state = {
   regionId: canonicalRegion(params.get("region")),
   contentId: canonicalContent(params.get("content")),
-  viewport: readViewport(window.innerWidth, window.innerHeight)
+  viewport: readViewport(FIXED_DESIGN.width, FIXED_DESIGN.height)
 };
 
 let lastError = "ok";
@@ -624,19 +626,17 @@ async function bootSignage() {
   const noteEl = document.getElementById("led-note");
   const noteIconEl = document.getElementById("led-note-icon");
   const attributionEl = document.getElementById("map-attribution");
+  // スタジオ iframe（?vw/?vh）以外は設計解像度で固定。実窓サイズには追従しない。
   const measure = () => {
     const fromW = Number(params.get("vw"));
     const fromH = Number(params.get("vh"));
     if (fromW > 0 && fromH > 0) return readViewport(fromW, fromH);
-    return readViewport(
-      window.innerWidth || document.documentElement.clientWidth,
-      window.innerHeight || document.documentElement.clientHeight
-    );
+    return readViewport(FIXED_DESIGN.width, FIXED_DESIGN.height);
   };
+  const useFixedScale = !(Number(params.get("vw")) > 0 && Number(params.get("vh")) > 0);
   const initialVp = measure();
   state.viewport = initialVp;
   const layout = loadLayout(state.regionId, state.contentId, initialVp.width, initialVp.height);
-  let renderTimer = 0;
   let iconPhaseTimer = 0;
   let tablePageTimer = 0;
   let tablePageIndex = Math.max(0, Number.parseInt(params.get("page") || "0", 10) || 0);
@@ -759,7 +759,7 @@ async function bootSignage() {
     const content = getContent(state.contentId);
     const vp = measure();
     state.viewport = vp;
-    applyViewport(screen, vp, region.id, content);
+    applyViewport(screen, vp, region.id, content, { fixedScale: useFixedScale });
     if (content.id !== "weekly_weather") hideWeekPoints();
 
     // 解像度ごとの保存レイアウトを読み直す
@@ -1022,8 +1022,12 @@ async function bootSignage() {
   });
 
   window.addEventListener("resize", () => {
-    window.clearTimeout(renderTimer);
-    renderTimer = window.setTimeout(() => render(), 80);
+    // 設計解像度は変えず、表示スケールだけ合わせる（累積しない）
+    if (useFixedScale) {
+      fitFixedScreen(screen, state.viewport.width, state.viewport.height);
+    }
+    window.clearTimeout(tickerLayoutTimer);
+    tickerLayoutTimer = window.setTimeout(() => layoutNoteTicker(), 40);
   });
   if (typeof ResizeObserver === "function") {
     new ResizeObserver(() => {

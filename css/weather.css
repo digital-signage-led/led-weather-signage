@@ -1,4 +1,4 @@
-.map-stage {
+﻿.map-stage {
   position: relative;
   width: 100%;
   height: 100%;
@@ -415,18 +415,16 @@ html.is-edit .city-card.is-dragging {
   background: color-mix(in srgb, var(--bg-card) 88%, transparent);
   border: none;
   border-radius: var(--box-radius);
-  padding: clamp(3px, 3.5%, 8px) clamp(4px, 5%, 10px) clamp(5px, 4.5%, 10px);
+  padding: var(--card-pad-y, 4px) var(--card-pad-x, 6px);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  gap: clamp(2px, 2%, 5px);
+  gap: var(--card-gap, 4px);
   line-height: 1.05;
   box-shadow: 0 1px 2px rgba(8, 28, 64, 0.12);
   white-space: nowrap;
   overflow: hidden;
-  container-type: size;
-  container-name: city-card;
 }
 
 .city-card.is-dragging {
@@ -443,7 +441,7 @@ html.is-edit .city-card.is-dragging {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: clamp(1px, 2cqh, 6px);
+  gap: var(--card-meta-gap, 2px);
   flex: 0 1 auto;
   min-width: 0;
   min-height: 0;
@@ -468,7 +466,7 @@ html.is-edit .city-card.is-dragging {
   display: block;
   width: 100%;
   box-sizing: border-box;
-  font-size: clamp(9px, min(40cqw, 16cqh), var(--font-city));
+  font-size: var(--font-city);
   font-weight: 900;
   color: var(--text-primary);
   flex: 0 0 auto;
@@ -483,7 +481,7 @@ html.is-edit .city-card.is-dragging {
 
 .city-card-temps {
   font-family: var(--font-main);
-  font-size: clamp(10px, min(40cqw, 16.5cqh), calc(var(--font-temp) * 0.95));
+  font-size: calc(var(--font-temp) * 0.95);
   font-weight: 600;
   letter-spacing: -0.02em;
   display: flex;
@@ -508,7 +506,7 @@ html.is-edit .city-card.is-dragging {
 
 .city-card-pop {
   font-family: var(--font-number);
-  font-size: clamp(10px, min(28cqw, 14cqh), var(--font-pop));
+  font-size: var(--font-pop);
   font-weight: 800;
   color: var(--pop-color);
   flex: 0 1 auto;
@@ -524,13 +522,12 @@ html.is-edit .city-card.is-dragging {
 /* 繧｢繧､繧ｳ繝ｳ縺ｨ蜷後§菴咲ｽｮ縺ｮ繝懊ャ繧ｯ繧ｹ縲ゅΞ繧､繝､繝ｼ縺ｯ繧｢繧､繧ｳ繝ｳ縺御ｸ翫ゆｸ九・蝨ｰ蜷阪・豌玲ｸｩ繧呈ｽｰ縺輔↑縺・*/
 .city-card-icon-stack {
   position: relative;
-  width: min(100%, 80cqh);
-  height: auto;
-  aspect-ratio: 1 / 1;
+  width: var(--icon-card);
+  height: var(--icon-card);
   max-width: 100%;
   max-height: 56%;
   display: inline-flex;
-  flex: 1 1 auto;
+  flex: 0 0 auto;
   min-width: 0;
   min-height: 0;
   align-items: center;
@@ -543,7 +540,7 @@ html.is-edit .city-card.is-dragging {
   left: 50%;
   top: 50%;
   width: 100%;
-  aspect-ratio: 1 / 1;
+  height: 100%;
   max-width: 100%;
   max-height: 100%;
   transform: translate(-50%, -50%);
@@ -599,8 +596,8 @@ html.is-edit .city-card.is-dragging {
   flex-direction: column;
   align-items: center;
   justify-content: space-evenly;
-  gap: clamp(1px, 2cqh, 5px);
-  padding: clamp(2px, 4%, 7px) clamp(2px, 5%, 7px);
+  gap: var(--card-gap, 4px);
+  padding: var(--card-pad-y, 4px) var(--card-pad-x, 6px);
 }
 
 .city-card-pops {
@@ -627,7 +624,7 @@ html.is-edit .city-card.is-dragging {
   gap: 0.12em;
   min-width: 0;
   overflow: hidden;
-  padding: clamp(3px, 2.2cqh, 8px) clamp(4px, 4cqw, 10px);
+  padding: var(--card-pad-y, 4px) var(--card-pad-x, 6px);
 }
 
 .pop-slot i {
@@ -635,7 +632,7 @@ html.is-edit .city-card.is-dragging {
 }
 
 .pop-slot b {
-  font-size: clamp(14px, min(36cqw, 22cqh), var(--font-pop-lg));
+  font-size: var(--font-pop-lg);
   font-weight: 800;
   min-width: 0;
   overflow: hidden;
@@ -742,7 +739,7 @@ html.is-edit .precip-tod-legend.is-dragging {
 
 .led-screen[data-content="weekly_weather"],
 .led-screen[data-content="weekly_precip"] {
-  background: var(--bg-sea) url("../img/weekly-frame.svg?v=pref370") no-repeat center / 100% 100%;
+  background: var(--bg-sea) url("../img/weekly-frame.svg?v=pref371") no-repeat center / 100% 100%;
 }
 
 .led-screen[data-content="weekly_weather"] .led-header,
@@ -891,11 +888,10 @@ html.is-edit .precip-tod-legend.is-dragging {
 
 .forecast-cell.is-weather .wx-icon {
   grid-row: 1;
-  width: auto;
-  height: 98%;
+  width: var(--icon-week, 48px);
+  height: var(--icon-week, 48px);
   max-width: 96%;
-  max-height: 98%;
-  aspect-ratio: 1.12 / 1;
+  max-height: 96%;
   flex: unset;
   min-width: 0;
   min-height: 0;
@@ -1129,7 +1125,7 @@ html.is-edit .precip-tod-legend.is-dragging {
   background: #0a2f7a;
   color: #ffffff;
   border-radius: calc(var(--box-radius) * 1.2);
-  font-size: max(16px, calc(var(--font-week) * 0.9));
+  font-size: calc(var(--font-week) * 0.9);
   font-weight: 900;
   line-height: 1.15;
   letter-spacing: 0.02em;
@@ -1160,8 +1156,8 @@ html.is-edit .precip-tod-legend.is-dragging {
 }
 
 .week-points-icon {
-  width: clamp(28px, calc(var(--header-title-height) * 0.48), 44px);
-  height: clamp(28px, calc(var(--header-title-height) * 0.48), 44px);
+  width: calc(var(--header-title-height) * 0.48);
+  height: calc(var(--header-title-height) * 0.48);
   flex: 0 0 auto;
   display: block;
 }
@@ -1181,7 +1177,7 @@ html.is-edit .precip-tod-legend.is-dragging {
   justify-content: center;
   gap: 0.08em;
   min-width: 0;
-  font-size: max(16px, calc(var(--font-week) * 0.88));
+  font-size: calc(var(--font-week) * 0.88);
   font-weight: 800;
   line-height: 1.15;
   white-space: nowrap;

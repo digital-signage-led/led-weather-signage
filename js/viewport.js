@@ -1,23 +1,25 @@
 /**
- * ビューポート駆動の共通レイアウト。
- * 解像度専用CSSや固定キャンバス＋scale は使わない。
- * Width×Height → 使用領域 → セル基準 → 文字・余白。
+ * サイネージは固定デザインキャンバスで描き、実画面へは均一スケールで合わせる。
+ * 機種ごとの流体トークン差や、部品単位の vw/vh 拡大は使わない。
  */
 
+/** 本番の固定設計解像度（レイアウト・週間フレーム基準） */
+export const FIXED_DESIGN = { width: 1920, height: 1080 };
+
 export const VIEWPORT_PRESETS = [
-  { width: 432, height: 288, label: "432×288" },
-  { width: 528, height: 352, label: "528×352" },
-  { width: 576, height: 432, label: "576×432" },
-  { width: 704, height: 528, label: "704×528" },
+  { width: 1920, height: 1080, label: "1920×1080（固定）" },
   { width: 720, height: 576, label: "720×576" },
+  { width: 576, height: 432, label: "576×432" },
+  { width: 432, height: 288, label: "432×288" },
   { width: 880, height: 704, label: "880×704" },
+  { width: 704, height: 528, label: "704×528" },
+  { width: 528, height: 352, label: "528×352" },
   { width: 1024, height: 600, label: "1024×600" },
-  { width: 1376, height: 448, label: "1376×448" },
-  { width: 1920, height: 1080, label: "1920×1080" }
+  { width: 1376, height: 448, label: "1376×448" }
 ];
 
-/** スタジオ初期プレビュー用（LED代表サイズ） */
-export const DEFAULT_STUDIO_VIEWPORT = { width: 576, height: 432 };
+/** スタジオ初期プレビュー用（設計解像度） */
+export const DEFAULT_STUDIO_VIEWPORT = { ...FIXED_DESIGN };
 
 const MIN_W = 160;
 const MIN_H = 120;
@@ -35,8 +37,7 @@ export function readViewport(width, height) {
   const minSide = Math.min(w, h);
   const maxSide = Math.max(w, h);
   const area = w * h;
-  // 短辺＋面積の幾何平均で、極端な縦横比でも文字だけ膨らまない基準値
-  const basis = Math.round(minSide * 0.72 + Math.sqrt(area) * 0.28);
+  const basis = minSide;
   const shape = aspect < 0.82
     ? "portrait"
     : aspect < 1.12
@@ -64,20 +65,30 @@ export function fluidPx(basis, ratio, minPx, maxPx) {
   return Math.round(clamp(basis * ratio, minPx, maxPx));
 }
 
-/** 天気／降水ボックスの実ピクセル */
+/** 窓サイズ（スケール計算用）。design サイズとは分けて扱う */
+export function readWindowSize() {
+  const w = window.innerWidth || document.documentElement.clientWidth || FIXED_DESIGN.width;
+  const h = window.innerHeight || document.documentElement.clientHeight || FIXED_DESIGN.height;
+  return {
+    width: Math.max(1, Math.round(w)),
+    height: Math.max(1, Math.round(h))
+  };
+}
+
+/** 天気／降水ボックスの実ピクセル（デザイン座標） */
 export function cardBoxPx(vp, variant = "weather") {
   const s = vp.basis || vp.minSide;
   const pop = variant === "pop";
   if (pop) {
-    const rawW = fluidPx(s, 0.22, 64, 200);
-    const rawH = fluidPx(s, 0.24, 60, 220);
+    const rawW = fluidPx(s, 0.22, 80, 220);
+    const rawH = fluidPx(s, 0.24, 72, 240);
     return {
       w: Math.min(rawW, Math.round(vp.width * 0.2)),
       h: Math.min(rawH, Math.round(vp.height * 0.28))
     };
   }
-  const rawW = fluidPx(s, 0.18, 52, 180);
-  const rawH = fluidPx(s, 0.26, 72, 240);
+  const rawW = fluidPx(s, 0.18, 64, 200);
+  const rawH = fluidPx(s, 0.26, 88, 260);
   return {
     w: Math.min(rawW, Math.round(vp.width * 0.18)),
     h: Math.min(rawH, Math.round(vp.height * 0.32))
@@ -96,8 +107,6 @@ export function tokensFor(vp, content = { id: "today_weather", name: "今日の�
     "--viewport-height": `${vp.height}px`,
     "--led-width": `${vp.width}px`,
     "--led-height": `${vp.height}px`,
-    "--ui-scale": String(Number((s / 432).toFixed(4))),
-    "--font-scale": String(Number((s / 432).toFixed(4))),
     "--font-title": `${fluidPx(s, 0.039, 10, 34)}px`,
     "--font-main-title": `${fluidPx(s, titleRatio, 12, 48)}px`,
     "--font-stamp": `${fluidPx(s, 0.025, 9, 22)}px`,
@@ -123,21 +132,20 @@ export function tokensFor(vp, content = { id: "today_weather", name: "今日の�
     "--card-box-w": `${box.w}px`,
     "--card-box-h": `${box.h}px`,
     "--card-min-width": "0px",
-    "--pin-size": `${fluidPx(s, 0.028, 6, 20)}px`,
+    "--pin-size": `${fluidPx(s, 0.028, 8, 22)}px`,
     "--map-stroke": `${clamp(s * 0.0028, 0.8, 2.4).toFixed(2)}px`,
-    "--precip-legend-title": `${fluidPx(s, 0.024, 8, 16)}px`,
-    "--precip-legend-label": `${fluidPx(s, 0.022, 7, 14)}px`,
-    "--precip-legend-pad-y": `${fluidPx(s, 0.009, 2, 6)}px`,
-    "--precip-legend-pad-x": `${fluidPx(s, 0.014, 3, 8)}px`,
-    "--precip-legend-min-w": `${fluidPx(s, 0.08, 24, 48)}px`,
-    "--precip-legend-radius": `${fluidPx(s, 0.008, 2, 5)}px`,
-    "--precip-legend-gap": `${fluidPx(s, 0.008, 2, 5)}px`
+    "--precip-legend-title": `${fluidPx(s, 0.024, 9, 18)}px`,
+    "--precip-legend-label": `${fluidPx(s, 0.022, 8, 16)}px`,
+    "--precip-legend-pad-y": `${fluidPx(s, 0.009, 2, 7)}px`,
+    "--precip-legend-pad-x": `${fluidPx(s, 0.014, 4, 10)}px`,
+    "--precip-legend-min-w": `${fluidPx(s, 0.08, 28, 56)}px`,
+    "--precip-legend-radius": `${fluidPx(s, 0.008, 2, 6)}px`,
+    "--precip-legend-gap": `${fluidPx(s, 0.008, 2, 6)}px`
   };
 }
 
 /**
- * 週間表：使用可能領域 ÷ 行・列 からセル基準トークンを算出。
- * font は cell の短辺を主基準（幅だけに依存しない）。
+ * 週間表：デザインキャンバス内の使用可能領域 ÷ 行・列 からセル基準トークンを算出。
  */
 export function tableLayoutTokens(vp, rows = 5) {
   const rowCount = Math.max(1, Number(rows) || 5);
@@ -182,7 +190,30 @@ export function tableLayoutTokens(vp, rows = 5) {
   };
 }
 
-export function applyViewport(element, vp, regionId, content) {
+/**
+ * 固定設計解像度の画面を、ウインドウに収まるよう中央配置でスケールする。
+ * transform は毎回置き換え（累積しない）。
+ */
+export function fitFixedScreen(element, designW = FIXED_DESIGN.width, designH = FIXED_DESIGN.height) {
+  if (!element) return 1;
+  const win = readWindowSize();
+  const scale = Math.min(win.width / designW, win.height / designH);
+  const ox = (win.width - designW * scale) / 2;
+  const oy = (win.height - designH * scale) / 2;
+  element.style.position = "absolute";
+  element.style.left = "0";
+  element.style.top = "0";
+  element.style.right = "auto";
+  element.style.bottom = "auto";
+  element.style.width = `${designW}px`;
+  element.style.height = `${designH}px`;
+  element.style.transformOrigin = "0 0";
+  element.style.transform = `translate(${ox}px, ${oy}px) scale(${scale})`;
+  element.style.setProperty("--fit-scale", String(scale));
+  return scale;
+}
+
+export function applyViewport(element, vp, regionId, content, options = {}) {
   if (!element) return;
   const tokens = tokensFor(vp, content);
   for (const [key, value] of Object.entries(tokens)) {
@@ -193,13 +224,6 @@ export function applyViewport(element, vp, regionId, content) {
   element.dataset.shape = vp.shape;
   element.dataset.size = vp.size;
   element.dataset.density = vp.density;
-  element.style.width = "100%";
-  element.style.height = "100%";
-  element.style.position = "absolute";
-  element.style.inset = "0";
-  element.style.removeProperty("transform");
-  element.style.removeProperty("left");
-  element.style.removeProperty("top");
   element.style.setProperty("--screen-width", `${vp.width}px`);
   element.style.setProperty("--screen-height", `${vp.height}px`);
   element.style.setProperty("--safe-area", tokens["--safe-inset"]);
@@ -211,6 +235,20 @@ export function applyViewport(element, vp, regionId, content) {
   element.style.setProperty("--map-land", "#76c85a");
   element.style.setProperty("--map-neighbor", "#d0d5db");
   element.style.setProperty("--bg-sea", "#c8ebff");
+
+  if (options.fixedScale) {
+    fitFixedScreen(element, vp.width, vp.height);
+  } else {
+    element.style.width = "100%";
+    element.style.height = "100%";
+    element.style.position = "absolute";
+    element.style.inset = "0";
+    element.style.removeProperty("transform");
+    element.style.removeProperty("left");
+    element.style.removeProperty("top");
+    element.style.removeProperty("right");
+    element.style.removeProperty("bottom");
+  }
 }
 
 /** 週間表描画後に、行数に応じたセル基準トークンを適用 */
