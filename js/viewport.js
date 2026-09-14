@@ -175,8 +175,8 @@ export function tableLayoutTokens(vp, rows = 5) {
     "--font-week-label": `${Math.round(clamp(cellMin * 0.2, 9, 18))}px`,
     "--font-week-value": `${Math.round(clamp(cellMin * 0.45, 12, 40))}px`,
     "--font-week-unit": `${Math.round(clamp(cellMin * 0.18, 8, 14))}px`,
-    "--font-week-temp": `${Math.round(clamp(cellH * 0.4 * 0.55, 10, 34))}px`,
-    "--icon-week": `${Math.round(clamp(cellH * 0.6 * 0.85, 12, 56))}px`,
+    "--font-week-temp": `${Math.round(clamp(cellH * 0.3 * 0.58, 10, 34))}px`,
+    "--icon-week": `${Math.round(clamp(cellH * 0.7 * 0.92, 12, 64))}px`,
     "--week-pad-y": `${Math.round(clamp(cellH * 0.05, 1, 8))}px`,
     "--week-pad-x": `${Math.round(clamp(cellW * 0.05, 1, 10))}px`
   };

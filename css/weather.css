@@ -1,4 +1,4 @@
-﻿.map-stage {
+.map-stage {
   position: relative;
   width: 100%;
   height: 100%;
@@ -742,7 +742,7 @@ html.is-edit .precip-tod-legend.is-dragging {
 
 .led-screen[data-content="weekly_weather"],
 .led-screen[data-content="weekly_precip"] {
-  background: var(--bg-sea) url("../img/weekly-frame.svg?v=pref369") no-repeat center / 100% 100%;
+  background: var(--bg-sea) url("../img/weekly-frame.svg?v=pref370") no-repeat center / 100% 100%;
 }
 
 .led-screen[data-content="weekly_weather"] .led-header,
@@ -882,19 +882,19 @@ html.is-edit .precip-tod-legend.is-dragging {
 
 .forecast-cell.is-weather {
   display: grid;
-  grid-template-rows: 6fr 4fr;
+  grid-template-rows: 7fr 3fr;
   align-items: center;
   justify-items: center;
   gap: 0;
-  padding: var(--week-pad-y, 0.06em) var(--week-pad-x, 0.06em);
+  padding: var(--week-pad-y, 0.04em) var(--week-pad-x, 0.04em);
 }
 
 .forecast-cell.is-weather .wx-icon {
   grid-row: 1;
   width: auto;
-  height: 88%;
-  max-width: 86%;
-  max-height: 88%;
+  height: 98%;
+  max-width: 96%;
+  max-height: 98%;
   aspect-ratio: 1.12 / 1;
   flex: unset;
   min-width: 0;
