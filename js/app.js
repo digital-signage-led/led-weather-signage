@@ -2,7 +2,7 @@
  * Studio / signage bootstrap. Studio drives the iframe viewport.
  */
 
-import { APP_VERSION, DATA_VERSION, MAP_VERSION } from "./version.js?v=pref345";
+import { APP_VERSION, DATA_VERSION, MAP_VERSION } from "./version.js?v=pref346";
 import {
   canonicalContent,
   canonicalRegion,
@@ -12,13 +12,13 @@ import {
   listContents,
   listRegions,
   loadCatalog
-} from "./catalog.js?v=pref345";
-import { adaptWeather, aggregateRegion } from "./weather-data.js?v=pref345";
-import { loadMapSvg, mountMap, placeCardsAroundMap, projectCity } from "./map-renderer.js?v=pref345";
-import { formatStamp, renderCityCard, renderPin, pinRadiusForViewBox, pinRadiusForMatchingScreen, pickNoteWeather, weatherTone, renderNoteIcon, renderPrecipTodLegend } from "./weather-renderer.js?v=pref345";
-import { applyCardScale, applyLockedCards, applyMapTransform, applyPrecipLegend, applyTitleScale, bindCardEditor, bindMapControls, bindMapEditor, bindOkinawaEditor, bindPrecipLegendEditor, CARD_POS_MAX, CARD_POS_MIN, CARD_SCALE_MAX, CARD_SCALE_MIN, TITLE_SCALE_MAX, TITLE_SCALE_MIN, centerCityCards, containMapInStage, freezeCardLayout, initLayoutDefaults, isCustomLayout, listCardPositions, loadCardScale, loadLayout, loadTitleScale, moveLockedCard, resetCardScale, resetLayout, resetTitleScale, saveCardScale, saveLayout, saveTitleScale, snapshotLayoutDefaults } from "./studio-layout.js?v=pref345";
-import { expandForecast, formatNoteHtml, noteFor } from "./forecast.js?v=pref345";
-import { renderWeeklyTable } from "./table-renderer.js?v=pref345";
+} from "./catalog.js?v=pref346";
+import { adaptWeather, aggregateRegion } from "./weather-data.js?v=pref346";
+import { loadMapSvg, mountMap, placeCardsAroundMap, projectCity } from "./map-renderer.js?v=pref346";
+import { formatStamp, renderCityCard, renderPin, pinRadiusForViewBox, pinRadiusForMatchingScreen, pickNoteWeather, weatherTone, renderNoteIcon, renderPrecipTodLegend } from "./weather-renderer.js?v=pref346";
+import { applyCardScale, applyLockedCards, applyMapTransform, applyPrecipLegend, applyTitleScale, bindCardEditor, bindMapControls, bindMapEditor, bindOkinawaEditor, bindPrecipLegendEditor, CARD_POS_MAX, CARD_POS_MIN, CARD_SCALE_MAX, CARD_SCALE_MIN, TITLE_SCALE_MAX, TITLE_SCALE_MIN, centerCityCards, containMapInStage, freezeCardLayout, initLayoutDefaults, isCustomLayout, listCardPositions, loadCardScale, loadLayout, loadTitleScale, moveLockedCard, resetCardScale, resetLayout, resetTitleScale, saveCardScale, saveLayout, saveTitleScale, snapshotLayoutDefaults } from "./studio-layout.js?v=pref346";
+import { expandForecast, formatNoteHtml, noteFor } from "./forecast.js?v=pref346";
+import { renderWeeklyTable } from "./table-renderer.js?v=pref346";
 import {
   VIEWPORT_PRESETS,
   applyViewport,
@@ -29,10 +29,10 @@ import {
   fitCityCardNames,
   readViewport,
   showAuxiliary
-} from "./viewport.js?v=pref345";
-import { msUntilIconPhaseChange } from "./jma-icons.js?v=pref345";
-import { fetchJmaWeather } from "./jma-live.js?v=pref345";
-import { buildWeekPoints, fetchWeekAlert, renderWeekPointsHtml } from "./week-points.js?v=pref345";
+} from "./viewport.js?v=pref346";
+import { msUntilIconPhaseChange } from "./jma-icons.js?v=pref346";
+import { fetchJmaWeather } from "./jma-live.js?v=pref346";
+import { buildWeekPoints, fetchWeekAlert, renderWeekPointsHtml } from "./week-points.js?v=pref346";
 
 const LIVE_WEATHER_TTL_MS = 10 * 60 * 1000;
 let liveWeatherCache = { at: 0, doc: null };

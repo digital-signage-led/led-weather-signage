@@ -743,7 +743,7 @@ html.is-edit .precip-tod-legend.is-dragging {
 
 .led-screen[data-content="weekly_weather"],
 .led-screen[data-content="weekly_precip"] {
-  background: var(--bg-sea) url("../img/weekly-frame.svg?v=pref345") no-repeat center / 100% 100%;
+  background: var(--bg-sea) url("../img/weekly-frame.svg?v=pref346") no-repeat center / 100% 100%;
 }
 
 .led-screen[data-content="weekly_weather"] .map-stage,
@@ -752,8 +752,11 @@ html.is-edit .precip-tod-legend.is-dragging {
 }
 
 .forecast-table {
-  --forecast-line: #7eb8d8;
-  --forecast-gap: 3px;
+  --forecast-line: #8eb8d6;
+  --forecast-gap: 2px;
+  --forecast-head: #fff3b2;
+  --forecast-city-bg: #cfe6f5;
+  --forecast-cell-bg: rgba(255, 255, 255, 0.94);
   position: absolute;
   left: var(--footer-gap);
   right: var(--footer-gap);
@@ -765,25 +768,26 @@ html.is-edit .precip-tod-legend.is-dragging {
   min-height: 0;
   overflow: hidden;
   z-index: 3;
-  padding: 6px;
-  border-radius: 14px;
-  background: rgba(210, 230, 245, 0.42);
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
   box-sizing: border-box;
 }
 
-/* 罫線は border ではなく gap＋背景色で描く（サイネージの scale / 古いブラウザでも消えない） */
+/* 罫線は gap＋背景色（サイネージでも消えにくい）。見た目は参照の細い水色ラインに合わせる */
 .forecast-grid {
   flex: 1 1 auto;
   min-width: 0;
   min-height: 0;
   display: grid;
-  grid-template-columns: minmax(3.6em, 16%) repeat(7, minmax(0, 1fr));
+  grid-template-columns: minmax(3.8em, 15%) repeat(7, minmax(0, 1fr));
   grid-template-rows: auto repeat(var(--forecast-rows, 5), minmax(0, 1fr));
   gap: var(--forecast-gap);
   padding: var(--forecast-gap);
   background: var(--forecast-line);
-  border-radius: 10px;
+  border-radius: 8px;
   box-sizing: border-box;
+  overflow: hidden;
 }
 
 .forecast-day-h,
@@ -807,19 +811,20 @@ html.is-edit .precip-tod-legend.is-dragging {
 
 .forecast-city-h {
   padding: 0;
-  background: rgba(210, 230, 245, 0.96);
+  background: var(--bg-sea);
   overflow: visible;
   white-space: normal;
 }
 
 .forecast-day-h {
   flex-direction: row;
-  align-items: baseline;
+  align-items: center;
   justify-content: center;
   gap: 0.08em;
-  padding: 0.12em 0.2em;
-  background: #f2e08a;
+  padding: 0.18em 0.12em;
+  background: var(--forecast-head);
   line-height: 1;
+  font-weight: 900;
 }
 
 .forecast-day-num {
@@ -836,9 +841,10 @@ html.is-edit .precip-tod-legend.is-dragging {
 
 .forecast-city {
   font-size: var(--font-city);
-  padding: 0.12em 0.2em;
-  background: #d7e8f4;
+  padding: 0.12em 0.16em;
+  background: var(--forecast-city-bg);
   color: var(--text-primary);
+  font-weight: 900;
 }
 
 .forecast-day-h.is-sunday {
@@ -854,38 +860,28 @@ html.is-edit .precip-tod-legend.is-dragging {
 }
 
 .forecast-cell.is-today {
-  background: #eef6ff;
+  background: rgba(238, 246, 255, 0.96);
 }
 
 .forecast-cell {
   flex-direction: column;
   padding: 0.06em 0.04em 0.1em;
-  background: #f7fbfe;
-}
-
-.forecast-grid > .forecast-day-h:nth-child(2),
-.forecast-grid > .forecast-city {
-  border-radius: 6px 0 0 6px;
-}
-
-.forecast-grid > .forecast-day-h:nth-child(8),
-.forecast-grid > .forecast-cell:nth-child(8n) {
-  border-radius: 0 6px 6px 0;
+  background: var(--forecast-cell-bg);
 }
 
 .forecast-cell.is-weather {
   container-type: size;
   justify-content: space-between;
-  gap: 0.02em;
-  padding: 0.04em 0.03em 0.06em;
+  gap: 0.04em;
+  padding: 0.08em 0.04em 0.1em;
 }
 
 .forecast-cell.is-weather .wx-icon {
-  width: min(96%, 90cqw);
+  width: min(94%, 88cqw);
   height: auto;
-  aspect-ratio: 1.15 / 1;
-  max-height: 70cqh;
-  flex: 1 1 64%;
+  aspect-ratio: 1.12 / 1;
+  max-height: 68cqh;
+  flex: 1 1 62%;
   min-width: 0;
   min-height: 0;
 }
@@ -898,18 +894,32 @@ html.is-edit .precip-tod-legend.is-dragging {
 .forecast-temps {
   font-family: var(--font-main);
   font-size: calc(var(--font-temp) * 0.68);
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: -0.02em;
   display: flex;
   align-items: baseline;
+  justify-content: center;
   flex: 0 0 auto;
-  gap: 0.04em;
+  gap: 0.02em;
 }
 
 .forecast-cell.is-weather .forecast-temps {
-  font-size: calc(var(--font-temp) * 0.56);
+  font-size: calc(var(--font-temp) * 0.58);
   line-height: 1;
   flex: 0 0 auto;
+}
+
+.forecast-temps .temp-max {
+  color: var(--temp-max);
+}
+
+.forecast-temps .temp-min {
+  color: var(--temp-min);
+}
+
+.forecast-temps .temp-slash {
+  color: #7aa0b8;
+  font-weight: 700;
 }
 
 .forecast-cell.is-pop {
