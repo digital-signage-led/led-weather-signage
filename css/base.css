@@ -491,7 +491,7 @@ svg.jma-icon {
   fill: var(--note-accent);
 }
 
-/* 黄色矢印上の天気アイコンを囲む正方形ボックス */
+/* 黄色矢印上の天気アイコンを囲む円 */
 .led-note-icon-box {
   position: absolute;
   left: 10%;
@@ -505,7 +505,7 @@ svg.jma-icon {
   box-sizing: border-box;
   background: rgba(255, 255, 255, 0.92);
   border: 0;
-  border-radius: calc(var(--footer-height) * 0.06);
+  border-radius: 50%;
   box-shadow: none;
   pointer-events: none;
 }
