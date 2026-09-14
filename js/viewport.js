@@ -182,8 +182,8 @@ export function fitFixedScreen(element, designW = FIXED_DESIGN.width, designH = 
 export function cityLimit(vp, regionId, content, available = 12) {
   const wanted = Math.max(1, available);
   if (content.kind === "table") {
-    // 全国・地方の週間表は4都市ずつページ切替（余りは最終ページ）
-    return Math.min(4, wanted);
+    // 週間表は最大5都市／ページ（端数1件は出さない）
+    return Math.min(5, wanted);
   }
   // 北海道・東北・中部は地点をできるだけすべて出す
   const region = String(regionId || "").toLowerCase();
@@ -197,6 +197,42 @@ export function cityLimit(vp, regionId, content, available = 12) {
   if (vp.shape === "portrait" || vp.size === "tiny") max = Math.min(max, Math.max(4, wanted - 2));
   if (vp.shape === "ultrawide") max = Math.min(wanted, max + 1);
   return Math.min(wanted, max);
+}
+
+/**
+ * 週間表のページ分割。最大 maxPerPage（既定5）。
+ * 余り1件だけになる分割は避け、3+2 / 3+3 などに整える。
+ */
+export function partitionTablePages(items, maxPerPage = 5) {
+  const list = Array.isArray(items) ? items.filter(Boolean) : [];
+  const n = list.length;
+  if (n === 0) return [[]];
+  if (n <= maxPerPage) return [list];
+
+  const sizes = [];
+  let left = n;
+  while (left > 0) {
+    if (left <= maxPerPage) {
+      sizes.push(left);
+      break;
+    }
+    if (left - maxPerPage === 1) {
+      // 例: 6→3+3、11の残り6→3+3
+      const first = Math.ceil(left / 2);
+      sizes.push(first, left - first);
+      break;
+    }
+    sizes.push(maxPerPage);
+    left -= maxPerPage;
+  }
+
+  const pages = [];
+  let offset = 0;
+  for (const size of sizes) {
+    pages.push(list.slice(offset, offset + size));
+    offset += size;
+  }
+  return pages;
 }
 
 export function cardSizePct(vp, regionId, variant = "weather") {

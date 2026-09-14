@@ -742,7 +742,7 @@ html.is-edit .precip-tod-legend.is-dragging {
 
 .led-screen[data-content="weekly_weather"],
 .led-screen[data-content="weekly_precip"] {
-  background: var(--bg-sea) url("../img/weekly-frame.svg?v=pref359") no-repeat center / 100% 100%;
+  background: var(--bg-sea) url("../img/weekly-frame.svg?v=pref364") no-repeat center / 100% 100%;
 }
 
 .led-screen[data-content="weekly_weather"] .led-header,
@@ -969,22 +969,27 @@ html.is-edit .precip-tod-legend.is-dragging {
 .forecast-cell.is-pop-metrics {
   flex-direction: column;
   align-items: stretch;
-  justify-content: center;
+  justify-content: space-evenly;
   gap: 0;
-  padding: 0.12em 0.18em;
+  padding: 0.2em 0.4em;
   overflow: hidden;
   color: var(--text-primary);
+  box-sizing: border-box;
+  white-space: normal;
 }
 
 .forecast-cell.is-pop-metrics .pop-metric {
   flex: 1 1 0;
   min-height: 0;
+  min-width: 0;
   display: flex;
+  flex-direction: row;
   align-items: center;
   justify-content: space-between;
-  gap: 0.2em;
-  padding: 0.08em 0;
+  gap: 0.35em;
+  padding: 0.1em 0;
   line-height: 1;
+  overflow: hidden;
 }
 
 .forecast-cell.is-pop-metrics .pop-metric.is-pop-chance {
@@ -992,30 +997,18 @@ html.is-edit .precip-tod-legend.is-dragging {
 }
 
 .forecast-cell.is-pop-metrics .pop-metric-label {
-  flex: 0 1 auto;
-  min-width: 0;
+  flex: 0 0 auto;
+  width: 2.5em;
+  max-width: 42%;
   font-family: var(--font-main);
-  font-size: max(16px, calc(var(--font-week) * 0.85));
+  font-size: clamp(16px, calc(var(--font-week) * 1.2), 26px);
   font-weight: 800;
   color: #0b6fbf;
+  text-align: left;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: clip;
-}
-
-.forecast-cell.is-pop-metrics .pop-metric-label.is-two-line {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: center;
-  gap: 0.06em;
-  white-space: normal;
-  line-height: 1.05;
-  font-size: max(16px, calc(var(--font-week) * 0.78));
-}
-
-.forecast-cell.is-pop-metrics .pop-metric-label.is-two-line > span {
-  display: block;
+  overflow: visible;
+  line-height: 1;
+  letter-spacing: 0.02em;
 }
 
 .forecast-cell.is-pop-metrics .pop-metric.is-humidity .pop-metric-label {
@@ -1025,29 +1018,38 @@ html.is-edit .precip-tod-legend.is-dragging {
 .forecast-cell.is-pop-metrics .pop-metric-value {
   display: inline-flex;
   align-items: baseline;
+  justify-content: flex-end;
   gap: 0.04em;
-  flex: 0 0 auto;
+  flex: 1 1 auto;
+  min-width: 0;
   color: #123b5c;
+  overflow: hidden;
 }
 
 .forecast-cell.is-pop-metrics .pop-metric-value b {
-  font-size: max(16px, calc(var(--font-pop-lg) * 0.62));
+  font-size: clamp(20px, calc(var(--font-pop-lg) * 0.5), 38px);
   font-weight: 900;
   line-height: 1;
   color: #123b5c;
 }
 
 .forecast-cell.is-pop-metrics .pop-metric-value small {
-  font-size: 0.7em;
+  font-size: 0.45em;
   font-weight: 800;
   line-height: 1;
   align-self: flex-end;
-  margin-bottom: 0.08em;
+  margin-bottom: 0.1em;
   color: #3d6b8c;
   flex: 0 0 auto;
 }
 
-.forecast-cell.is-pop b {
+.forecast-city.is-empty,
+.forecast-cell.is-empty {
+  background: color-mix(in srgb, var(--forecast-cell-bg) 55%, transparent);
+  pointer-events: none;
+}
+
+.forecast-cell.is-pop:not(.is-pop-metrics) b {
   font-size: var(--font-pop-lg);
   font-weight: 800;
   line-height: 1;
@@ -1055,7 +1057,7 @@ html.is-edit .precip-tod-legend.is-dragging {
   align-items: center;
 }
 
-.forecast-cell.is-pop small {
+.forecast-cell.is-pop:not(.is-pop-metrics) small {
   font-size: 0.55em;
   line-height: 1;
   align-self: flex-end;

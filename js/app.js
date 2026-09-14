@@ -2,7 +2,7 @@
  * Studio / signage bootstrap. Studio drives the iframe viewport.
  */
 
-import { APP_VERSION, DATA_VERSION, MAP_VERSION } from "./version.js?v=pref359";
+import { APP_VERSION, DATA_VERSION, MAP_VERSION } from "./version.js?v=pref364";
 import {
   canonicalContent,
   canonicalRegion,
@@ -12,13 +12,13 @@ import {
   listContents,
   listRegions,
   loadCatalog
-} from "./catalog.js?v=pref359";
-import { adaptWeather, aggregateRegion } from "./weather-data.js?v=pref359";
-import { loadMapSvg, mountMap, placeCardsAroundMap, projectCity } from "./map-renderer.js?v=pref359";
-import { formatStamp, renderCityCard, renderPin, pinRadiusForViewBox, pinRadiusForMatchingScreen, pickNoteWeather, weatherTone, renderNoteIcon, renderPrecipTodLegend } from "./weather-renderer.js?v=pref359";
-import { applyCardScale, applyLockedCards, applyMapTransform, applyPrecipLegend, applyTitleScale, bindCardEditor, bindMapControls, bindMapEditor, bindOkinawaEditor, bindPrecipLegendEditor, CARD_POS_MAX, CARD_POS_MIN, CARD_SCALE_MAX, CARD_SCALE_MIN, TITLE_SCALE_MAX, TITLE_SCALE_MIN, centerCityCards, containMapInStage, freezeCardLayout, initLayoutDefaults, isCustomLayout, listCardPositions, loadCardScale, loadLayout, loadTitleScale, moveLockedCard, resetCardScale, resetLayout, resetTitleScale, saveCardScale, saveLayout, saveTitleScale, snapshotLayoutDefaults } from "./studio-layout.js?v=pref359";
-import { expandForecast, formatNoteHtml, noteFor } from "./forecast.js?v=pref359";
-import { renderWeeklyTable } from "./table-renderer.js?v=pref359";
+} from "./catalog.js?v=pref364";
+import { adaptWeather, aggregateRegion } from "./weather-data.js?v=pref364";
+import { loadMapSvg, mountMap, placeCardsAroundMap, projectCity } from "./map-renderer.js?v=pref364";
+import { formatStamp, renderCityCard, renderPin, pinRadiusForViewBox, pinRadiusForMatchingScreen, pickNoteWeather, weatherTone, renderNoteIcon, renderPrecipTodLegend } from "./weather-renderer.js?v=pref364";
+import { applyCardScale, applyLockedCards, applyMapTransform, applyPrecipLegend, applyTitleScale, bindCardEditor, bindMapControls, bindMapEditor, bindOkinawaEditor, bindPrecipLegendEditor, CARD_POS_MAX, CARD_POS_MIN, CARD_SCALE_MAX, CARD_SCALE_MIN, TITLE_SCALE_MAX, TITLE_SCALE_MIN, centerCityCards, containMapInStage, freezeCardLayout, initLayoutDefaults, isCustomLayout, listCardPositions, loadCardScale, loadLayout, loadTitleScale, moveLockedCard, resetCardScale, resetLayout, resetTitleScale, saveCardScale, saveLayout, saveTitleScale, snapshotLayoutDefaults } from "./studio-layout.js?v=pref364";
+import { expandForecast, formatNoteHtml, noteFor } from "./forecast.js?v=pref364";
+import { renderWeeklyTable } from "./table-renderer.js?v=pref364";
 import {
   FIXED_DESIGN,
   VIEWPORT_PRESETS,
@@ -29,12 +29,13 @@ import {
   fitFixedScreen,
   fitTitleBars,
   fitCityCardNames,
+  partitionTablePages,
   readViewport,
   showAuxiliary
-} from "./viewport.js?v=pref359";
-import { msUntilIconPhaseChange } from "./jma-icons.js?v=pref359";
-import { fetchJmaWeather } from "./jma-live.js?v=pref359";
-import { buildWeekPoints, fetchWeekAlert, renderWeekPointsHtml } from "./week-points.js?v=pref359";
+} from "./viewport.js?v=pref364";
+import { msUntilIconPhaseChange } from "./jma-icons.js?v=pref364";
+import { fetchJmaWeather } from "./jma-live.js?v=pref364";
+import { buildWeekPoints, fetchWeekAlert, renderWeekPointsHtml } from "./week-points.js?v=pref364";
 
 /** 府県天気予報の発表時刻（JST）。発表反映待ちで +5 分後に取りに行く。 */
 const JMA_PUBLISH_HOURS_JST = [5, 11, 17];
@@ -147,8 +148,16 @@ document.body.classList.toggle("is-kiosk", !isStudio);
 document.getElementById("studio-root").hidden = !isStudio;
 document.getElementById("app").hidden = isStudio;
 
-if (isStudio) bootStudio();
-else bootSignage();
+if (isStudio) {
+  // スタジオ親ページは読込オーバーレイ不要（iframe 側が独自に is-boot する）
+  document.documentElement.classList.remove("is-boot");
+  bootStudio().catch((error) => {
+    console.error(error);
+    document.documentElement.classList.remove("is-boot");
+  });
+} else {
+  bootSignage();
+}
 
 function productionUrl(regionId, contentId, extra = {}) {
   const next = new URL(window.location.href);
@@ -166,10 +175,11 @@ function productionUrl(regionId, contentId, extra = {}) {
 }
 
 async function bootStudio() {
-  await loadCatalog();
-  await initLayoutDefaults();
-  state.regionId = canonicalRegion(state.regionId);
-  state.contentId = canonicalContent(state.contentId);
+  try {
+    await loadCatalog();
+    await initLayoutDefaults();
+    state.regionId = canonicalRegion(state.regionId);
+    state.contentId = canonicalContent(state.contentId);
 
   const studioBar = document.getElementById("studio-bar");
   const regionSelect = document.getElementById("region-select");
@@ -594,6 +604,9 @@ async function bootStudio() {
   syncCardScaleUi();
   contentSelect.addEventListener("change", syncChrome);
   loadFrame();
+  } finally {
+    document.documentElement.classList.remove("is-boot");
+  }
 }
 
 async function bootSignage() {
@@ -765,18 +778,17 @@ async function bootSignage() {
       weatherStamp = weather.updatedAt;
 
       const candidates = aggregateRegion(locations.cities, weather, region);
-      const pageSize = cityLimit(vp, region.id, content, candidates.length);
-      const pageKey = `${region.id}:${content.id}:${pageSize}`;
+      const tablePages = content.kind === "table"
+        ? partitionTablePages(candidates, 5)
+        : [candidates.slice(0, cityLimit(vp, region.id, content, candidates.length))];
+      const pageKey = `${region.id}:${content.id}:p${tablePages.map((p) => p.length).join("-")}`;
       if (pageKey !== tablePageKey) {
         tablePageKey = pageKey;
         tablePageIndex = 0;
       }
-      const pageCount = Math.max(1, Math.ceil(Math.max(1, candidates.length) / Math.max(1, pageSize)));
+      const pageCount = Math.max(1, tablePages.length);
       if (tablePageIndex >= pageCount) tablePageIndex = 0;
-      const pageStart = content.kind === "table" ? tablePageIndex * pageSize : 0;
-      const pageCities = content.kind === "table"
-        ? candidates.slice(pageStart, pageStart + pageSize)
-        : candidates.slice(0, pageSize);
+      const pageCities = tablePages[tablePageIndex] || [];
       const selected = pageCities
         .map((city) => attachForecast(city, weather.pointsByCity.get(city.cityId), content, weather.updatedAt));
 

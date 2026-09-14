@@ -2,14 +2,22 @@
  * Weekly weather / precip table renderer.
  */
 
-import { canonicalContent } from "./catalog.js?v=pref359";
-import { loadIcon } from "./map-renderer.js?v=pref359";
-import { weatherTone } from "./weather-renderer.js?v=pref359";
-import { popTone } from "./forecast.js?v=pref359";
-import { isNightHours, jmaLabel } from "./jma-icons.js?v=pref359";
+import { canonicalContent } from "./catalog.js?v=pref364";
+import { loadIcon } from "./map-renderer.js?v=pref364";
+import { weatherTone } from "./weather-renderer.js?v=pref364";
+import { popTone } from "./forecast.js?v=pref364";
+import { isNightHours, jmaLabel } from "./jma-icons.js?v=pref364";
+
+/** 1ページの上限行。ページ都市数がこれ未満ならその数で描く（1行だけは避ける） */
+const TABLE_ROW_MAX = 5;
 
 export async function renderWeeklyTable(cities, contentId) {
-  const days = cities[0]?.weekly || [];
+  const list = Array.isArray(cities) ? cities.slice(0, TABLE_ROW_MAX) : [];
+  let slots = list.length;
+  if (slots === 0) slots = TABLE_ROW_MAX;
+  else if (slots === 1) slots = 2; // 1都市だけの縦伸びを防ぐ
+  const days = list[0]?.weekly || list.find((c) => c?.weekly?.length)?.weekly || [];
+  const dayCount = Math.max(7, days.length || 7);
   const head = [
     `<span class="forecast-city-h" aria-hidden="true"></span>`,
     ...days.map((day) => `
@@ -18,9 +26,17 @@ export async function renderWeeklyTable(cities, contentId) {
   ];
 
   const body = [];
-  for (const city of cities) {
+  for (let row = 0; row < slots; row += 1) {
+    const city = list[row];
+    if (!city) {
+      body.push(`<span class="forecast-city is-empty" aria-hidden="true"></span>`);
+      for (let i = 0; i < dayCount; i += 1) {
+        body.push(`<div class="forecast-cell is-empty" aria-hidden="true"></div>`);
+      }
+      continue;
+    }
     body.push(`<span class="forecast-city">${city.cityName}</span>`);
-    const cells = await Promise.all((city.weekly || []).map((day) => (
+    const cells = await Promise.all((city.weekly || days).map((day) => (
       canonicalContent(contentId) === "weekly_precip"
         ? Promise.resolve(renderPopCell(day))
         : renderWeatherCell(day)
@@ -29,7 +45,7 @@ export async function renderWeeklyTable(cities, contentId) {
   }
 
   return `
-    <div class="forecast-table" data-content="${contentId}" style="--forecast-rows:${Math.max(1, cities.length)}">
+    <div class="forecast-table" data-content="${contentId}" style="--forecast-rows:${slots}">
       <div class="forecast-grid">
         ${head.join("")}
         ${body.join("")}
@@ -72,7 +88,7 @@ function renderPopCell(day) {
   return `
     <div class="forecast-cell is-pop is-pop-metrics ${popTone(pop)}${day.today ? " is-today" : ""}">
       <div class="pop-metric is-pop-chance">
-        <span class="pop-metric-label is-two-line"><span>\u964d\u6c34</span><span>\u78ba\u7387</span></span>
+        <span class="pop-metric-label">\u964d\u6c34</span>
         <span class="pop-metric-value"><b>${pop}</b><small>%</small></span>
       </div>
       <div class="pop-metric is-humidity">
