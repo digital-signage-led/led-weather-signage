@@ -4,8 +4,8 @@
  */
 
 import { canonicalRegion, isNational } from "./catalog.js?v=pref320";
-import { cardSizePct } from "./viewport.js?v=pref344";
-import { MAP_VERSION } from "./version.js?v=pref344";
+import { cardSizePct } from "./viewport.js?v=pref345";
+import { MAP_VERSION } from "./version.js?v=pref345";
 
 import { jmaIconFile } from "./jma-icons.js?v=pref320";
 
