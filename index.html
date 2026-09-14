@@ -42,8 +42,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/base.css?v=pref366">
-  <link rel="stylesheet" href="css/weather.css?v=pref366">
+  <link rel="stylesheet" href="css/base.css?v=pref367">
+  <link rel="stylesheet" href="css/weather.css?v=pref367">
 </head>
 <body>
   <p id="boot-status" role="status">読込中</p>
@@ -143,7 +143,9 @@
             <svg class="led-note-arrow" viewBox="0 0 140 80" preserveAspectRatio="none">
               <path d="M0 0H86L140 40L86 80H0Z"/>
             </svg>
-            <span class="wx-icon" id="led-note-icon"></span>
+            <span class="led-note-icon-box">
+              <span class="wx-icon" id="led-note-icon"></span>
+            </span>
           </span>
           <div class="led-note" id="led-note"></div>
           <p class="jma-credit">出典：<a href="https://www.jma.go.jp/bosai/forecast/">気象庁</a>（jma.go.jp）</p>
@@ -152,6 +154,6 @@
     </article>
     <aside id="debug-overlay" hidden></aside>
   </div>
-  <script type="module" src="js/app.js?v=pref366"></script>
+  <script type="module" src="js/app.js?v=pref367"></script>
 </body>
 </html>

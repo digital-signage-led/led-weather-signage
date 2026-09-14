@@ -3,8 +3,8 @@
  * HTML は JMA API を呼ばない。雪など季節外れのコードを循環させない。
  */
 
-import { canonicalContent, getContent as contentFromCatalog } from "./catalog.js?v=pref366";
-import { isWetWeather, jmaLabel, jmaTone, resolveWeatherCode } from "./jma-icons.js?v=pref366";
+import { canonicalContent, getContent as contentFromCatalog } from "./catalog.js?v=pref367";
+import { isWetWeather, jmaLabel, jmaTone, resolveWeatherCode } from "./jma-icons.js?v=pref367";
 
 const WEEKDAYS = ["日", "月", "火", "水", "木", "金", "土"];
 
@@ -59,8 +59,8 @@ export function expandForecast(point, updatedAt) {
       today: i === 0,
       weather,
       weatherLabel: stored?.weatherLabel || jmaLabel(weather),
-      tempMax: stored && stored.tempMax !== undefined ? stored.tempMax : point.tempMax,
-      tempMin: stored && stored.tempMin !== undefined ? stored.tempMin : point.tempMin,
+      tempMax: stored?.tempMax != null ? stored.tempMax : (i === 1 ? tomorrow.tempMax : i === 0 ? point.tempMax : null),
+      tempMin: stored?.tempMin != null ? stored.tempMin : (i === 1 ? tomorrow.tempMin : i === 0 ? point.tempMin : null),
       pop: dayPopMax,
       popAm,
       popPm,

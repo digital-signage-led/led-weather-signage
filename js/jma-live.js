@@ -129,6 +129,71 @@ function seriesBy(forecastBlock, key) {
   return forecastBlock?.timeSeries?.find((series) => series.areas?.some((item) => key in item));
 }
 
+function shortTempsForYmd(tempSeries, tempArea, ymd) {
+  if (!tempSeries || !tempArea?.temps) return { min: null, max: null };
+  const defines = tempSeries.timeDefines || [];
+  const temps = tempArea.temps;
+  const idxs = [];
+  for (let i = 0; i < defines.length; i += 1) {
+    const stamp = new Date(defines[i]);
+    if (!Number.isNaN(stamp.getTime()) && formatYmd(stamp) === ymd) idxs.push(i);
+  }
+  if (idxs.length >= 2) {
+    return { min: num(temps[idxs[0]]), max: num(temps[idxs[1]]) };
+  }
+  if (idxs.length === 1) {
+    const v = num(temps[idxs[0]]);
+    return { min: v, max: v };
+  }
+  // 定義が無い／日付不一致のときは従来どおり [最低, 最高]
+  if (defines.length >= 2 && temps.length >= 2) {
+    const d0 = formatYmd(new Date(defines[0]));
+    const d1 = formatYmd(new Date(defines[1]));
+    if (d0 === ymd || d1 === ymd) {
+      return { min: num(temps[0]), max: num(temps[1]) };
+    }
+  }
+  return { min: null, max: null };
+}
+
+function weeklyTempsForYmd(weeklyTempSeries, weeklyTempArea, ymd) {
+  if (!weeklyTempSeries || !weeklyTempArea) return { min: null, max: null };
+  const defines = weeklyTempSeries.timeDefines || [];
+  const idx = defines.findIndex((stamp) => {
+    const d = new Date(stamp);
+    return !Number.isNaN(d.getTime()) && formatYmd(d) === ymd;
+  });
+  if (idx < 0) return { min: null, max: null };
+  return {
+    min: num(weeklyTempArea.tempsMin?.[idx]),
+    max: num(weeklyTempArea.tempsMax?.[idx])
+  };
+}
+
+function weatherCodeForYmd(weeklyWxSeries, weeklyWxArea, ymd, fallback) {
+  if (!weeklyWxSeries || !weeklyWxArea?.weatherCodes) return fallback;
+  const defines = weeklyWxSeries.timeDefines || [];
+  const idx = defines.findIndex((stamp) => {
+    const d = new Date(stamp);
+    return !Number.isNaN(d.getTime()) && formatYmd(d) === ymd;
+  });
+  if (idx < 0) return fallback;
+  return String(weeklyWxArea.weatherCodes[idx] || fallback);
+}
+
+function popForYmd(weeklyWxSeries, weeklyWxArea, ymd, fallback) {
+  if (!weeklyWxSeries || !weeklyWxArea) return fallback;
+  const defines = weeklyWxSeries.timeDefines || [];
+  const idx = defines.findIndex((stamp) => {
+    const d = new Date(stamp);
+    return !Number.isNaN(d.getTime()) && formatYmd(d) === ymd;
+  });
+  if (idx < 0) return fallback;
+  const raw = weeklyWxArea.pops?.[idx];
+  if (raw === "" || raw == null) return fallback;
+  return num(raw) ?? fallback;
+}
+
 function extractPoint(forecast, city, mapping) {
   const shortTerm = forecast[0];
   const weekly = forecast[1];
@@ -160,8 +225,14 @@ function extractPoint(forecast, city, mapping) {
   const tomorrowPop = tomorrowAm != null || tomorrowPm != null
     ? Math.max(tomorrowAm ?? 0, tomorrowPm ?? 0)
     : (todayPops.length ? Math.max(...todayPops.slice(-3)) : todayPop);
-  const tempMin = num(tempArea?.temps?.[0]);
-  const tempMax = num(tempArea?.temps?.[1]);
+
+  const shortToday = shortTempsForYmd(tempSeries, tempArea, todayYmd);
+  const shortTomorrow = shortTempsForYmd(tempSeries, tempArea, tomorrowYmd);
+  // 夕方以降は temps が「明日の最低／最高」だけになることが多い
+  const fallbackPair = {
+    min: num(tempArea?.temps?.[0]),
+    max: num(tempArea?.temps?.[1])
+  };
 
   const weeklyWx = seriesBy(weekly, "weatherCodes");
   const weeklyTemp = seriesBy(weekly, "tempsMax") || seriesBy(weekly, "tempsMin");
@@ -169,17 +240,28 @@ function extractPoint(forecast, city, mapping) {
   const weeklyTempArea = weeklyTemp
     ? pickArea(weeklyTemp.areas, [city.cityName, city.cityName.replace(/[市町村]$/, "")])
     : null;
-  const weeklyCodes = weeklyWxArea?.weatherCodes || [];
-  const weeklyPops = (weeklyWxArea?.pops || []).map((value) => (value === "" ? null : num(value)));
 
   const weeklyDays = [];
   for (let i = 0; i < 7; i += 1) {
+    const dayDate = new Date();
+    dayDate.setDate(dayDate.getDate() + i);
+    const ymd = formatYmd(dayDate);
+    const weeklyT = weeklyTempsForYmd(weeklyTemp, weeklyTempArea, ymd);
+    const shortT = i === 0
+      ? shortToday
+      : i === 1
+        ? shortTomorrow
+        : { min: null, max: null };
+    // 週間の該当日が空（明日の気温など）なら短時間予報で補う。無い日は null
+    const tempMax = weeklyT.max ?? shortT.max ?? (i <= 1 ? fallbackPair.max : null);
+    const tempMin = weeklyT.min ?? shortT.min ?? (i <= 1 ? fallbackPair.min : null);
+
     if (i === 0) {
       weeklyDays.push({
         weather: todayCode,
         weatherLabel: labelOf(todayCode),
-        tempMax: tempMax ?? num(weeklyTempArea?.tempsMax?.[0]),
-        tempMin: tempMin ?? num(weeklyTempArea?.tempsMin?.[0]),
+        tempMax,
+        tempMin,
         pop: todayPop,
         popAm: todayAm ?? todayPop,
         popPm: todayPm ?? todayPop,
@@ -187,15 +269,24 @@ function extractPoint(forecast, city, mapping) {
       });
       continue;
     }
-    const weeklyIndex = i - 1;
-    const code = String((i === 1 ? tomorrowCode : null) || weeklyCodes[weeklyIndex] || tomorrowCode);
-    const dayPop = weeklyPops[weeklyIndex] ?? (i === 1 ? tomorrowPop : todayPop);
-    // 週間の欠測は今日気温で埋めず null のまま（同値の偽データを出さない）
+
+    const code = weatherCodeForYmd(
+      weeklyWx,
+      weeklyWxArea,
+      ymd,
+      i === 1 ? tomorrowCode : todayCode
+    );
+    const dayPop = popForYmd(
+      weeklyWx,
+      weeklyWxArea,
+      ymd,
+      i === 1 ? tomorrowPop : todayPop
+    );
     weeklyDays.push({
       weather: code,
       weatherLabel: labelOf(code),
-      tempMax: num(weeklyTempArea?.tempsMax?.[weeklyIndex]),
-      tempMin: num(weeklyTempArea?.tempsMin?.[weeklyIndex]),
+      tempMax,
+      tempMin,
       pop: dayPop,
       popAm: i === 1 ? (tomorrowAm ?? dayPop) : dayPop,
       popPm: i === 1 ? (tomorrowPm ?? dayPop) : dayPop,

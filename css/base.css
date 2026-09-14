@@ -487,14 +487,36 @@ svg.jma-icon {
   fill: var(--note-accent);
 }
 
-.led-note-mark .wx-icon {
+/* 黄色矢印上の天気アイコンを囲む正方形ボックス */
+.led-note-icon-box {
   position: absolute;
-  left: 8%;
+  left: 10%;
   top: 50%;
-  transform: translateY(-50%);
   z-index: 1;
-  width: calc(var(--footer-height) * 0.96);
-  height: calc(var(--footer-height) * 0.64);
+  width: calc(var(--footer-height) * 0.78);
+  height: calc(var(--footer-height) * 0.78);
+  aspect-ratio: 1 / 1;
+  display: grid;
+  place-items: center;
+  transform: translateY(-50%);
+  box-sizing: border-box;
+  background: rgba(255, 255, 255, 0.92);
+  border: calc(var(--footer-height) * 0.035) solid #0a2f7a;
+  border-radius: calc(var(--footer-height) * 0.06);
+  box-shadow: 0 1px 0 rgba(10, 47, 122, 0.18);
+  pointer-events: none;
+}
+
+.led-note-mark .wx-icon {
+  position: relative;
+  left: auto;
+  top: auto;
+  transform: none;
+  z-index: 1;
+  width: 78%;
+  height: 62%;
+  max-width: 100%;
+  max-height: 100%;
 }
 
 .led-note-mark .wx-icon.is-sunny,
