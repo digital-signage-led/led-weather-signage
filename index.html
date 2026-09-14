@@ -9,12 +9,33 @@
   <style>
     html.is-boot { background: #c8ebff; }
     html.is-boot .led-screen { visibility: hidden; }
+    /* 機種差で外部CSSが欠けても週間表が崩壊しない最低限の保険 */
+    .forecast-grid {
+      display: grid !important;
+      grid-template-columns: minmax(3.8em, 15%) repeat(7, minmax(0, 1fr));
+      grid-template-rows: auto repeat(var(--forecast-rows, 4), minmax(0, 1fr));
+      gap: 2px;
+      min-width: 0;
+      min-height: 0;
+      overflow: hidden;
+    }
+    .forecast-cell.is-weather .wx-icon,
+    .wx-icon {
+      max-width: 4.2em;
+      max-height: 3.2em;
+    }
+    .wx-icon svg,
+    svg.jma-icon,
+    .led-title-mark svg {
+      max-width: 100% !important;
+      max-height: 100% !important;
+    }
   </style>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/base.css?v=pref354">
-  <link rel="stylesheet" href="css/weather.css?v=pref354">
+  <link rel="stylesheet" href="css/base.css?v=pref355">
+  <link rel="stylesheet" href="css/weather.css?v=pref355">
 </head>
 <body>
   <div id="studio-root" hidden>
@@ -122,6 +143,6 @@
     </article>
     <aside id="debug-overlay" hidden></aside>
   </div>
-  <script type="module" src="js/app.js?v=pref354"></script>
+  <script type="module" src="js/app.js?v=pref355"></script>
 </body>
 </html>

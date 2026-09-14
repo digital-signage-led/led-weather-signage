@@ -742,7 +742,7 @@ html.is-edit .precip-tod-legend.is-dragging {
 
 .led-screen[data-content="weekly_weather"],
 .led-screen[data-content="weekly_precip"] {
-  background: var(--bg-sea) url("../img/weekly-frame.svg?v=pref354") no-repeat center / 100% 100%;
+  background: var(--bg-sea) url("../img/weekly-frame.svg?v=pref355") no-repeat center / 100% 100%;
 }
 
 .led-screen[data-content="weekly_weather"] .map-stage,
@@ -884,18 +884,20 @@ html.is-edit .precip-tod-legend.is-dragging {
 }
 
 .forecast-cell.is-weather {
-  container-type: size;
   justify-content: space-between;
   gap: 0.04em;
   padding: 0.08em 0.04em 0.1em;
+  overflow: hidden;
 }
 
+/* cqw/cqh は機種によって表セルを崩壊させるので使わない */
 .forecast-cell.is-weather .wx-icon {
-  width: min(94%, 88cqw);
+  width: 72%;
+  max-width: 4.2em;
   height: auto;
   aspect-ratio: 1.12 / 1;
-  max-height: 68cqh;
-  flex: 1 1 62%;
+  max-height: 58%;
+  flex: 1 1 auto;
   min-width: 0;
   min-height: 0;
 }
@@ -903,6 +905,8 @@ html.is-edit .precip-tod-legend.is-dragging {
 .forecast-cell.is-weather .wx-icon svg {
   width: 100%;
   height: 100%;
+  max-width: 100%;
+  max-height: 100%;
 }
 
 .forecast-temps {
@@ -951,7 +955,7 @@ html.is-edit .precip-tod-legend.is-dragging {
   justify-content: center;
   gap: 0;
   padding: 0.12em 0.18em;
-  container-type: size;
+  overflow: hidden;
   color: var(--text-primary);
 }
 
@@ -974,7 +978,7 @@ html.is-edit .precip-tod-legend.is-dragging {
   flex: 0 1 auto;
   min-width: 0;
   font-family: var(--font-main);
-  font-size: clamp(7px, 18cqh, calc(var(--font-week) * 0.55));
+  font-size: calc(var(--font-week) * 0.52);
   font-weight: 800;
   color: #0b6fbf;
   white-space: nowrap;
@@ -990,7 +994,7 @@ html.is-edit .precip-tod-legend.is-dragging {
   gap: 0.06em;
   white-space: normal;
   line-height: 1.05;
-  font-size: clamp(6px, 14cqh, calc(var(--font-week) * 0.48));
+  font-size: calc(var(--font-week) * 0.46);
 }
 
 .forecast-cell.is-pop-metrics .pop-metric-label.is-two-line > span {
@@ -1010,7 +1014,7 @@ html.is-edit .precip-tod-legend.is-dragging {
 }
 
 .forecast-cell.is-pop-metrics .pop-metric-value b {
-  font-size: clamp(11px, 34cqh, calc(var(--font-pop-lg) * 0.72));
+  font-size: calc(var(--font-pop-lg) * 0.68);
   font-weight: 900;
   line-height: 1;
   color: #123b5c;

@@ -3,11 +3,11 @@
  * 緯度経度を同じ投影で地図上の位置へ変換する。
  */
 
-import { canonicalRegion, isNational } from "./catalog.js?v=pref354";
-import { cardSizePct } from "./viewport.js?v=pref354";
-import { MAP_VERSION } from "./version.js?v=pref354";
+import { canonicalRegion, isNational } from "./catalog.js?v=pref355";
+import { cardSizePct } from "./viewport.js?v=pref355";
+import { MAP_VERSION } from "./version.js?v=pref355";
 
-import { jmaIconFile } from "./jma-icons.js?v=pref354";
+import { jmaIconFile } from "./jma-icons.js?v=pref355";
 
 const iconCache = new Map();
 let iconSeq = 0;
@@ -21,8 +21,9 @@ function inlineJmaSvg(svgText, prefix) {
   svg = svg.replace(/<svg\b([^>]*)>/i, (_, attrs) => {
     const rest = String(attrs)
       .replace(/\s(width|height)="[^"]*"/g, "")
-      .replace(/\sclass="[^"]*"/g, "");
-    return `<svg class="jma-icon" width="100%" height="100%" preserveAspectRatio="xMidYMid meet"${rest}>`;
+      .replace(/\sclass="[^"]*"/g, "")
+      .replace(/\sstyle="[^"]*"/g, "");
+    return `<svg class="jma-icon" width="100%" height="100%" style="max-width:100%;max-height:100%;display:block" preserveAspectRatio="xMidYMid meet"${rest}>`;
   });
   svg = svg.replace(/\bid="([^"]+)"/g, `id="${prefix}-$1"`);
   svg = svg.replace(/url\(#([^)]+)\)/g, `url(#${prefix}-$1)`);

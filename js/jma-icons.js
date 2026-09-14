@@ -2,7 +2,7 @@
  * 気象庁天気コード118種。アイコンファイルと名称の対応。
  */
 
-import { JMA_WEATHER_CODES } from "./jma-codes.js?v=pref354";
+import { JMA_WEATHER_CODES } from "./jma-codes.js?v=pref355";
 
 export const JMA_CODE_LIST = Object.keys(JMA_WEATHER_CODES);
 

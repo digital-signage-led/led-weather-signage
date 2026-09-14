@@ -3,8 +3,8 @@
  * HTML は JMA API を呼ばない。雪など季節外れのコードを循環させない。
  */
 
-import { canonicalContent, getContent as contentFromCatalog } from "./catalog.js?v=pref354";
-import { isWetWeather, jmaLabel, jmaTone, resolveWeatherCode } from "./jma-icons.js?v=pref354";
+import { canonicalContent, getContent as contentFromCatalog } from "./catalog.js?v=pref355";
+import { isWetWeather, jmaLabel, jmaTone, resolveWeatherCode } from "./jma-icons.js?v=pref355";
 
 const WEEKDAYS = ["日", "月", "火", "水", "木", "金", "土"];
 
