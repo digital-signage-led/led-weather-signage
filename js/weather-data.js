@@ -2,7 +2,7 @@
  * 螟夜Κ豌苓ｱ｡ 竊・蜈ｱ騾壹Δ繝・Ν縲３enderer 縺ｯ縺薙％縺縺代ｒ隕九ｋ縲・
  */
 
-import { citiesForRegion } from "./catalog.js?v=pref358";
+import { citiesForRegion } from "./catalog.js?v=pref359";
 
 export function adaptWeather(doc) {
   return {

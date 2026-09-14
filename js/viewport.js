@@ -1,18 +1,21 @@
 /**
- * 解像度に依存しないサイネージ計測。
- * 特定の Width×Height 分岐はせず、幅・高さ・比率・面積から連続的に決める。
+ * サイネージは設計解像度で描き、実画面へは均等スケールで合わせる。
+ * 機種ごとの Width×Height 分岐や流体トークン差は使わない。
  */
 
+/** 本番の固定設計解像度（レイアウト・週間フレーム基準） */
+export const FIXED_DESIGN = { width: 1920, height: 1080 };
+
 export const VIEWPORT_PRESETS = [
-  { width: 432, height: 288, label: "432×288" },
-  { width: 528, height: 352, label: "528×352" },
-  { width: 576, height: 432, label: "576×432" },
-  { width: 704, height: 528, label: "704×528" },
+  { width: 1920, height: 1080, label: "1920×1080（固定）" },
   { width: 720, height: 576, label: "720×576" },
+  { width: 576, height: 432, label: "576×432" },
+  { width: 432, height: 288, label: "432×288" },
   { width: 880, height: 704, label: "880×704" },
+  { width: 704, height: 528, label: "704×528" },
+  { width: 528, height: 352, label: "528×352" },
   { width: 1024, height: 600, label: "1024×600" },
-  { width: 1376, height: 448, label: "1376×448" },
-  { width: 1920, height: 1080, label: "1920×1080" }
+  { width: 1376, height: 448, label: "1376×448" }
 ];
 
 const MIN_W = 160;
@@ -125,14 +128,11 @@ export function tokensFor(vp, content = { id: "today_weather", name: "今日の�
   };
 }
 
-export function applyViewport(element, vp, regionId, content) {
+export function applyViewport(element, vp, regionId, content, options = {}) {
   const tokens = tokensFor(vp, content);
   for (const [key, value] of Object.entries(tokens)) {
     element.style.setProperty(key, value);
   }
-  element.style.width = "100%";
-  element.style.height = "100%";
-  element.style.removeProperty("transform");
   element.dataset.region = regionId;
   element.dataset.content = content.id;
   element.dataset.shape = vp.shape;
@@ -149,6 +149,34 @@ export function applyViewport(element, vp, regionId, content) {
   element.style.setProperty("--map-land", "#76c85a");
   element.style.setProperty("--map-neighbor", "#d0d5db");
   element.style.setProperty("--bg-sea", "#c8ebff");
+
+  if (options.fixedScale) {
+    fitFixedScreen(element, vp.width, vp.height);
+  } else {
+    element.style.width = "100%";
+    element.style.height = "100%";
+    element.style.removeProperty("transform");
+    element.style.removeProperty("left");
+    element.style.removeProperty("top");
+  }
+}
+
+/** 固定設計解像度の画面を、ウインドウに収まるよう中央配置でスケールする */
+export function fitFixedScreen(element, designW = FIXED_DESIGN.width, designH = FIXED_DESIGN.height) {
+  if (!element) return 1;
+  const sw = window.innerWidth || document.documentElement.clientWidth || designW;
+  const sh = window.innerHeight || document.documentElement.clientHeight || designH;
+  const scale = Math.min(sw / designW, sh / designH);
+  const ox = (sw - designW * scale) / 2;
+  const oy = (sh - designH * scale) / 2;
+  element.style.position = "absolute";
+  element.style.left = "0";
+  element.style.top = "0";
+  element.style.width = `${designW}px`;
+  element.style.height = `${designH}px`;
+  element.style.transformOrigin = "0 0";
+  element.style.transform = `translate(${ox}px, ${oy}px) scale(${scale})`;
+  return scale;
 }
 
 export function cityLimit(vp, regionId, content, available = 12) {

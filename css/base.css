@@ -89,7 +89,8 @@ body.is-kiosk #app {
   height: 100%;
   min-height: 100%;
   overflow: hidden;
-  background: var(--bg-sea);
+  background: #070b14;
+  position: relative;
 }
 
 #studio-root,
