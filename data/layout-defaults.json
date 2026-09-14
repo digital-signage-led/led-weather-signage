@@ -1,5 +1,5 @@
 {
-  "rev": 1757826000000,
+  "rev": 1757827200000,
   "layouts": {
     "national": {
       "viewports": {
@@ -44,6 +44,26 @@
           "cards": {},
           "cardsPop": {},
           "rev": 1757826000000
+        }
+      }
+    },
+    "tohoku": {
+      "viewports": {
+        "576x432": {
+          "map": { "scale": 1, "rotate": 0, "x": 0, "y": -2 },
+          "okinawa": { "x": 20, "y": 38, "scale": 1 },
+          "precipLegend": { "x": 86, "y": 68 },
+          "cards": {},
+          "cardsPop": {},
+          "rev": 1757827200000
+        },
+        "1920x1080": {
+          "map": { "scale": 1, "rotate": 0, "x": 0, "y": -2 },
+          "okinawa": { "x": 20, "y": 38, "scale": 1 },
+          "precipLegend": { "x": 86, "y": 68 },
+          "cards": {},
+          "cardsPop": {},
+          "rev": 1757827200000
         }
       }
     }

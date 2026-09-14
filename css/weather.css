@@ -78,9 +78,13 @@ html.is-edit .map-cards {
   --map-fit: 1.08;
 }
 
-.led-screen[data-region="tohoku"],
 .led-screen[data-region="kinki"] {
   --map-fit: 0.96;
+}
+
+/* 東北は縦長で右端が切れやすいので縮小して全体を収める */
+.led-screen[data-region="tohoku"] {
+  --map-fit: 0.82;
 }
 
 .led-screen[data-region="kanto"],

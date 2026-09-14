@@ -4,8 +4,8 @@
  */
 
 import { canonicalRegion, isNational } from "./catalog.js?v=pref320";
-import { cardSizePct } from "./viewport.js?v=pref339";
-import { MAP_VERSION } from "./version.js?v=pref339";
+import { cardSizePct } from "./viewport.js?v=pref340";
+import { MAP_VERSION } from "./version.js?v=pref340";
 
 import { jmaIconFile } from "./jma-icons.js?v=pref320";
 
@@ -358,7 +358,7 @@ function fitRegionalView(svg, pinsSvg, regionId) {
       ? 1.2
       : regionId === "kyushu"
         ? 1.1
-        : regionId === "chubu"
+        : regionId === "chubu" || regionId === "tohoku"
           ? 3.2
           : 1.5;
   const view = `${minX - pad} ${minY - pad} ${maxX - minX + pad * 2} ${maxY - minY + pad * 2}`;
@@ -694,15 +694,15 @@ const CARD_SLOTS = {
     miyazaki: { x: 84, y: 70 }
   },
   tohoku: {
-    aomori: { x: 82, y: 14 },
-    akita: { x: 16, y: 28 },
-    miyakoIwate: { x: 84, y: 30 },
-    morioka: { x: 82, y: 46 },
-    yamagata: { x: 16, y: 48 },
-    sendai: { x: 82, y: 62 },
-    aizuwakamatsu: { x: 16, y: 66 },
-    fukushima: { x: 18, y: 80 },
-    iwaki: { x: 82, y: 78 }
+    aomori: { x: 70, y: 12 },
+    akita: { x: 18, y: 28 },
+    miyakoIwate: { x: 84, y: 28 },
+    morioka: { x: 78, y: 42 },
+    yamagata: { x: 18, y: 50 },
+    sendai: { x: 80, y: 56 },
+    aizuwakamatsu: { x: 18, y: 66 },
+    fukushima: { x: 24, y: 80 },
+    iwaki: { x: 78, y: 78 }
   },
   shikoku: {
     matsuyama: { x: 16, y: 42 },
@@ -772,15 +772,15 @@ const CARD_SLOTS_POP = {
     miyazaki: { x: 84, y: 72 }
   },
   tohoku: {
-    aomori: { x: 80, y: 16 },
-    akita: { x: 18, y: 30 },
-    miyakoIwate: { x: 82, y: 32 },
-    morioka: { x: 80, y: 48 },
+    aomori: { x: 70, y: 12 },
+    akita: { x: 18, y: 28 },
+    miyakoIwate: { x: 84, y: 28 },
+    morioka: { x: 78, y: 42 },
     yamagata: { x: 18, y: 50 },
-    sendai: { x: 80, y: 64 },
-    aizuwakamatsu: { x: 18, y: 70 },
-    fukushima: { x: 18, y: 86 },
-    iwaki: { x: 80, y: 80 }
+    sendai: { x: 80, y: 56 },
+    aizuwakamatsu: { x: 18, y: 66 },
+    fukushima: { x: 24, y: 80 },
+    iwaki: { x: 78, y: 78 }
   },
   hokkaido: {
     wakkanai: { x: 28, y: 10 },

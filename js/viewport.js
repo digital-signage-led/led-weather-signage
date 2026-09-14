@@ -159,8 +159,9 @@ export function cityLimit(vp, regionId, content, available = 12) {
     const rows = Math.floor((vp.height - chrome) / rowH);
     return clamp(rows, 3, wanted);
   }
-  // 北海道は11地点をすべて出す
-  if (String(regionId || "").toLowerCase() === "hokkaido") {
+  // 北海道・東北は地点をできるだけすべて出す
+  const region = String(regionId || "").toLowerCase();
+  if (region === "hokkaido" || region === "tohoku") {
     return wanted;
   }
   const cardW = vp.width * (content.card === "pop" ? 0.22 : 0.2);
