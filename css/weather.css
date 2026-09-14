@@ -83,11 +83,15 @@ html.is-edit .map-cards {
   --map-fit: 0.96;
 }
 
-.led-screen[data-region="chubu"],
 .led-screen[data-region="kanto"],
 .led-screen[data-region="chugoku"],
 .led-screen[data-region="shikoku"] {
   --map-fit: 0.98;
+}
+
+/* 中部は縦長でフッターに掛かりやすいので少し縮小して全体を収める */
+.led-screen[data-region="chubu"] {
+  --map-fit: 0.84;
 }
 
 .led-screen[data-region="hokkaido"] {

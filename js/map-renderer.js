@@ -4,8 +4,8 @@
  */
 
 import { canonicalRegion, isNational } from "./catalog.js?v=pref320";
-import { cardSizePct } from "./viewport.js?v=pref336";
-import { MAP_VERSION } from "./version.js?v=pref336";
+import { cardSizePct } from "./viewport.js?v=pref337";
+import { MAP_VERSION } from "./version.js?v=pref337";
 
 import { jmaIconFile } from "./jma-icons.js?v=pref320";
 
@@ -352,7 +352,15 @@ function fitRegionalView(svg, pinsSvg, regionId) {
     viewBoxByRegion.set(regionId, fallback);
     return;
   }
-  const pad = isNational(regionId) ? 1.8 : regionId === "okinawa" ? 1.2 : regionId === "kyushu" ? 1.1 : 1.5;
+  const pad = isNational(regionId)
+    ? 1.8
+    : regionId === "okinawa"
+      ? 1.2
+      : regionId === "kyushu"
+        ? 1.1
+        : regionId === "chubu"
+          ? 3.2
+          : 1.5;
   const view = `${minX - pad} ${minY - pad} ${maxX - minX + pad * 2} ${maxY - minY + pad * 2}`;
   svg.setAttribute("viewBox", view);
   if (pinsSvg) pinsSvg.setAttribute("viewBox", view);
@@ -666,16 +674,15 @@ const CARD_SLOTS = {
     chiba: { x: 84, y: 72 }
   },
   chubu: {
-    sado: { x: 48, y: 10 },
-    niigata: { x: 84, y: 16 },
-    toyama: { x: 84, y: 34 },
-    kanazawa: { x: 16, y: 34 },
-    fukui: { x: 16, y: 50 },
-    takayama: { x: 84, y: 50 },
-    gifu: { x: 16, y: 66 },
-    nagoya: { x: 84, y: 66 },
-    shizuoka: { x: 84, y: 82 },
-    tsu: { x: 48, y: 88 }
+    niigata: { x: 82, y: 18 },
+    toyama: { x: 78, y: 36 },
+    kanazawa: { x: 20, y: 36 },
+    fukui: { x: 18, y: 50 },
+    takayama: { x: 78, y: 50 },
+    gifu: { x: 20, y: 64 },
+    nagoya: { x: 78, y: 64 },
+    shizuoka: { x: 80, y: 80 },
+    tsu: { x: 48, y: 82 }
   },
   kyushu: {
     fukuoka: { x: 64, y: 16 },
@@ -786,16 +793,15 @@ const CARD_SLOTS_POP = {
     hakodate: { x: 16, y: 82 }
   },
   chubu: {
-    sado: { x: 48, y: 10 },
-    niigata: { x: 84, y: 16 },
-    toyama: { x: 84, y: 34 },
-    kanazawa: { x: 16, y: 34 },
-    fukui: { x: 16, y: 50 },
-    takayama: { x: 84, y: 50 },
-    gifu: { x: 16, y: 66 },
-    nagoya: { x: 84, y: 66 },
-    shizuoka: { x: 84, y: 82 },
-    tsu: { x: 48, y: 88 }
+    niigata: { x: 82, y: 18 },
+    toyama: { x: 78, y: 36 },
+    kanazawa: { x: 20, y: 36 },
+    fukui: { x: 18, y: 50 },
+    takayama: { x: 78, y: 50 },
+    gifu: { x: 20, y: 64 },
+    nagoya: { x: 78, y: 64 },
+    shizuoka: { x: 80, y: 80 },
+    tsu: { x: 48, y: 82 }
   }
 };
 
