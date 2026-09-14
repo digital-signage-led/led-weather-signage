@@ -890,10 +890,26 @@ html.is-edit .precip-tod-legend.is-dragging {
   border-radius: 0 calc(var(--box-radius) * 0.7) calc(var(--box-radius) * 0.7) 0;
 }
 
+.forecast-cell.is-weather {
+  container-type: size;
+  justify-content: space-between;
+  gap: 0.02em;
+  padding: 0.04em 0.03em 0.06em;
+}
+
 .forecast-cell.is-weather .wx-icon {
-  width: min(92%, calc(var(--icon-card) * 1.85));
-  height: min(58%, calc(var(--icon-card) * 1.5));
-  flex: 1 1 auto;
+  width: min(96%, 90cqw);
+  height: auto;
+  aspect-ratio: 1.15 / 1;
+  max-height: 70cqh;
+  flex: 1 1 64%;
+  min-width: 0;
+  min-height: 0;
+}
+
+.forecast-cell.is-weather .wx-icon svg {
+  width: 100%;
+  height: 100%;
 }
 
 .forecast-temps {
@@ -905,6 +921,12 @@ html.is-edit .precip-tod-legend.is-dragging {
   align-items: baseline;
   flex: 0 0 auto;
   gap: 0.04em;
+}
+
+.forecast-cell.is-weather .forecast-temps {
+  font-size: calc(var(--font-temp) * 0.56);
+  line-height: 1;
+  flex: 0 0 auto;
 }
 
 .forecast-cell.is-pop {
