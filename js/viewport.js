@@ -184,7 +184,7 @@ export function tableLayoutTokens(vp, rows = 5) {
     "--font-week-value": `${Math.round(clamp(cellMin * 0.45, 12, 40))}px`,
     "--font-week-unit": `${Math.round(clamp(cellMin * 0.18, 8, 14))}px`,
     "--font-week-temp": `${Math.round(clamp(cellH * 0.3 * 0.58, 10, 34))}px`,
-    "--icon-week": `${Math.round(clamp(cellH * 0.7 * 0.92, 12, 64))}px`,
+    "--icon-week": `${Math.round(clamp(cellH * 0.82 * 0.95, 14, 96))}px`,
     "--week-pad-y": `${Math.round(clamp(cellH * 0.05, 1, 8))}px`,
     "--week-pad-x": `${Math.round(clamp(cellW * 0.05, 1, 10))}px`
   };
