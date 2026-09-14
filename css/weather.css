@@ -100,7 +100,6 @@ html.is-edit .map-cards {
 
 .led-screen[data-region="hokkaido"] {
   --map-fit: 1.14;
-  --header-title-height: calc(var(--header-height) * 1.6);
 }
 
 .led-screen[data-region="okinawa"] {
@@ -743,7 +742,7 @@ html.is-edit .precip-tod-legend.is-dragging {
 
 .led-screen[data-content="weekly_weather"],
 .led-screen[data-content="weekly_precip"] {
-  background: var(--bg-sea) url("../img/weekly-frame.svg?v=pref352") no-repeat center / 100% 100%;
+  background: var(--bg-sea) url("../img/weekly-frame.svg?v=pref353") no-repeat center / 100% 100%;
 }
 
 .led-screen[data-content="weekly_weather"] .map-stage,

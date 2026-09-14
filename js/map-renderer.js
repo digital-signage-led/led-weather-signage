@@ -3,11 +3,11 @@
  * 緯度経度を同じ投影で地図上の位置へ変換する。
  */
 
-import { canonicalRegion, isNational } from "./catalog.js?v=pref352";
-import { cardSizePct } from "./viewport.js?v=pref352";
-import { MAP_VERSION } from "./version.js?v=pref352";
+import { canonicalRegion, isNational } from "./catalog.js?v=pref353";
+import { cardSizePct } from "./viewport.js?v=pref353";
+import { MAP_VERSION } from "./version.js?v=pref353";
 
-import { jmaIconFile } from "./jma-icons.js?v=pref352";
+import { jmaIconFile } from "./jma-icons.js?v=pref353";
 
 const iconCache = new Map();
 let iconSeq = 0;

@@ -4,15 +4,15 @@
  * カード倍率もその4種で共有。全国は単体、地方は地方同士で倍率を共有。
  */
 
-import { canonicalContent, canonicalRegion, isNational } from "./catalog.js?v=pref352";
+import { canonicalContent, canonicalRegion, isNational } from "./catalog.js?v=pref353";
 
 const STORAGE_KEY = "led-weather-layout-v5";
 const STORAGE_KEY_LEGACY = "led-weather-layout-v4";
 const CARD_SIZE_KEY = "led-weather-card-size-v4";
 const CARD_SIZE_KEY_LEGACY_V3 = "led-weather-card-size-v3";
 const CARD_SIZE_KEY_LEGACY_V2 = "led-weather-card-size-v2";
-const TITLE_SCALE_KEY = "led-weather-title-scale-v2";
-const TITLE_SCALE_KEY_LEGACY = "led-weather-title-scale-v1";
+const TITLE_SCALE_KEY = "led-weather-title-scale-v3";
+const TITLE_SCALE_KEY_LEGACY = "led-weather-title-scale-v2";
 
 /** リポジトリ同梱の完成配置。localStorage に無い解像度だけ補完する。 */
 let shippedDefaults = { layouts: {}, cardScales: {}, titleScales: {} };
