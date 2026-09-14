@@ -159,6 +159,10 @@ export function cityLimit(vp, regionId, content, available = 12) {
     const rows = Math.floor((vp.height - chrome) / rowH);
     return clamp(rows, 3, wanted);
   }
+  // 北海道は許可地点（稚内・小樽除く）をすべて出す
+  if (String(regionId || "").toLowerCase() === "hokkaido") {
+    return wanted;
+  }
   const cardW = vp.width * (content.card === "pop" ? 0.22 : 0.2);
   const cardH = vp.height * (content.card === "pop" ? 0.12 : 0.11);
   const budget = Math.round((vp.area * 0.4) / Math.max(1, cardW * cardH));
