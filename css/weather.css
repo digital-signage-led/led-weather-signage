@@ -743,7 +743,7 @@ html.is-edit .precip-tod-legend.is-dragging {
 
 .led-screen[data-content="weekly_weather"],
 .led-screen[data-content="weekly_precip"] {
-  background: var(--bg-sea) url("../img/weekly-frame.svg?v=pref350") no-repeat center / 100% 100%;
+  background: var(--bg-sea) url("../img/weekly-frame.svg?v=pref351") no-repeat center / 100% 100%;
 }
 
 .led-screen[data-content="weekly_weather"] .map-stage,
@@ -757,6 +757,7 @@ html.is-edit .precip-tod-legend.is-dragging {
   --forecast-head: #fff3b2;
   --forecast-city-bg: #cfe6f5;
   --forecast-cell-bg: rgba(255, 255, 255, 0.94);
+  --forecast-radius: 12px;
   position: absolute;
   left: var(--footer-gap);
   right: var(--footer-gap);
@@ -785,7 +786,7 @@ html.is-edit .precip-tod-legend.is-dragging {
   gap: var(--forecast-gap);
   padding: var(--forecast-gap);
   background: var(--forecast-line);
-  border-radius: 8px;
+  border-radius: var(--forecast-radius);
   box-sizing: border-box;
   overflow: hidden;
 }
@@ -814,6 +815,7 @@ html.is-edit .precip-tod-legend.is-dragging {
   background: var(--bg-sea);
   overflow: visible;
   white-space: normal;
+  border-radius: calc(var(--forecast-radius) - var(--forecast-gap)) 0 0 0;
 }
 
 .forecast-day-h {
@@ -825,6 +827,19 @@ html.is-edit .precip-tod-legend.is-dragging {
   background: var(--forecast-head);
   line-height: 1;
   font-weight: 900;
+}
+
+/* 表の四隅を丸くする */
+.forecast-grid > .forecast-day-h:nth-child(8) {
+  border-radius: 0 calc(var(--forecast-radius) - var(--forecast-gap)) 0 0;
+}
+
+.forecast-grid > .forecast-city:nth-last-child(8) {
+  border-radius: 0 0 0 calc(var(--forecast-radius) - var(--forecast-gap));
+}
+
+.forecast-grid > .forecast-cell:last-child {
+  border-radius: 0 0 calc(var(--forecast-radius) - var(--forecast-gap)) 0;
 }
 
 .forecast-day-num {
