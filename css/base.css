@@ -337,8 +337,7 @@ body.is-kiosk #studio-root {
   pointer-events: none;
 }
 
-html:not(.is-edit) .map-resize,
-html:not(.is-edit) .card-resize {
+html:not(.is-edit) .map-resize {
   display: none !important;
 }
 

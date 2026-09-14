@@ -68,7 +68,6 @@ export async function renderCityCard(point, position, options = {}) {
         <span class="pop-slot is-noon ${popTone(noon)}"><b>${Math.round(noon)}</b></span>
         <span class="pop-slot is-night ${popTone(night)}"><b>${Math.round(night)}</b></span>
       </span>
-      <i class="card-resize" aria-hidden="true"></i>
     </article>`;
   }
   const tone = weatherTone(point.weather);
@@ -86,7 +85,6 @@ export async function renderCityCard(point, position, options = {}) {
       </span>
       <span class="city-card-name">${point.cityName}</span>
       <span class="city-card-row">${temps}${pop}</span>
-      <i class="card-resize" aria-hidden="true"></i>
     </article>
   `;
 }

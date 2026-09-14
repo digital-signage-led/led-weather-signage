@@ -4,7 +4,7 @@
  * カード倍率もその4種で共有。全国は単体、地方は地方同士で倍率を共有。
  */
 
-import { canonicalContent, canonicalRegion, isNational } from "./catalog.js?v=pref334";
+import { canonicalContent, canonicalRegion, isNational } from "./catalog.js?v=pref335";
 
 const STORAGE_KEY = "led-weather-layout-v5";
 const STORAGE_KEY_LEGACY = "led-weather-layout-v4";
@@ -989,22 +989,14 @@ export function bindCardEditor(cardsEl, layout, regionId, contentId = "today_wea
     event.stopPropagation();
     card.setPointerCapture(event.pointerId);
 
-    const resizing = Boolean(event.target.closest(".card-resize"));
     const box = () => layer.getBoundingClientRect();
     const start = {
       x: event.clientX,
       y: event.clientY,
       moved: false,
-      scale: currentScale(),
       left: parseFloat(card.style.left),
       top: parseFloat(card.style.top)
     };
-    const cardBox = card.getBoundingClientRect();
-    const center = {
-      x: cardBox.left + cardBox.width / 2,
-      y: cardBox.top + cardBox.height / 2
-    };
-    const startDist = Math.max(12, Math.hypot(event.clientX - center.x, event.clientY - center.y));
 
     const onMove = (moveEvent) => {
       const dx = moveEvent.clientX - start.x;
@@ -1012,14 +1004,9 @@ export function bindCardEditor(cardsEl, layout, regionId, contentId = "today_wea
       if (!start.moved && dx * dx + dy * dy < 16) return;
       start.moved = true;
       card.classList.add("is-dragging");
-      if (resizing) {
-        const dist = Math.hypot(moveEvent.clientX - center.x, moveEvent.clientY - center.y);
-        applySharedScale(start.scale * (dist / startDist));
-        return;
-      }
       const area = box();
-      const x = start.left + ((moveEvent.clientX - start.x) / area.width) * 100;
-      const y = start.top + ((moveEvent.clientY - start.y) / area.height) * 100;
+      const x = start.left + (dx / area.width) * 100;
+      const y = start.top + (dy / area.height) * 100;
       lockCard(card, clamp(x, CARD_POS_MIN, CARD_POS_MAX), clamp(y, CARD_POS_MIN, CARD_POS_MAX));
     };
 
