@@ -178,7 +178,8 @@ function extractPoint(forecast, city, mapping) {
         tempMin: tempMin ?? num(weeklyTempArea?.tempsMin?.[0]) ?? 0,
         pop: todayPop,
         popAm: todayAm ?? todayPop,
-        popPm: todayPm ?? todayPop
+        popPm: todayPm ?? todayPop,
+        humidity: estimateLiveHumidity(todayPop, todayCode)
       });
       continue;
     }
@@ -192,7 +193,8 @@ function extractPoint(forecast, city, mapping) {
       tempMin: num(weeklyTempArea?.tempsMin?.[weeklyIndex]) ?? tempMin ?? 0,
       pop: dayPop,
       popAm: i === 1 ? (tomorrowAm ?? dayPop) : dayPop,
-      popPm: i === 1 ? (tomorrowPm ?? dayPop) : dayPop
+      popPm: i === 1 ? (tomorrowPm ?? dayPop) : dayPop,
+      humidity: estimateLiveHumidity(dayPop, code)
     });
   }
 
@@ -239,6 +241,16 @@ function noteForRegion(regionId, points, locationsById) {
   if (rain) return "雨の所があります。折りたたみ傘があると安心です。";
   if (cloudy >= sunny) return "曇りの所が多くなります。";
   return "おおむね晴れです。";
+}
+
+function estimateLiveHumidity(pop, weatherCode) {
+  const code = String(weatherCode || "");
+  const wet = /^(3|4)|雨|雪|雷/.test(code) || Number(code) >= 200 && Number(code) < 500 && /[3-9]/.test(code.slice(-1));
+  // JMA weather codes: 3xx rain, etc. Simpler: use pop
+  const rainy = Number(pop) >= 40 || /^3\d\d$/.test(code) || /^4\d\d$/.test(code);
+  const base = rainy || wet ? 72 : 52;
+  const n = Math.round(base + (Number(pop) || 0) * 0.18);
+  return Math.max(20, Math.min(99, n));
 }
 
 export function buildJmaWeather(cities, area, forecastsByOffice) {

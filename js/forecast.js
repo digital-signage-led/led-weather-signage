@@ -51,6 +51,7 @@ export function expandForecast(point, updatedAt) {
       stored?.popPm
       ?? (i === 0 ? periods.noon : i === 1 ? tomorrowPeriods.noon : dayPop)
     );
+    const dayPopMax = Math.max(popAm, popPm, dayPop);
     weekly.push({
       date: formatDate(date),
       weekday: WEEKDAYS[date.getDay()],
@@ -60,9 +61,14 @@ export function expandForecast(point, updatedAt) {
       weatherLabel: stored?.weatherLabel || jmaLabel(weather),
       tempMax: stored?.tempMax ?? point.tempMax,
       tempMin: stored?.tempMin ?? point.tempMin,
-      pop: Math.max(popAm, popPm, dayPop),
+      pop: dayPopMax,
       popAm,
-      popPm
+      popPm,
+      humidity: clampHumidity(
+        stored?.humidity
+        ?? point.humidity
+        ?? estimateHumidity(dayPopMax, weather, hash(`${point.cityId || ""}:${i}`))
+      )
     });
   }
   return { tomorrow, periods, tomorrowPeriods, weekly };
@@ -105,7 +111,7 @@ export function noteFor(contentId, regionId, weather, points) {
     else if (tone === "is-snow") base = "明日は雪の所があります。";
     else if (tone === "is-rain") base = "明日は雨の所があります。傘をご用意ください。";
     else base = "明日はおおむね穏やかです。";
-  } else if (content === "weekly_precip") base = "向こう一週間の降水確率です。";
+  } else if (content === "weekly_precip") base = "向こう一週間の降水確率と湿度です。";
   else base = "向こう一週間の天気です。";
   return appendLocalConditions(base);
 }
@@ -132,7 +138,27 @@ export function popTone(pop) {
 }
 
 function clampPop(value) {
-  return Math.max(0, Math.min(90, Math.round(value / 10) * 10));
+  return Math.max(0, Math.min(90, Math.round(Number(value) / 10) * 10));
+}
+
+function clampHumidity(value) {
+  const n = Math.round(Number(value));
+  if (!Number.isFinite(n)) return 60;
+  return Math.max(20, Math.min(99, n));
+}
+
+/** 湿度の実測が無いときは降水・天気から推定（表示用） */
+function estimateHumidity(pop, weather, seed = 0) {
+  const wet = isWetWeather(weather);
+  const base = wet ? 72 : 52;
+  return clampHumidity(base + Math.round((Number(pop) || 0) * 0.18) + ((seed % 13) - 6));
+}
+
+function hash(text) {
+  let n = 0;
+  const s = String(text || "");
+  for (let i = 0; i < s.length; i += 1) n = (n * 31 + s.charCodeAt(i)) >>> 0;
+  return n;
 }
 
 function formatDate(date) {

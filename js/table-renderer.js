@@ -2,11 +2,11 @@
  * 週間天気 / 週間降水確率の表。地図の上には7日分を置けないので表にする。
  */
 
-import { canonicalContent } from "./catalog.js?v=pref348";
-import { loadIcon } from "./map-renderer.js?v=pref348";
-import { weatherTone } from "./weather-renderer.js?v=pref348";
-import { popTone } from "./forecast.js?v=pref348";
-import { isNightHours, jmaLabel } from "./jma-icons.js?v=pref348";
+import { canonicalContent } from "./catalog.js?v=pref349";
+import { loadIcon } from "./map-renderer.js?v=pref349";
+import { weatherTone } from "./weather-renderer.js?v=pref349";
+import { popTone } from "./forecast.js?v=pref349";
+import { isNightHours, jmaLabel } from "./jma-icons.js?v=pref349";
 
 export async function renderWeeklyTable(cities, contentId) {
   const days = cities[0]?.weekly || [];
@@ -61,9 +61,18 @@ async function renderWeatherCell(day) {
 }
 
 function renderPopCell(day) {
+  const pop = Math.round(Number(day.pop) || 0);
+  const humidity = Math.round(Number(day.humidity) || 0);
   return `
-    <div class="forecast-cell is-pop ${popTone(day.pop)}${day.today ? " is-today" : ""}">
-      <b>${Math.round(day.pop)}</b><small>%</small>
+    <div class="forecast-cell is-pop is-pop-metrics ${popTone(pop)}${day.today ? " is-today" : ""}">
+      <div class="pop-metric is-pop-chance">
+        <span class="pop-metric-label">降水確率</span>
+        <span class="pop-metric-value"><b>${pop}</b><small>%</small></span>
+      </div>
+      <div class="pop-metric is-humidity">
+        <span class="pop-metric-label">湿度</span>
+        <span class="pop-metric-value"><b>${humidity}</b><small>%</small></span>
+      </div>
     </div>
   `;
 }

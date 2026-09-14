@@ -743,7 +743,7 @@ html.is-edit .precip-tod-legend.is-dragging {
 
 .led-screen[data-content="weekly_weather"],
 .led-screen[data-content="weekly_precip"] {
-  background: var(--bg-sea) url("../img/weekly-frame.svg?v=pref348") no-repeat center / 100% 100%;
+  background: var(--bg-sea) url("../img/weekly-frame.svg?v=pref349") no-repeat center / 100% 100%;
 }
 
 .led-screen[data-content="weekly_weather"] .map-stage,
@@ -929,6 +929,71 @@ html.is-edit .precip-tod-legend.is-dragging {
   gap: 0.04em;
   font-family: var(--font-number);
   color: var(--pop-color);
+}
+
+.forecast-cell.is-pop-metrics {
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  gap: 0;
+  padding: 0.12em 0.18em;
+  container-type: size;
+  color: var(--text-primary);
+}
+
+.forecast-cell.is-pop-metrics .pop-metric {
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.2em;
+  padding: 0.08em 0;
+  line-height: 1;
+}
+
+.forecast-cell.is-pop-metrics .pop-metric.is-pop-chance {
+  border-bottom: 1px dotted #9bb8cc;
+}
+
+.forecast-cell.is-pop-metrics .pop-metric-label {
+  flex: 0 1 auto;
+  min-width: 0;
+  font-family: var(--font-main);
+  font-size: clamp(7px, 18cqh, calc(var(--font-week) * 0.55));
+  font-weight: 800;
+  color: #0b6fbf;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: clip;
+}
+
+.forecast-cell.is-pop-metrics .pop-metric.is-humidity .pop-metric-label {
+  color: #1a7a6a;
+}
+
+.forecast-cell.is-pop-metrics .pop-metric-value {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.04em;
+  flex: 0 0 auto;
+  color: #123b5c;
+}
+
+.forecast-cell.is-pop-metrics .pop-metric-value b {
+  font-size: clamp(11px, 34cqh, calc(var(--font-pop-lg) * 0.72));
+  font-weight: 900;
+  line-height: 1;
+  color: #123b5c;
+}
+
+.forecast-cell.is-pop-metrics .pop-metric-value small {
+  font-size: 0.48em;
+  font-weight: 800;
+  line-height: 1;
+  align-self: flex-end;
+  margin-bottom: 0.08em;
+  color: #3d6b8c;
 }
 
 .forecast-cell.is-pop b {
