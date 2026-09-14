@@ -4,8 +4,8 @@
  */
 
 import { canonicalRegion, isNational } from "./catalog.js?v=pref320";
-import { cardSizePct } from "./viewport.js?v=pref338";
-import { MAP_VERSION } from "./version.js?v=pref338";
+import { cardSizePct } from "./viewport.js?v=pref339";
+import { MAP_VERSION } from "./version.js?v=pref339";
 
 import { jmaIconFile } from "./jma-icons.js?v=pref320";
 
@@ -148,7 +148,7 @@ function detachOkinawaInset(fitEl, mapSvg) {
 const SCREEN_FOCUS_PREFS = {
   hokkaido: ["01"],
   tohoku: ["02", "03", "04", "05", "06", "07"],
-  kanto: ["08", "09", "10", "11", "12", "13", "14", "19", "20"],
+  kanto: ["08", "09", "10", "11", "12", "13", "14", "19"],
   chubu: ["15", "16", "17", "18", "19", "20", "21", "22", "23", "24"],
   kinki: ["24", "25", "26", "27", "28", "29", "30"],
   chugoku: ["31", "32", "33", "34", "35"],
@@ -663,7 +663,6 @@ const CARD_SLOTS = {
     tsu: { x: 84, y: 78 }
   },
   kanto: {
-    nagano: { x: 16, y: 30 },
     utsunomiya: { x: 84, y: 14 },
     maebashi: { x: 16, y: 46 },
     mito: { x: 84, y: 34 },
@@ -674,15 +673,16 @@ const CARD_SLOTS = {
     chiba: { x: 84, y: 72 }
   },
   chubu: {
-    niigata: { x: 82, y: 18 },
-    toyama: { x: 78, y: 36 },
-    kanazawa: { x: 20, y: 36 },
-    fukui: { x: 18, y: 50 },
-    takayama: { x: 78, y: 50 },
-    gifu: { x: 20, y: 64 },
-    nagoya: { x: 78, y: 64 },
-    shizuoka: { x: 80, y: 80 },
-    tsu: { x: 48, y: 82 }
+    niigata: { x: 82, y: 14 },
+    nagano: { x: 78, y: 28 },
+    toyama: { x: 78, y: 38 },
+    kanazawa: { x: 18, y: 36 },
+    fukui: { x: 16, y: 50 },
+    takayama: { x: 72, y: 52 },
+    gifu: { x: 18, y: 64 },
+    nagoya: { x: 78, y: 66 },
+    shizuoka: { x: 82, y: 80 },
+    tsu: { x: 48, y: 84 }
   },
   kyushu: {
     fukuoka: { x: 64, y: 16 },
@@ -753,7 +753,6 @@ const CARD_SLOTS_POP = {
     kochi: { x: 28, y: 63 }
   },
   kanto: {
-    nagano: { x: 18, y: 38 },
     utsunomiya: { x: 80, y: 16 },
     maebashi: { x: 18, y: 52 },
     mito: { x: 80, y: 36 },
@@ -797,15 +796,16 @@ const CARD_SLOTS_POP = {
     hakodate: { x: 16, y: 82 }
   },
   chubu: {
-    niigata: { x: 82, y: 18 },
-    toyama: { x: 78, y: 36 },
-    kanazawa: { x: 20, y: 36 },
-    fukui: { x: 18, y: 50 },
-    takayama: { x: 78, y: 50 },
-    gifu: { x: 20, y: 64 },
-    nagoya: { x: 78, y: 64 },
-    shizuoka: { x: 80, y: 80 },
-    tsu: { x: 48, y: 82 }
+    niigata: { x: 82, y: 14 },
+    nagano: { x: 78, y: 28 },
+    toyama: { x: 78, y: 38 },
+    kanazawa: { x: 18, y: 36 },
+    fukui: { x: 16, y: 50 },
+    takayama: { x: 72, y: 52 },
+    gifu: { x: 18, y: 64 },
+    nagoya: { x: 78, y: 66 },
+    shizuoka: { x: 82, y: 80 },
+    tsu: { x: 48, y: 84 }
   }
 };
 
