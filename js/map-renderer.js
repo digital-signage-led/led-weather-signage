@@ -392,6 +392,10 @@ function paintNeighborLand(svg, regionId = "") {
   regionId = canonicalRegion(regionId);
   const national = isNational(regionId);
   const focusPrefs = new Set(focusPrefsFor(regionId));
+  // 近畿・中国・四国・九州は灰色でよい（中部など既存は緑）
+  const greyFocus = regionId === "kinki" || regionId === "chugoku"
+    || regionId === "shikoku" || regionId === "kyushu";
+  const focusFill = greyFocus ? "#c5cad1" : "#76c85a";
   const focusStroke = national
     ? `stroke: none !important;`
     : `stroke: #ffffff !important;
@@ -404,7 +408,7 @@ function paintNeighborLand(svg, regionId = "") {
   style.textContent = `
     .map-fills.map-focus > path:not(.map-as-dim),
     .map-fills .map-as-focus {
-      fill: #76c85a !important;
+      fill: ${focusFill} !important;
       fill-rule: nonzero !important;
       ${focusStroke}
     }
@@ -417,9 +421,9 @@ function paintNeighborLand(svg, regionId = "") {
   `;
   svg.insertBefore(style, svg.firstChild);
   const applyFocusPaint = (el) => {
-    el.setAttribute("fill", "#76c85a");
+    el.setAttribute("fill", focusFill);
     el.setAttribute("fill-rule", "nonzero");
-    el.style.setProperty("fill", "#76c85a", "important");
+    el.style.setProperty("fill", focusFill, "important");
     el.style.setProperty("fill-rule", "nonzero", "important");
     if (national) {
       el.style.setProperty("stroke", "none", "important");
@@ -674,6 +678,7 @@ const CARD_SLOTS = {
   },
   chubu: {
     niigata: { x: 82, y: 14 },
+    sado: { x: 62, y: 10 },
     nagano: { x: 78, y: 28 },
     kofu: { x: 88, y: 46 },
     toyama: { x: 78, y: 38 },
@@ -762,15 +767,6 @@ const CARD_SLOTS_POP = {
     yokohama: { x: 46, y: 86 },
     chiba: { x: 80, y: 72 }
   },
-  kyushu: {
-    fukuoka: { x: 66, y: 16 },
-    saga: { x: 16, y: 34 },
-    oita: { x: 84, y: 28 },
-    nagasaki: { x: 16, y: 52 },
-    kumamoto: { x: 84, y: 50 },
-    kagoshima: { x: 16, y: 72 },
-    miyazaki: { x: 84, y: 72 }
-  },
   tohoku: {
     aomori: { x: 70, y: 12 },
     akita: { x: 18, y: 28 },
@@ -797,6 +793,7 @@ const CARD_SLOTS_POP = {
   },
   chubu: {
     niigata: { x: 82, y: 14 },
+    sado: { x: 62, y: 10 },
     nagano: { x: 78, y: 28 },
     kofu: { x: 88, y: 46 },
     toyama: { x: 78, y: 38 },
@@ -807,6 +804,37 @@ const CARD_SLOTS_POP = {
     nagoya: { x: 78, y: 66 },
     shizuoka: { x: 82, y: 80 },
     tsu: { x: 48, y: 84 }
+  },
+  kinki: {
+    otsu: { x: 78, y: 16 },
+    kyoto: { x: 18, y: 28 },
+    kobe: { x: 14, y: 46 },
+    osaka: { x: 16, y: 64 },
+    nara: { x: 82, y: 52 },
+    wakayama: { x: 18, y: 84 },
+    tsu: { x: 84, y: 78 }
+  },
+  chugoku: {
+    tottori: { x: 82, y: 14 },
+    matsue: { x: 48, y: 16 },
+    okayama: { x: 84, y: 48 },
+    hiroshima: { x: 36, y: 72 },
+    yamaguchi: { x: 14, y: 72 }
+  },
+  shikoku: {
+    takamatsu: { x: 80, y: 16 },
+    matsuyama: { x: 14, y: 40 },
+    tokushima: { x: 84, y: 54 },
+    kochi: { x: 48, y: 82 }
+  },
+  kyushu: {
+    fukuoka: { x: 66, y: 14 },
+    saga: { x: 14, y: 32 },
+    oita: { x: 84, y: 26 },
+    nagasaki: { x: 14, y: 50 },
+    kumamoto: { x: 84, y: 48 },
+    miyazaki: { x: 84, y: 70 },
+    kagoshima: { x: 16, y: 74 }
   }
 };
 

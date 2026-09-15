@@ -66,6 +66,86 @@
           "rev": 1757827200000
         }
       }
+    },
+    "kinki": {
+      "viewports": {
+        "576x432": {
+          "map": { "scale": 1, "rotate": 0, "x": 0, "y": 0 },
+          "okinawa": { "x": 20, "y": 38, "scale": 1 },
+          "precipLegend": { "x": 86, "y": 68 },
+          "cards": {},
+          "cardsPop": {},
+          "rev": 1757904000000
+        },
+        "1920x1080": {
+          "map": { "scale": 1, "rotate": 0, "x": 0, "y": 0 },
+          "okinawa": { "x": 20, "y": 38, "scale": 1 },
+          "precipLegend": { "x": 86, "y": 68 },
+          "cards": {},
+          "cardsPop": {},
+          "rev": 1757904000000
+        }
+      }
+    },
+    "chugoku": {
+      "viewports": {
+        "576x432": {
+          "map": { "scale": 1, "rotate": 0, "x": 0, "y": 0 },
+          "okinawa": { "x": 20, "y": 38, "scale": 1 },
+          "precipLegend": { "x": 86, "y": 68 },
+          "cards": {},
+          "cardsPop": {},
+          "rev": 1757904000000
+        },
+        "1920x1080": {
+          "map": { "scale": 1, "rotate": 0, "x": 0, "y": 0 },
+          "okinawa": { "x": 20, "y": 38, "scale": 1 },
+          "precipLegend": { "x": 86, "y": 68 },
+          "cards": {},
+          "cardsPop": {},
+          "rev": 1757904000000
+        }
+      }
+    },
+    "shikoku": {
+      "viewports": {
+        "576x432": {
+          "map": { "scale": 1, "rotate": 0, "x": 0, "y": 0 },
+          "okinawa": { "x": 20, "y": 38, "scale": 1 },
+          "precipLegend": { "x": 86, "y": 68 },
+          "cards": {},
+          "cardsPop": {},
+          "rev": 1757904000000
+        },
+        "1920x1080": {
+          "map": { "scale": 1, "rotate": 0, "x": 0, "y": 0 },
+          "okinawa": { "x": 20, "y": 38, "scale": 1 },
+          "precipLegend": { "x": 86, "y": 68 },
+          "cards": {},
+          "cardsPop": {},
+          "rev": 1757904000000
+        }
+      }
+    },
+    "kyushu": {
+      "viewports": {
+        "576x432": {
+          "map": { "scale": 1, "rotate": 0, "x": 0, "y": 0 },
+          "okinawa": { "x": 20, "y": 38, "scale": 1 },
+          "precipLegend": { "x": 86, "y": 68 },
+          "cards": {},
+          "cardsPop": {},
+          "rev": 1757904000000
+        },
+        "1920x1080": {
+          "map": { "scale": 1, "rotate": 0, "x": 0, "y": 0 },
+          "okinawa": { "x": 20, "y": 38, "scale": 1 },
+          "precipLegend": { "x": 86, "y": 68 },
+          "cards": {},
+          "cardsPop": {},
+          "rev": 1757904000000
+        }
+      }
     }
   },
   "cardScales": {
