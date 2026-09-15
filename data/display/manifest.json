@@ -3,7 +3,7 @@
   "updated_at": "2026-09-15T13:56:27.537Z",
   "published_at": "2026-09-15T13:56:27.537Z",
   "publisher": "studio-e2e",
-  "commit": "",
+  "commit": "5541bec",
   "contents": {
     "today_weather": {
       "version": 1,
@@ -155,7 +155,7 @@
       "pref_id": "",
       "station_id": "",
       "publisher": "studio-e2e",
-      "commit": "",
+      "commit": "5541bec",
       "status": "published"
     },
     {
