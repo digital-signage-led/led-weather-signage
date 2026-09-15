@@ -301,7 +301,7 @@ function nearestViewportSlice(viewports, width, height) {
 
 export async function initLayoutDefaults() {
   try {
-    const response = await fetch("data/layout-defaults.json", { cache: "no-store" });
+    const response = await fetch(`${window.__LED_BASE__ || ""}data/layout-defaults.json`, { cache: "no-store" });
     if (response.ok) {
       const doc = await response.json();
       if (doc && typeof doc === "object") shippedDefaults = doc;

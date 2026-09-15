@@ -36,7 +36,7 @@ export async function loadMapSvg(mapFile = "japan.svg") {
   // 全国・地方とも共通の japan.svg。1回だけ取得し以降はメモリ再利用。
   if (!mapSvgTextPromise) {
     const file = "japan.svg";
-    mapSvgTextPromise = fetch(`maps/${file}?v=${MAP_VERSION}`)
+    mapSvgTextPromise = fetch(`${window.__LED_BASE__ || ""}maps/${file}?v=${MAP_VERSION}`)
       .then((response) => {
         if (!response.ok) throw new Error(`${file} を読み込めません`);
         return response.text();
@@ -66,7 +66,7 @@ function cloneMapSvg(svgText) {
 export async function loadIcon(weather, night = false) {
   const file = jmaIconFile(weather, night);
   if (!iconCache.has(file)) {
-    const response = await fetch(file);
+    const response = await fetch(`${window.__LED_BASE__ || ""}${file}`);
     if (!response.ok) throw new Error(`アイコンを読み込めません: ${file}`);
     iconCache.set(file, await response.text());
   }

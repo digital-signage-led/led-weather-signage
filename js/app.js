@@ -15,10 +15,10 @@ import {
   loadCatalog
 } from "./catalog.js?v=pref388";
 import { adaptWeather, aggregateRegion } from "./weather-data.js?v=pref388";
-import { loadMapSvg, mountMap, placeCardsAroundMap, projectCity, computeFocusMapTransform, regionalFallbackTransform } from "./map-renderer.js?v=pref411";
+import { loadMapSvg, mountMap, placeCardsAroundMap, projectCity, computeFocusMapTransform, regionalFallbackTransform } from "./map-renderer.js?v=pref422";
 import { MAP_LAYOUT_GEN } from "./map-layout.js?v=pref391";
 import { formatStamp, renderCityCard, renderPin, pinRadiusForViewBox, pinRadiusForMatchingScreen, pickNoteWeather, weatherTone, renderNoteIcon, renderPrecipTodLegend } from "./weather-renderer.js?v=pref396";
-import { applyCardScale, applyLockedCards, applyMapTransform, applyPrecipLegend, applyTitleScale, autoPlacePrecipLegend, bindCardEditor, bindMapControls, bindMapEditor, bindOkinawaEditor, bindPrecipLegendEditor, CARD_POS_MAX, CARD_POS_MIN, CARD_SCALE_MAX, CARD_SCALE_MIN, TITLE_SCALE_MAX, TITLE_SCALE_MIN, centerCityCards, containMapInStage, describeLayoutShare, describeMapShare, freezeCardLayout, initLayoutDefaults, isCustomLayout, isManualMapTransform, legendStatusLabel, listCardPositions, loadCardScale, loadLayout, loadMapLayout, loadTitleScale, moveLockedCard, nudgeCardsAwayFromLegend, resetCardScale, resetLayout, resetTitleScale, runLegendCommand, saveCardScale, saveLayout, saveMapLayout, saveTitleScale, shouldAutoPlaceLegend, snapshotLayoutDefaults } from "./studio-layout.js?v=pref414";
+import { applyCardScale, applyLockedCards, applyMapTransform, applyPrecipLegend, applyTitleScale, autoPlacePrecipLegend, bindCardEditor, bindMapControls, bindMapEditor, bindOkinawaEditor, bindPrecipLegendEditor, CARD_POS_MAX, CARD_POS_MIN, CARD_SCALE_MAX, CARD_SCALE_MIN, TITLE_SCALE_MAX, TITLE_SCALE_MIN, centerCityCards, containMapInStage, describeLayoutShare, describeMapShare, freezeCardLayout, initLayoutDefaults, isCustomLayout, isManualMapTransform, legendStatusLabel, listCardPositions, loadCardScale, loadLayout, loadMapLayout, loadTitleScale, moveLockedCard, nudgeCardsAwayFromLegend, resetCardScale, resetLayout, resetTitleScale, runLegendCommand, saveCardScale, saveLayout, saveMapLayout, saveTitleScale, shouldAutoPlaceLegend, snapshotLayoutDefaults } from "./studio-layout.js?v=pref422";
 import { expandForecast, formatNoteHtml, noteFor } from "./forecast.js?v=pref391";
 import { renderWeeklyTable } from "./table-renderer.js?v=pref417";
 import {
@@ -168,7 +168,8 @@ if (isStudio) {
 
 function productionUrl(regionId, contentId, extra = {}) {
   const next = new URL(window.location.href);
-  const path = next.pathname === "/view" ? "/view" : next.pathname;
+  let path = next.pathname === "/view" ? "/view" : next.pathname;
+  if (path !== "/view" && !path.endsWith("/") && !/\.html$/i.test(path)) path += "/";
   next.pathname = path;
   next.search = "";
   next.searchParams.set("region", canonicalRegion(regionId));
@@ -679,9 +680,9 @@ async function bootStudio() {
 }
 
 async function bootSignage() {
-  // 気象庁最新を先に取り、同梱データとの二重描画（残像）を避ける。ハング時のみ 8 秒後に強制表示
+  // 公開URLは同梱データで即描画。気象庁は裏で取り、来たら差し替える（待たせない）
   const liveReady = pullLiveWeatherAndRender();
-  window.setTimeout(() => document.documentElement.classList.remove("is-boot"), 8000);
+  window.setTimeout(() => document.documentElement.classList.remove("is-boot"), 4000);
   await loadCatalog();
   await initLayoutDefaults();
   state.regionId = getRegion(state.regionId).id;
@@ -1140,10 +1141,6 @@ async function bootSignage() {
 
   persistView();
   try {
-    await Promise.race([
-      liveReady,
-      new Promise((resolve) => window.setTimeout(resolve, 2500))
-    ]);
     await render();
   } finally {
     document.documentElement.classList.remove("is-boot");
@@ -1305,7 +1302,8 @@ async function loadWeatherDoc() {
 }
 
 async function fetchJson(url) {
-  const response = await fetch(`${url}?v=${DATA_VERSION}`, { cache: "no-store" });
+  const base = window.__LED_BASE__ || "";
+  const response = await fetch(`${base}${url}?v=${DATA_VERSION}`, { cache: "no-store" });
   if (!response.ok) throw new Error(`${url} fetch failed`);
   return response.json();
 }

@@ -2,6 +2,21 @@
 <html lang="ja" class="is-boot">
 <head>
   <meta charset="UTF-8">
+  <script>
+    (function () {
+      var path = location.pathname;
+      var dir = /\.html$/i.test(path)
+        ? path.replace(/[^/]+$/, "")
+        : (path.endsWith("/") ? path : path + "/");
+      var base = document.createElement("base");
+      base.href = dir;
+      document.head.appendChild(base);
+      window.__LED_BASE__ = dir;
+      window.setTimeout(function () {
+        document.documentElement.classList.remove("is-boot");
+      }, 2000);
+    })();
+  </script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="color-scheme" content="light">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
@@ -24,11 +39,6 @@
     }
     html.is-boot #boot-status { display: flex; }
   </style>
-  <script>
-    window.setTimeout(function () {
-      document.documentElement.classList.remove("is-boot");
-    }, 2500);
-  </script>
   <style>
     /* 外部CSS未読込時の最低限フォールバック（本定義は weather.css） */
     .forecast-grid {
@@ -170,6 +180,6 @@
     </article>
     <aside id="debug-overlay" hidden></aside>
   </div>
-  <script type="module" src="js/app.js?v=pref421"></script>
+  <script type="module" src="js/app.js?v=pref422"></script>
 </body>
 </html>
