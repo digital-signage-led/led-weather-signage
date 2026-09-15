@@ -23,7 +23,7 @@ export const TITLE_SCALE_MAX = 2.8;
 export const CARD_POS_MIN = -40;
 export const CARD_POS_MAX = 140;
 /** 降水確率レジェンド（朝/昼/夜）の既定位置＝画面右下 */
-export const PRECIP_LEGEND_DEFAULT = { x: 86, y: 68 };
+export const PRECIP_LEGEND_DEFAULT = { x: 86, y: 58 };
 
 function emptyLayout(regionId = "national") {
   regionId = canonicalRegion(regionId);

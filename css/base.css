@@ -100,9 +100,14 @@ body.is-kiosk #app {
 
 #studio-root,
 .studio {
-  min-height: 100vh;
+  height: 100vh;
+  height: 100dvh;
+  max-height: 100vh;
+  max-height: 100dvh;
+  min-height: 0;
   display: grid;
-  grid-template-rows: auto 1fr;
+  grid-template-rows: auto minmax(0, 1fr);
+  overflow: hidden;
 }
 
 #studio-root[hidden],
@@ -118,6 +123,10 @@ body.is-kiosk #app {
   padding: 12px 18px;
   background: #0d1422;
   border-bottom: 1px solid #223049;
+  max-height: 36vh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  flex-shrink: 0;
 }
 
 .studio-bar label {
@@ -259,7 +268,11 @@ body.is-kiosk #app {
   position: relative;
   overflow: auto;
   min-height: 0;
+  height: 100%;
   padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background:
     linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
     linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
@@ -272,6 +285,7 @@ body.is-kiosk #app {
   width: var(--slot-width, var(--viewport-width));
   height: var(--slot-height, var(--viewport-height));
   overflow: hidden;
+  flex: 0 0 auto;
 }
 
 #signage-frame {
