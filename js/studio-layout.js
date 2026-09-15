@@ -400,7 +400,33 @@ function seedLocalStorageFromDefaults() {
  * 地図: 地方 × 縦横比（4日次コンテンツ共通）
  * ボックス/凡例: 地方 × グループ × 縦横比
  */
-export function loadLayout(regionId, contentId = "today_weather", width = 0, height = 0) {
+function cardCount(entry) {
+  if (!entry) return 0;
+  return Math.max(
+    Object.keys(entry.cards || {}).length,
+    Object.keys(entry.cardsPop || {}).length
+  );
+}
+
+function richestSlice(regionDef, group, aspect, width, height) {
+  if (!regionDef) return null;
+  const candidates = [];
+  const add = (entry, weight) => {
+    if (!entry) return;
+    candidates.push({ entry, score: weight + cardCount(entry) * 20 });
+  };
+  add(pickGroupAspectSlice(regionDef, group, aspect), 200);
+  for (const [vpKey, entry] of Object.entries(regionDef.viewports || {})) {
+    const wh = parseViewportKey(vpKey);
+    const same = wh.w > 0 && aspectTemplateKey(wh.w, wh.h) === aspect;
+    add(entry, same ? 120 : 40);
+  }
+  if (width > 0 && height > 0) add(pickLayoutSlice(regionDef, width, height), 80);
+  candidates.sort((a, b) => b.score - a.score);
+  return candidates[0]?.entry || null;
+}
+
+export function loadLayout(regionId, contentId = "today_weather", width = 0, height = 0, options = {}) {
   regionId = canonicalRegion(regionId);
   const group = getLayoutGroup(contentId);
   const w = Math.round(Number(width) || 0);
@@ -410,26 +436,13 @@ export function loadLayout(regionId, contentId = "today_weather", width = 0, hei
   try {
     const all = readLayoutStore();
     const saved = layoutStoreKeys(regionId).map((key) => all[key]).find(Boolean);
-    let slice = pickGroupAspectSlice(saved, group, aspect);
-    if (!slice && saved?.viewports) {
-      for (const [vpKey, entry] of Object.entries(saved.viewports)) {
-        const wh = parseViewportKey(vpKey);
-        if (wh.w > 0 && aspectTemplateKey(wh.w, wh.h) === aspect) {
-          slice = entry;
-          break;
-        }
-      }
-      if (!slice) slice = pickLayoutSlice(saved, width, height);
-    }
     const shippedRegion = shippedDefaults.layouts?.[regionId];
-    const shippedGroup = pickGroupAspectSlice(shippedRegion, group, aspect);
-    let shipped = shippedGroup;
-    if (!shipped && shippedRegion?.viewports) {
-      const vpKey = w > 0 && h > 0 ? viewportSizeKey(w, h) : "";
-      shipped = (vpKey && shippedRegion.viewports[vpKey])
-        || nearestViewportSlice(shippedRegion.viewports, w, h);
-    }
-    slice = slice || shipped;
+    const local = richestSlice(saved, group, aspect, width, height);
+    const shipped = richestSlice(shippedRegion, group, aspect, width, height);
+    const preferShipped = Boolean(options.preferShipped);
+    let slice = preferShipped
+      ? (cardCount(shipped) >= cardCount(local) ? shipped : local) || shipped || local
+      : local || shipped;
     const base = emptyLayout(regionId);
     if (!slice) {
       return {

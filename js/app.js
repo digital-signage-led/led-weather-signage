@@ -18,7 +18,7 @@ import { adaptWeather, aggregateRegion } from "./weather-data.js?v=pref388";
 import { loadMapSvg, mountMap, placeCardsAroundMap, projectCity, computeFocusMapTransform, regionalFallbackTransform } from "./map-renderer.js?v=pref422";
 import { MAP_LAYOUT_GEN } from "./map-layout.js?v=pref391";
 import { formatStamp, renderCityCard, renderPin, pinRadiusForViewBox, pinRadiusForMatchingScreen, pickNoteWeather, weatherTone, renderNoteIcon, renderPrecipTodLegend } from "./weather-renderer.js?v=pref396";
-import { applyCardScale, applyLockedCards, applyMapTransform, applyPrecipLegend, applyTitleScale, autoPlacePrecipLegend, bindCardEditor, bindMapControls, bindMapEditor, bindOkinawaEditor, bindPrecipLegendEditor, CARD_POS_MAX, CARD_POS_MIN, CARD_SCALE_MAX, CARD_SCALE_MIN, TITLE_SCALE_MAX, TITLE_SCALE_MIN, centerCityCards, containMapInStage, describeLayoutShare, describeMapShare, freezeCardLayout, initLayoutDefaults, isCustomLayout, isManualMapTransform, legendStatusLabel, listCardPositions, loadCardScale, loadLayout, loadMapLayout, loadTitleScale, moveLockedCard, nudgeCardsAwayFromLegend, resetCardScale, resetLayout, resetTitleScale, runLegendCommand, saveCardScale, saveLayout, saveMapLayout, saveTitleScale, shouldAutoPlaceLegend, snapshotLayoutDefaults } from "./studio-layout.js?v=pref422";
+import { applyCardScale, applyLockedCards, applyMapTransform, applyPrecipLegend, applyTitleScale, autoPlacePrecipLegend, bindCardEditor, bindMapControls, bindMapEditor, bindOkinawaEditor, bindPrecipLegendEditor, CARD_POS_MAX, CARD_POS_MIN, CARD_SCALE_MAX, CARD_SCALE_MIN, TITLE_SCALE_MAX, TITLE_SCALE_MIN, centerCityCards, containMapInStage, describeLayoutShare, describeMapShare, freezeCardLayout, initLayoutDefaults, isCustomLayout, isManualMapTransform, legendStatusLabel, listCardPositions, loadCardScale, loadLayout, loadMapLayout, loadTitleScale, moveLockedCard, nudgeCardsAwayFromLegend, resetCardScale, resetLayout, resetTitleScale, runLegendCommand, saveCardScale, saveLayout, saveMapLayout, saveTitleScale, shouldAutoPlaceLegend, snapshotLayoutDefaults } from "./studio-layout.js?v=pref423";
 import { expandForecast, formatNoteHtml, noteFor } from "./forecast.js?v=pref391";
 import { renderWeeklyTable } from "./table-renderer.js?v=pref417";
 import {
@@ -625,8 +625,18 @@ async function bootStudio() {
           titleScales: { ...(current.titleScales || {}) }
         };
         for (const [regionId, regionDef] of Object.entries(snapshot.layouts || {})) {
-          const prev = merged.layouts[regionId] || { viewports: {} };
+          const prev = merged.layouts[regionId] || { groups: {}, viewports: {} };
+          const groups = { ...(prev.groups || {}) };
+          for (const [group, pack] of Object.entries(regionDef.groups || {})) {
+            groups[group] = {
+              aspects: {
+                ...(groups[group]?.aspects || {}),
+                ...(pack.aspects || {})
+              }
+            };
+          }
           merged.layouts[regionId] = {
+            groups,
             viewports: {
               ...(prev.viewports || {}),
               ...(regionDef.viewports || {})
@@ -705,7 +715,9 @@ async function bootSignage() {
   const useFixedScale = !(Number(params.get("vw")) > 0 && Number(params.get("vh")) > 0);
   const initialVp = measure();
   state.viewport = initialVp;
-  const layout = loadLayout(state.regionId, state.contentId, initialVp.width, initialVp.height);
+  const layout = loadLayout(state.regionId, state.contentId, initialVp.width, initialVp.height, {
+    preferShipped: !canEdit
+  });
   let iconPhaseTimer = 0;
   let tablePageTimer = 0;
   let tablePageIndex = Math.max(0, Number.parseInt(params.get("page") || "0", 10) || 0);
@@ -816,7 +828,9 @@ async function bootSignage() {
     if (content.id !== "weekly_weather") hideWeekPoints();
 
     // 解像度ごとの保存レイアウトを読み直す
-    const savedLayout = loadLayout(region.id, content.id, vp.width, vp.height);
+    const savedLayout = loadLayout(region.id, content.id, vp.width, vp.height, {
+      preferShipped: !canEdit
+    });
     layout.map = { ...savedLayout.map };
     layout.okinawa = { ...savedLayout.okinawa };
     layout.cards = { ...savedLayout.cards };
@@ -933,7 +947,8 @@ async function bootSignage() {
         ),
         layout
       );
-      if (!Object.keys(savedLayout.cards || {}).length
+      if (canEdit
+        && !Object.keys(savedLayout.cards || {}).length
         && freezeCardLayout(laidOut, layout, { force: false })) {
         saveLayout(region.id, layout, content.id, vp.width, vp.height);
       }
