@@ -153,6 +153,34 @@ body.is-kiosk #app {
   padding: 0 10px;
 }
 
+.studio-url-catalog {
+  flex: 1 1 100%;
+}
+
+.studio-url-catalog button {
+  height: 34px;
+}
+
+.studio-url-table {
+  width: 100%;
+  margin-top: 8px;
+  font-size: 11px;
+  color: #d5deea;
+  border-collapse: collapse;
+}
+
+.studio-url-table th,
+.studio-url-table td {
+  border-bottom: 1px solid #314563;
+  padding: 4px 6px;
+  text-align: left;
+}
+
+.studio-url-table code {
+  font-size: 10px;
+  word-break: break-all;
+}
+
 .studio-bar input[type="number"] {
   min-width: 88px;
   width: 96px;

@@ -59,14 +59,15 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/base.css?v=pref419">
+  <link rel="stylesheet" href="css/base.css?v=pref426">
   <link rel="stylesheet" href="css/weather.css?v=pref417">
+  <link rel="stylesheet" href="css/v1-content.css?v=pref426">
 </head>
 <body>
   <p id="boot-status" role="status">読込中</p>
   <div id="studio-root" hidden>
     <form class="studio-bar" id="studio-bar">
-      <label>
+      <label id="region-field">
         地域
         <select id="region-select" name="region"></select>
       </label>
@@ -74,6 +75,18 @@
         コンテンツ
         <select id="content-select" name="content"></select>
       </label>
+      <label id="pref-field" hidden>
+        都道府県
+        <select id="pref-select" name="pref"></select>
+      </label>
+      <label id="station-field" hidden>
+        観測地点
+        <select id="station-select" name="station"></select>
+      </label>
+      <div class="studio-url-catalog">
+        <button type="button" id="url-catalog-toggle">公開URL一覧</button>
+        <div id="url-catalog-panel" hidden></div>
+      </div>
       <label>
         幅
         <input id="viewport-width" name="vw" type="number" min="160" max="7680" step="1" value="1920">
@@ -180,6 +193,6 @@
     </article>
     <aside id="debug-overlay" hidden></aside>
   </div>
-  <script type="module" src="js/app.js?v=pref425"></script>
+  <script type="module" src="js/app.js?v=pref426"></script>
 </body>
 </html>

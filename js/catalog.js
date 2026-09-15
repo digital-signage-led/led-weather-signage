@@ -3,7 +3,7 @@
  * 表示区分と気象内部区分を分ける。旧IDはエイリアスで受ける。
  */
 
-const DATA_VERSION = "pref388";
+const DATA_VERSION = "pref426";
 
 const REGION_ALIASES = {
   NATIONAL: "national",
@@ -109,6 +109,8 @@ export function citiesForRegion(cities, region) {
   ));
 }
 
-export function contentTitle(region, content) {
+export function contentTitle(region, content, extra = {}) {
+  if (extra.stationName) return `${extra.stationName}｜${content.name}`;
+  if (extra.prefName) return `${extra.prefName}｜${content.name}`;
   return `${region.name}｜${content.name}`;
 }

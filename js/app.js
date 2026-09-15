@@ -2,7 +2,7 @@
  * Studio / signage bootstrap. Studio drives the iframe viewport.
  */
 
-import { APP_VERSION, DATA_VERSION, MAP_VERSION } from "./version.js?v=pref425";
+import { APP_VERSION, DATA_VERSION, MAP_VERSION } from "./version.js?v=pref426";
 import {
   canonicalContent,
   canonicalRegion,
@@ -10,10 +10,12 @@ import {
   getContent,
   getRegion,
   isNational,
-  listContents,
   listRegions,
   loadCatalog
-} from "./catalog.js?v=pref388";
+} from "./catalog.js?v=pref426";
+import { capabilityForContent, groupedContents, isV1Content, locationScope } from "./content-registry.js?v=pref426";
+import { getPrefecture, getStation, listPrefectures, loadLocationMasters, stationsForPref } from "./location-masters.js?v=pref426";
+import { generatePublicUrls } from "./public-urls.js?v=pref426";
 import { adaptWeather, aggregateRegion } from "./weather-data.js?v=pref388";
 import { loadMapSvg, mountMap, placeCardsAroundMap, projectCity, computeFocusMapTransform, regionalFallbackTransform } from "./map-renderer.js?v=pref422";
 import { MAP_LAYOUT_GEN } from "./map-layout.js?v=pref391";
@@ -138,6 +140,8 @@ const canEdit = params.get("edit") === "1";
 const state = {
   regionId: canonicalRegion(params.get("region")),
   contentId: canonicalContent(params.get("content")),
+  prefId: params.get("pref") || "tokyo",
+  stationId: params.get("station") || "44132",
   viewport: readViewport(FIXED_DESIGN.width, FIXED_DESIGN.height)
 };
 
@@ -172,8 +176,19 @@ function productionUrl(regionId, contentId, extra = {}) {
   if (path !== "/view" && !path.endsWith("/") && !/\.html$/i.test(path)) path += "/";
   next.pathname = path;
   next.search = "";
-  next.searchParams.set("region", canonicalRegion(regionId));
+  const content = getContent(contentId);
+  const scope = content.location_scope || "region";
   next.searchParams.set("content", canonicalContent(contentId));
+  if (scope === "region" || scope === "national" || !isV1Content(content)) {
+    next.searchParams.set("region", canonicalRegion(regionId));
+  } else if (regionId) {
+    next.searchParams.set("region", canonicalRegion(regionId));
+  }
+  if (scope === "prefecture" && extra.pref) next.searchParams.set("pref", extra.pref);
+  if (scope === "station") {
+    if (extra.pref) next.searchParams.set("pref", extra.pref);
+    if (extra.station) next.searchParams.set("station", extra.station);
+  }
   if (extra.edit) next.searchParams.set("edit", "1");
   if (extra.debug) next.searchParams.set("debug", "1");
   if (extra.site) next.searchParams.set("site", extra.site);
@@ -185,13 +200,21 @@ function productionUrl(regionId, contentId, extra = {}) {
 async function bootStudio() {
   try {
     await loadCatalog();
+    await loadLocationMasters();
     await initLayoutDefaults();
     state.regionId = canonicalRegion(state.regionId);
     state.contentId = canonicalContent(state.contentId);
+    state.prefId = getPrefecture(state.prefId).pref_id;
+    state.stationId = getStation(state.stationId).station_id;
 
   const studioBar = document.getElementById("studio-bar");
   const regionSelect = document.getElementById("region-select");
   const contentSelect = document.getElementById("content-select");
+  const prefSelect = document.getElementById("pref-select");
+  const stationSelect = document.getElementById("station-select");
+  const regionField = document.getElementById("region-field");
+  const prefField = document.getElementById("pref-field");
+  const stationField = document.getElementById("station-field");
   const widthInput = document.getElementById("viewport-width");
   const heightInput = document.getElementById("viewport-height");
   const presetHost = document.getElementById("viewport-presets");
@@ -234,11 +257,15 @@ async function bootStudio() {
   regionSelect.innerHTML = listRegions()
     .map((item) => `<option value="${item.id}">${item.name}</option>`)
     .join("");
-  contentSelect.innerHTML = listContents()
-    .map((item) => `<option value="${item.id}">${item.name}</option>`)
+  contentSelect.innerHTML = groupedContents()
+    .map((group) => `<optgroup label="${group.label}">${group.items.map((item) => `<option value="${item.id}">${item.name}</option>`).join("")}</optgroup>`)
+    .join("");
+  prefSelect.innerHTML = listPrefectures()
+    .map((item) => `<option value="${item.pref_id}">${item.pref_name}</option>`)
     .join("");
   regionSelect.value = getRegion(state.regionId).id;
   contentSelect.value = getContent(state.contentId).id;
+  prefSelect.value = state.prefId;
   state.regionId = regionSelect.value;
   state.contentId = contentSelect.value;
   widthInput.value = String(state.viewport.width);
@@ -255,6 +282,12 @@ async function bootStudio() {
     next.searchParams.set("studio", "1");
     next.searchParams.set("region", state.regionId);
     next.searchParams.set("content", state.contentId);
+    if (locationScope(state.contentId) === "prefecture" || locationScope(state.contentId) === "station") {
+      next.searchParams.set("pref", state.prefId);
+    }
+    if (locationScope(state.contentId) === "station") {
+      next.searchParams.set("station", state.stationId);
+    }
     if (isDebug) next.searchParams.set("debug", "1");
     window.history.replaceState({}, "", next);
   };
@@ -323,7 +356,9 @@ async function bootStudio() {
       debug: isDebug,
       site: params.get("site"),
       vw: state.viewport.width,
-      vh: state.viewport.height
+      vh: state.viewport.height,
+      pref: state.prefId,
+      station: state.stationId
     });
     fitFrame();
   };
@@ -447,12 +482,54 @@ async function bootStudio() {
     syncTitleScaleUi();
     loadFrame();
   });
+  const fillStationSelect = () => {
+    const cap = capabilityForContent(state.contentId);
+    const list = stationsForPref(state.prefId, cap);
+    const fallback = list.length ? list : stationsForPref(state.prefId);
+    stationSelect.innerHTML = fallback
+      .map((item) => `<option value="${item.station_id}">${item.station_name}</option>`)
+      .join("");
+    if (!fallback.some((item) => item.station_id === state.stationId)) {
+      state.stationId = fallback[0]?.station_id || state.stationId;
+    }
+    stationSelect.value = state.stationId;
+  };
+  const syncScopeUi = () => {
+    const scope = locationScope(state.contentId);
+    if (regionField) regionField.hidden = scope === "prefecture" || scope === "station";
+    if (prefField) prefField.hidden = scope !== "prefecture" && scope !== "station";
+    if (stationField) stationField.hidden = scope !== "station";
+    if (scope === "national") {
+      state.regionId = "national";
+      regionSelect.value = "national";
+    }
+    if (scope === "prefecture" || scope === "station") {
+      const pref = getPrefecture(state.prefId);
+      state.regionId = pref.region_id;
+    }
+    fillStationSelect();
+  };
+  fillStationSelect();
   contentSelect.addEventListener("change", () => {
     state.contentId = contentSelect.value;
+    syncScopeUi();
     reloadLayoutForViewport();
     persistStudio();
     syncCardScaleUi();
     syncTitleScaleUi();
+    loadFrame();
+  });
+  prefSelect?.addEventListener("change", () => {
+    state.prefId = prefSelect.value;
+    const pref = getPrefecture(state.prefId);
+    state.regionId = pref.region_id;
+    fillStationSelect();
+    persistStudio();
+    loadFrame();
+  });
+  stationSelect?.addEventListener("change", () => {
+    state.stationId = stationSelect.value;
+    persistStudio();
     loadFrame();
   });
   const onSizeLive = () => {
@@ -496,9 +573,43 @@ async function bootStudio() {
     const legendTools = document.getElementById("legend-tools");
     const isPrecip = content.id === "today_precip" || content.id === "tomorrow_precip";
     if (legendTools) legendTools.hidden = content.kind !== "map" || !isPrecip;
+    syncScopeUi();
     syncLayoutShareUi();
     syncLegendStatusUi();
   };
+
+  const catalogPanel = document.getElementById("url-catalog-panel");
+  document.getElementById("url-catalog-toggle")?.addEventListener("click", () => {
+    if (!catalogPanel) return;
+    catalogPanel.hidden = !catalogPanel.hidden;
+    if (catalogPanel.hidden) return;
+    const rows = generatePublicUrls();
+    const groups = ["既存 地方・全国", "都道府県", "観測地点", "全国防災"];
+    catalogPanel.innerHTML = groups.map((group) => {
+      const items = rows.filter((row) => row.group === group);
+      if (!items.length) return "";
+      return `<h3>${group}（${items.length}）</h3>
+        <table class="studio-url-table">
+          <thead><tr><th>表示名</th><th>content</th><th>scope</th><th>対象</th><th>URL</th><th>状態</th></tr></thead>
+          <tbody>${items.map((row) => `<tr>
+            <td>${row.name}</td><td>${row.contentId}</td><td>${row.scope}</td><td>${row.target}</td>
+            <td><button type="button" class="url-copy" data-url="${row.url}">コピー</button> <code>${row.url}</code></td>
+            <td>${row.status}</td>
+          </tr>`).join("")}</tbody>
+        </table>`;
+    }).join("");
+  });
+  catalogPanel?.addEventListener("click", async (event) => {
+    const btn = event.target.closest(".url-copy");
+    if (!btn) return;
+    const url = new URL(btn.dataset.url, location.href).href;
+    try {
+      await navigator.clipboard.writeText(url);
+      btn.textContent = "コピー済";
+    } catch {
+      btn.textContent = "失敗";
+    }
+  });
 
   const syncLegendStatusUi = (legend) => {
     const statusEl = document.getElementById("legend-status");
@@ -694,9 +805,12 @@ async function bootSignage() {
   const liveReady = pullLiveWeatherAndRender();
   window.setTimeout(() => document.documentElement.classList.remove("is-boot"), 4000);
   await loadCatalog();
+  await loadLocationMasters();
   await initLayoutDefaults();
   state.regionId = getRegion(state.regionId).id;
   state.contentId = getContent(state.contentId).id;
+  state.prefId = getPrefecture(state.prefId).pref_id;
+  state.stationId = getStation(state.stationId).station_id;
 
   const screen = document.getElementById("led-screen");
   const stage = document.getElementById("map-stage");
@@ -810,6 +924,12 @@ async function bootSignage() {
     next.searchParams.delete("studio");
     next.searchParams.set("region", state.regionId);
     next.searchParams.set("content", state.contentId);
+    if (locationScope(state.contentId) === "prefecture" || locationScope(state.contentId) === "station") {
+      next.searchParams.set("pref", state.prefId);
+    }
+    if (locationScope(state.contentId) === "station") {
+      next.searchParams.set("station", state.stationId);
+    }
     if (canEdit) next.searchParams.set("edit", "1");
     if (isDebug) next.searchParams.set("debug", "1");
     const icon = params.get("icon");
@@ -826,6 +946,39 @@ async function bootSignage() {
     state.viewport = vp;
     applyViewport(screen, vp, region.id, content, { fixedScale: useFixedScale });
     if (content.id !== "weekly_weather") hideWeekPoints();
+
+    if (isV1Content(content)) {
+      const pref = getPrefecture(state.prefId);
+      const station = getStation(state.stationId);
+      const extraTitle = content.location_scope === "station"
+        ? { stationName: station.station_name }
+        : content.location_scope === "prefecture"
+          ? { prefName: pref.pref_name }
+          : {};
+      titleEl.textContent = contentTitle(region, content, extraTitle);
+      document.title = titleEl.textContent;
+      syncTitleMark(content);
+      applyTitleScale(screen, loadTitleScale(vp.width, vp.height, region.id, content.id));
+      fitTitleBars(screen);
+      attributionEl.hidden = true;
+      hideWeekPoints();
+      screen.classList.remove("is-map-pending");
+      const { renderV1Content } = await import(`./renderers/v1-content.js?v=${DATA_VERSION}`);
+      const result = await renderV1Content({
+        content,
+        prefId: pref.pref_id,
+        stationId: station.station_id,
+        setNote: setNoteTicker
+      });
+      weatherStamp = result?.stamp || "";
+      stampEl.textContent = weatherStamp ? formatStamp(weatherStamp, !showAuxiliary(vp, "stampWeek")) : "";
+      layoutNoteTicker();
+      lastError = "ok";
+      updateDebug(vp, region, content, weatherStamp);
+      recordSite();
+      persistView();
+      return;
+    }
 
     // 解像度ごとの保存レイアウトを読み直す
     const savedLayout = loadLayout(region.id, content.id, vp.width, vp.height, {

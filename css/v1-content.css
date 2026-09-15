@@ -1,0 +1,110 @@
+.v1-graph,
+.v1-panel,
+.v1-list,
+.v1-stats,
+.v1-week,
+.v1-tiles {
+  width: 100%;
+  height: 100%;
+  padding: 24px 36px;
+  color: #0a2f7a;
+}
+
+.v1-current {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  font-size: 28px;
+  font-weight: 800;
+}
+
+.v1-current strong {
+  font-size: 96px;
+  line-height: 1;
+  color: #e62919;
+}
+
+.v1-unit { font-size: 36px; }
+.v1-minmax { margin-left: auto; font-size: 28px; }
+.v1-svg { width: 100%; height: calc(100% - 120px); }
+.v1-axis, .v1-tick { fill: #0a2f7a; font-size: 22px; font-weight: 700; }
+
+.v1-stats,
+.v1-week {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 18px;
+}
+
+.v1-stat,
+.v1-row {
+  background: #fff;
+  border-radius: 8px;
+  padding: 18px 22px;
+}
+
+.v1-stat h3,
+.v1-row time {
+  margin: 0;
+  font-size: 26px;
+}
+
+.v1-stat p {
+  margin: 8px 0 0;
+  font-size: 28px;
+}
+
+.v1-stat strong {
+  font-size: 72px;
+  color: #e62919;
+}
+
+.v1-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow: hidden;
+}
+
+.v1-row p {
+  margin: 6px 0 0;
+  font-size: 34px;
+}
+
+.v1-empty,
+.v1-pending {
+  font-size: 36px;
+  font-weight: 800;
+}
+
+.v1-pending-flag {
+  color: #a33;
+  font-size: 28px;
+}
+
+.v1-tiles {
+  display: flex;
+  flex-direction: column;
+}
+
+.v1-tile-caption {
+  margin: 0 0 12px;
+  font-size: 32px;
+  font-weight: 800;
+}
+
+.v1-tile-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  gap: 0;
+  background: #c8ebff;
+  min-height: 0;
+}
+
+.v1-tile {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
