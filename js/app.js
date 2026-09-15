@@ -2,7 +2,7 @@
  * Studio / signage bootstrap. Studio drives the iframe viewport.
  */
 
-import { APP_VERSION, DATA_VERSION, MAP_VERSION } from "./version.js?v=pref428";
+import { APP_VERSION, DATA_VERSION, MAP_VERSION } from "./version.js?v=pref429";
 import { applyResolvedDisplay, bindDisplayStudio, readDraft } from "./display-studio.js?v=pref428";
 import { loadDisplayBundle, resolveDisplayConfig } from "./display-config.js?v=pref428";
 import {
@@ -135,7 +135,10 @@ const VIEWPORT_STORE = "led-signage-viewport";
 const SITE_STORE = "led-signage-site";
 
 const params = new URLSearchParams(window.location.search);
-const isStudio = params.get("studio") === "1";
+const studioFlag = String(params.get("studio") || "").toLowerCase();
+const isStudio = studioFlag === "1" || studioFlag === "true" || studioFlag === "yes"
+  || /studio\.html$/i.test(window.location.pathname)
+  || window.location.hash === "#studio";
 const isDebug = params.get("debug") === "1";
 const canEdit = params.get("edit") === "1";
 
