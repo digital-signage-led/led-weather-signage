@@ -136,13 +136,24 @@ export function tokensFor(vp, content = { id: "today_weather", name: "今日の�
     "--card-min-width": "0px",
     "--pin-size": `${fluidPx(s, 0.028, 8, 22)}px`,
     "--map-stroke": `${clamp(s * 0.0028, 0.8, 2.4).toFixed(2)}px`,
-    "--precip-legend-title": `${fluidPx(s, 0.024, 9, 18)}px`,
-    "--precip-legend-label": `${fluidPx(s, 0.022, 8, 16)}px`,
-    "--precip-legend-pad-y": `${fluidPx(s, 0.009, 2, 7)}px`,
-    "--precip-legend-pad-x": `${fluidPx(s, 0.014, 4, 10)}px`,
-    "--precip-legend-min-w": `${fluidPx(s, 0.08, 28, 56)}px`,
-    "--precip-legend-radius": `${fluidPx(s, 0.008, 2, 6)}px`,
-    "--precip-legend-gap": `${fluidPx(s, 0.008, 2, 6)}px`
+    ...precipLegendTokens(vp)
+  };
+}
+
+/** 降水確率レジェンド（朝/昼/夜）。短辺比率で全コンテンツ共通に拡大縮小する */
+function precipLegendTokens(vp) {
+  const s = vp.basis || vp.minSide;
+  // 576px を基準比 1。1920×1080（短辺1080）では約 1.9 倍
+  const ratio = clamp(s / 576, 0.75, 2.6);
+  return {
+    "--precip-legend-scale": String(Number(ratio.toFixed(3))),
+    "--precip-legend-title": `${Math.round(15 * ratio)}px`,
+    "--precip-legend-label": `${Math.round(14 * ratio)}px`,
+    "--precip-legend-pad-y": `${Math.round(5 * ratio)}px`,
+    "--precip-legend-pad-x": `${Math.round(9 * ratio)}px`,
+    "--precip-legend-min-w": `${Math.round(48 * ratio)}px`,
+    "--precip-legend-radius": `${Math.round(5 * ratio)}px`,
+    "--precip-legend-gap": `${Math.round(6 * ratio)}px`
   };
 }
 

@@ -684,6 +684,7 @@ html.is-edit .precip-tod-legend.is-dragging {
   font-weight: 800;
   color: #1a3350;
   text-align: center;
+  white-space: nowrap;
 }
 
 .precip-tod-legend-row {
@@ -698,6 +699,7 @@ html.is-edit .precip-tod-legend.is-dragging {
   overflow: hidden;
   border-radius: var(--precip-legend-radius, 4px);
   min-width: var(--precip-legend-min-w, 40px);
+  width: var(--precip-legend-min-w, 40px);
   box-shadow: 0 1px 2px rgba(8, 28, 64, 0.18);
 }
 
@@ -708,8 +710,9 @@ html.is-edit .precip-tod-legend.is-dragging {
   padding: var(--precip-legend-pad-y, 3px) var(--precip-legend-pad-x, 6px);
   font-family: var(--font-main);
   font-size: var(--precip-legend-label, 11px);
-  font-weight: 700;
+  font-weight: 800;
   color: #fff;
+  line-height: 1.15;
 }
 
 .precip-tod-legend-box > .is-morning {
@@ -739,7 +742,7 @@ html.is-edit .precip-tod-legend.is-dragging {
 
 .led-screen[data-content="weekly_weather"],
 .led-screen[data-content="weekly_precip"] {
-  background: var(--bg-sea) url("../img/weekly-frame.svg?v=pref380") no-repeat center / 100% 100%;
+  background: var(--bg-sea) url("../img/weekly-frame.svg?v=pref381") no-repeat center / 100% 100%;
 }
 
 .led-screen[data-content="weekly_weather"] .led-header,
