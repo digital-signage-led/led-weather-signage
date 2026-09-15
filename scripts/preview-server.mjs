@@ -2,6 +2,7 @@ import http from "node:http";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { publishDisplay, waitForPagesVersion } from "./publish-display.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const port = Number(process.env.PORT || 5173);
@@ -57,6 +58,62 @@ function readBody(req) {
 
 const server = http.createServer(async (req, res) => {
   const urlPath = decodeURIComponent((req.url || "/").split("?")[0]);
+
+  if (req.method === "OPTIONS" && urlPath.startsWith("/api/")) {
+    res.writeHead(204, {
+      "access-control-allow-origin": req.headers.origin || "*",
+      "access-control-allow-headers": "content-type, authorization",
+      "access-control-allow-methods": "POST, GET, OPTIONS"
+    });
+    res.end();
+    return;
+  }
+
+  if (req.method === "GET" && urlPath === "/api/publish-status") {
+    const manifest = readJson(path.join(root, "data", "display", "manifest.json"), {});
+    res.writeHead(200, { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" });
+    res.end(JSON.stringify({ ok: true, manifest }));
+    return;
+  }
+
+  if (req.method === "POST" && urlPath === "/api/publish") {
+    try {
+      const secret = process.env.LED_PUBLISH_SECRET || "";
+      const auth = String(req.headers.authorization || "").replace(/^Bearer\s+/i, "");
+      if (!secret || auth !== secret) {
+        res.writeHead(401, { "content-type": "application/json; charset=utf-8" });
+        res.end(JSON.stringify({ ok: false, error: "認証が必要です。管理者パスワードを確認してください。" }));
+        return;
+      }
+      const body = JSON.parse((await readBody(req)) || "{}");
+      const result = publishDisplay({
+        contentId: body.content_id,
+        scope: body.scope || "content",
+        prefId: body.pref_id,
+        stationId: body.station_id,
+        layer: body.layer || {},
+        baseVersion: body.base_version,
+        publisher: body.publisher || "studio"
+      });
+      const deploy = await waitForPagesVersion(result.pages_wait_version || undefined, 120000).catch(() => ({ ok: false }));
+      res.writeHead(200, { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" });
+      res.end(JSON.stringify({
+        ...result,
+        deploy_ok: deploy.ok === true,
+        pages_checked: true
+      }));
+    } catch (error) {
+      const code = error?.code === "CONFLICT" ? 409 : error?.code === "INVALID" ? 400 : 500;
+      res.writeHead(code, { "content-type": "application/json; charset=utf-8" });
+      res.end(JSON.stringify({
+        ok: false,
+        error: String(error?.message || error),
+        code: error?.code || "ERROR",
+        currentVersion: error?.currentVersion
+      }));
+    }
+    return;
+  }
 
   if (req.method === "POST" && urlPath === "/api/layout-defaults") {
     try {

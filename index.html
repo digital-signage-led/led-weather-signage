@@ -59,9 +59,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/base.css?v=pref426">
+  <link rel="stylesheet" href="css/base.css?v=pref427">
   <link rel="stylesheet" href="css/weather.css?v=pref417">
-  <link rel="stylesheet" href="css/v1-content.css?v=pref426">
+  <link rel="stylesheet" href="css/v1-content.css?v=pref427">
 </head>
 <body>
   <p id="boot-status" role="status">読込中</p>
@@ -87,6 +87,47 @@
         <button type="button" id="url-catalog-toggle">公開URL一覧</button>
         <div id="url-catalog-panel" hidden></div>
       </div>
+      <section class="studio-publish" id="studio-publish">
+        <div class="studio-edit-target">
+          <p>編集対象：<strong id="edit-target-name">—</strong></p>
+          <p>現在の編集範囲：<strong id="edit-scope-label">コンテンツ全体</strong></p>
+          <fieldset>
+            <legend>適用範囲</legend>
+            <label><input type="radio" name="edit-scope" value="content" checked> 全体</label>
+            <label><input type="radio" name="edit-scope" value="prefecture"> 都道府県</label>
+            <label><input type="radio" name="edit-scope" value="station"> 観測地点</label>
+          </fieldset>
+        </div>
+        <div id="v1-display-tools" hidden>
+          <label>タイトル大きさ <span id="v1-title-value">1.00</span>
+            <input id="v1-title-scale" type="range" min="0.6" max="2.8" step="0.02" value="1">
+          </label>
+          <label>グラフ大きさ <span id="v1-graph-scale-value">1.00</span>
+            <input id="v1-graph-scale" type="range" min="0.5" max="2.5" step="0.02" value="1">
+          </label>
+          <label>グラフ 左右
+            <input id="v1-graph-x" type="range" min="-280" max="280" step="1" value="0">
+          </label>
+          <label>グラフ 上下
+            <input id="v1-graph-y" type="range" min="-280" max="280" step="1" value="0">
+          </label>
+          <label><input type="checkbox" id="v1-ticker-enabled" checked> Ticker</label>
+        </div>
+        <p class="studio-publish-state">状態：<strong id="publish-state">未変更</strong>　本番：<span id="publish-live-ver">—</span>　下書き：<span id="publish-draft-ver">なし</span></p>
+        <p class="studio-publish-state">影響URL：<strong id="publish-impact">—</strong></p>
+        <label>管理者パスワード
+          <input id="publish-secret" type="password" autocomplete="current-password">
+        </label>
+        <div class="studio-publish-actions">
+          <button type="button" id="display-discard">変更を破棄</button>
+          <button type="button" id="display-revert">公開済みに戻す</button>
+          <button type="button" id="display-draft">下書き保存</button>
+          <button type="button" id="display-publish">本番公開</button>
+        </div>
+        <div id="publish-confirm" class="studio-publish-confirm" hidden></div>
+        <pre id="publish-result" class="studio-publish-result" hidden></pre>
+        <div id="publish-history" class="studio-publish-history"></div>
+      </section>
       <label>
         幅
         <input id="viewport-width" name="vw" type="number" min="160" max="7680" step="1" value="1920">
@@ -193,6 +234,6 @@
     </article>
     <aside id="debug-overlay" hidden></aside>
   </div>
-  <script type="module" src="js/app.js?v=pref426"></script>
+  <script type="module" src="js/app.js?v=pref427"></script>
 </body>
 </html>

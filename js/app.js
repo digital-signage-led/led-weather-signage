@@ -2,7 +2,9 @@
  * Studio / signage bootstrap. Studio drives the iframe viewport.
  */
 
-import { APP_VERSION, DATA_VERSION, MAP_VERSION } from "./version.js?v=pref426";
+import { APP_VERSION, DATA_VERSION, MAP_VERSION } from "./version.js?v=pref427";
+import { applyResolvedDisplay, bindDisplayStudio, readDraft } from "./display-studio.js?v=pref427";
+import { loadDisplayBundle, resolveDisplayConfig } from "./display-config.js?v=pref427";
 import {
   canonicalContent,
   canonicalRegion,
@@ -194,6 +196,7 @@ function productionUrl(regionId, contentId, extra = {}) {
   if (extra.site) next.searchParams.set("site", extra.site);
   if (extra.vw) next.searchParams.set("vw", String(extra.vw));
   if (extra.vh) next.searchParams.set("vh", String(extra.vh));
+  if (extra.preview === "draft") next.searchParams.set("preview", "draft");
   return next.pathname + next.search;
 }
 
@@ -358,7 +361,8 @@ async function bootStudio() {
       vw: state.viewport.width,
       vh: state.viewport.height,
       pref: state.prefId,
-      station: state.stationId
+      station: state.stationId,
+      preview: readDraft()?.content_id === state.contentId ? "draft" : ""
     });
     fitFrame();
   };
@@ -579,22 +583,31 @@ async function bootStudio() {
   };
 
   const catalogPanel = document.getElementById("url-catalog-panel");
-  document.getElementById("url-catalog-toggle")?.addEventListener("click", () => {
+  document.getElementById("url-catalog-toggle")?.addEventListener("click", async () => {
     if (!catalogPanel) return;
     catalogPanel.hidden = !catalogPanel.hidden;
     if (catalogPanel.hidden) return;
     const rows = generatePublicUrls();
+    let versions = {};
+    try {
+      const bundle = await loadDisplayBundle(state.contentId);
+      versions = bundle.manifest?.contents || {};
+    } catch {
+      versions = {};
+    }
     const groups = ["既存 地方・全国", "都道府県", "観測地点", "全国防災"];
     catalogPanel.innerHTML = groups.map((group) => {
       const items = rows.filter((row) => row.group === group);
       if (!items.length) return "";
       return `<h3>${group}（${items.length}）</h3>
         <table class="studio-url-table">
-          <thead><tr><th>表示名</th><th>content</th><th>scope</th><th>対象</th><th>URL</th><th>状態</th></tr></thead>
+          <thead><tr><th>表示名</th><th>content</th><th>scope</th><th>対象</th><th>URL</th><th>状態</th><th>version</th><th>最終公開</th></tr></thead>
           <tbody>${items.map((row) => `<tr>
             <td>${row.name}</td><td>${row.contentId}</td><td>${row.scope}</td><td>${row.target}</td>
             <td><button type="button" class="url-copy" data-url="${row.url}">コピー</button> <code>${row.url}</code></td>
-            <td>${row.status}</td>
+            <td>${versions[row.contentId]?.status || row.status}</td>
+            <td>v${versions[row.contentId]?.version || "—"}</td>
+            <td>${versions[row.contentId]?.updated_at || "—"}</td>
           </tr>`).join("")}</tbody>
         </table>`;
     }).join("");
@@ -794,6 +807,18 @@ async function bootStudio() {
   syncChrome();
   syncCardScaleUi();
   contentSelect.addEventListener("change", syncChrome);
+  const displayUi = bindDisplayStudio({
+    root: studioBar,
+    state,
+    reloadPreview: (keepDraft) => {
+      if (!keepDraft) {/* preview flag comes from draft store */}
+      loadFrame();
+      displayUi.refreshMeta();
+    }
+  });
+  contentSelect.addEventListener("change", () => displayUi.refreshMeta());
+  prefSelect?.addEventListener("change", () => displayUi.refreshMeta());
+  stationSelect?.addEventListener("change", () => displayUi.refreshMeta());
   loadFrame();
   } finally {
     document.documentElement.classList.remove("is-boot");
@@ -958,7 +983,22 @@ async function bootSignage() {
       titleEl.textContent = contentTitle(region, content, extraTitle);
       document.title = titleEl.textContent;
       syncTitleMark(content);
-      applyTitleScale(screen, loadTitleScale(vp.width, vp.height, region.id, content.id));
+      let displayResolved = null;
+      try {
+        const bundle = await loadDisplayBundle(content.id);
+        const draft = params.get("preview") === "draft" ? readDraft() : null;
+        displayResolved = resolveDisplayConfig({
+          contentDoc: bundle.contentDoc,
+          defaultsDoc: bundle.defaultsDoc,
+          prefId: pref.pref_id,
+          stationId: station.station_id,
+          draftLayer: draft?.content_id === content.id ? draft.layer : null
+        });
+        applyResolvedDisplay(screen, displayResolved);
+        applyTitleScale(screen, displayResolved.title_scale);
+      } catch {
+        applyTitleScale(screen, loadTitleScale(vp.width, vp.height, region.id, content.id));
+      }
       fitTitleBars(screen);
       attributionEl.hidden = true;
       hideWeekPoints();

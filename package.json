@@ -7,7 +7,7 @@
   "scripts": {
     "start": "node scripts/preview-server.mjs",
     "maps": "node scripts/build-maps.mjs",
-    "test": "node scripts/test-catalog.mjs && node scripts/test-viewport.mjs && node scripts/test-v1-registry.mjs",
+    "test": "node scripts/test-catalog.mjs && node scripts/test-viewport.mjs && node scripts/test-v1-registry.mjs && node scripts/test-display-config.mjs",
     "test:catalog": "node scripts/test-catalog.mjs",
     "test:viewport": "node scripts/test-viewport.mjs",
     "test:visual": "node scripts/visual-regression.mjs",

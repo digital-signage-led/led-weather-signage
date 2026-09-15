@@ -153,6 +153,36 @@ body.is-kiosk #app {
   padding: 0 10px;
 }
 
+.studio-publish {
+  flex: 1 1 100%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  padding: 8px 0;
+  border-top: 1px solid #314563;
+}
+
+.studio-edit-target,
+.studio-publish-state {
+  margin: 0;
+  color: #d5deea;
+  font-size: 12px;
+}
+
+.studio-publish-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.studio-publish-confirm,
+.studio-publish-result,
+.studio-publish-history {
+  flex: 1 1 100%;
+  color: #f4f7fb;
+  font-size: 12px;
+}
+
 .studio-url-catalog {
   flex: 1 1 100%;
 }

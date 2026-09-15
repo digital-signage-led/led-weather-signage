@@ -1,3 +1,8 @@
+.v1-graph {
+  transform: translate(var(--v1-graph-x, 0px), var(--v1-graph-y, 0px)) scale(var(--v1-graph-scale, 1));
+  transform-origin: center center;
+}
+
 .v1-graph,
 .v1-panel,
 .v1-list,

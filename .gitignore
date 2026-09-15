@@ -1,3 +1,5 @@
+.env
+.env.*
 tmp-preview/
 tmp-*.png
 node_modules/
