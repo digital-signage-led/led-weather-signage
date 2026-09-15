@@ -23,6 +23,13 @@
       letter-spacing: 0.06em;
     }
     html.is-boot #boot-status { display: flex; }
+  </style>
+  <script>
+    window.setTimeout(function () {
+      document.documentElement.classList.remove("is-boot");
+    }, 2500);
+  </script>
+  <style>
     /* 外部CSS未読込時の最低限フォールバック（本定義は weather.css） */
     .forecast-grid {
       display: grid;
@@ -163,6 +170,6 @@
     </article>
     <aside id="debug-overlay" hidden></aside>
   </div>
-  <script type="module" src="js/app.js?v=pref420"></script>
+  <script type="module" src="js/app.js?v=pref421"></script>
 </body>
 </html>

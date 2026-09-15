@@ -160,7 +160,10 @@ if (isStudio) {
     document.documentElement.classList.remove("is-boot");
   });
 } else {
-  bootSignage();
+  bootSignage().catch((error) => {
+    console.error(error);
+    document.documentElement.classList.remove("is-boot");
+  });
 }
 
 function productionUrl(regionId, contentId, extra = {}) {
@@ -1137,12 +1140,18 @@ async function bootSignage() {
 
   persistView();
   try {
-    await liveReady;
+    await Promise.race([
+      liveReady,
+      new Promise((resolve) => window.setTimeout(resolve, 2500))
+    ]);
     await render();
   } finally {
     document.documentElement.classList.remove("is-boot");
   }
   const refreshLive = () => pullLiveWeatherAndRender(render);
+  liveReady.then(() => {
+    if (liveWeatherCache.doc) render();
+  }).catch(() => {});
   scheduleJmaRefresh(refreshLive);
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "visible" && needsJmaRefresh()) {
