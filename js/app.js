@@ -2,23 +2,25 @@
  * Studio / signage bootstrap. Studio drives the iframe viewport.
  */
 
-import { APP_VERSION, DATA_VERSION, MAP_VERSION } from "./version.js?v=pref384";
+import { APP_VERSION, DATA_VERSION, MAP_VERSION } from "./version.js?v=pref390";
 import {
   canonicalContent,
   canonicalRegion,
   contentTitle,
   getContent,
   getRegion,
+  isNational,
   listContents,
   listRegions,
   loadCatalog
-} from "./catalog.js?v=pref384";
-import { adaptWeather, aggregateRegion } from "./weather-data.js?v=pref384";
-import { loadMapSvg, mountMap, placeCardsAroundMap, projectCity } from "./map-renderer.js?v=pref384";
-import { formatStamp, renderCityCard, renderPin, pinRadiusForViewBox, pinRadiusForMatchingScreen, pickNoteWeather, weatherTone, renderNoteIcon, renderPrecipTodLegend } from "./weather-renderer.js?v=pref384";
-import { applyCardScale, applyLockedCards, applyMapTransform, applyPrecipLegend, applyTitleScale, bindCardEditor, bindMapControls, bindMapEditor, bindOkinawaEditor, bindPrecipLegendEditor, CARD_POS_MAX, CARD_POS_MIN, CARD_SCALE_MAX, CARD_SCALE_MIN, TITLE_SCALE_MAX, TITLE_SCALE_MIN, centerCityCards, containMapInStage, freezeCardLayout, initLayoutDefaults, isCustomLayout, listCardPositions, loadCardScale, loadLayout, loadTitleScale, moveLockedCard, resetCardScale, resetLayout, resetTitleScale, saveCardScale, saveLayout, saveTitleScale, snapshotLayoutDefaults } from "./studio-layout.js?v=pref384";
-import { expandForecast, formatNoteHtml, noteFor } from "./forecast.js?v=pref384";
-import { renderWeeklyTable } from "./table-renderer.js?v=pref384";
+} from "./catalog.js?v=pref388";
+import { adaptWeather, aggregateRegion } from "./weather-data.js?v=pref388";
+import { loadMapSvg, mountMap, placeCardsAroundMap, projectCity, computeFocusMapTransform, regionalFallbackTransform } from "./map-renderer.js?v=pref411";
+import { MAP_LAYOUT_GEN } from "./map-layout.js?v=pref391";
+import { formatStamp, renderCityCard, renderPin, pinRadiusForViewBox, pinRadiusForMatchingScreen, pickNoteWeather, weatherTone, renderNoteIcon, renderPrecipTodLegend } from "./weather-renderer.js?v=pref396";
+import { applyCardScale, applyLockedCards, applyMapTransform, applyPrecipLegend, applyTitleScale, autoPlacePrecipLegend, bindCardEditor, bindMapControls, bindMapEditor, bindOkinawaEditor, bindPrecipLegendEditor, CARD_POS_MAX, CARD_POS_MIN, CARD_SCALE_MAX, CARD_SCALE_MIN, TITLE_SCALE_MAX, TITLE_SCALE_MIN, centerCityCards, containMapInStage, describeLayoutShare, describeMapShare, freezeCardLayout, initLayoutDefaults, isCustomLayout, isManualMapTransform, legendStatusLabel, listCardPositions, loadCardScale, loadLayout, loadMapLayout, loadTitleScale, moveLockedCard, nudgeCardsAwayFromLegend, resetCardScale, resetLayout, resetTitleScale, runLegendCommand, saveCardScale, saveLayout, saveMapLayout, saveTitleScale, shouldAutoPlaceLegend, snapshotLayoutDefaults } from "./studio-layout.js?v=pref414";
+import { expandForecast, formatNoteHtml, noteFor } from "./forecast.js?v=pref391";
+import { renderWeeklyTable } from "./table-renderer.js?v=pref417";
 import {
   DEFAULT_STUDIO_VIEWPORT,
   FIXED_DESIGN,
@@ -34,10 +36,10 @@ import {
   partitionTablePages,
   readViewport,
   showAuxiliary
-} from "./viewport.js?v=pref384";
-import { msUntilIconPhaseChange } from "./jma-icons.js?v=pref384";
-import { fetchJmaWeather } from "./jma-live.js?v=pref384";
-import { buildWeekPoints, fetchWeekAlert, renderWeekPointsHtml } from "./week-points.js?v=pref384";
+} from "./viewport.js?v=pref416";
+import { msUntilIconPhaseChange } from "./jma-icons.js?v=pref388";
+import { fetchJmaWeather } from "./jma-live.js?v=pref388";
+import { buildWeekPoints, fetchWeekAlert, renderWeekPointsHtml } from "./week-points.js?v=pref388";
 
 /** 府県天気予報の発表時刻（JST）。発表反映待ちで +5 分後に取りに行く。 */
 const JMA_PUBLISH_HOURS_JST = [5, 11, 17];
@@ -193,6 +195,15 @@ async function bootStudio() {
   const frame = document.getElementById("signage-frame");
   const metricsEl = document.getElementById("preview-metrics");
   let viewScale = 1;
+  const syncLayoutShareUi = (saveFlash = "") => {
+    if (!metricsEl) return;
+    const mapInfo = describeMapShare(state.regionId, state.viewport.width, state.viewport.height);
+    const flash = saveFlash ? `<div class="studio-layout-flash">${saveFlash}</div>` : "";
+    metricsEl.innerHTML = `
+      <div class="studio-layout-share" style="white-space:pre-line">${mapInfo.summary}</div>
+      ${flash}
+    `;
+  };
 
   try {
     const saved = JSON.parse(sessionStorage.getItem(VIEWPORT_STORE) || "null");
@@ -213,6 +224,7 @@ async function bootStudio() {
     layout.cards = next.cards;
     layout.precipLegend = next.precipLegend;
     syncMapControls?.();
+    syncLayoutShareUi();
   };
 
   regionSelect.innerHTML = listRegions()
@@ -278,7 +290,7 @@ async function bootStudio() {
     const stageW = previewStage.clientWidth || previewStage.offsetWidth || 0;
     const stageH = previewStage.clientHeight || previewStage.offsetHeight || 0;
     const availW = Math.max(120, stageW - 32);
-    const availH = Math.max(120, stageH - 32);
+    const availH = Math.max(120, stageH - 48);
     viewScale = Math.min(1, availW / vp.width, availH / vp.height);
     if (!Number.isFinite(viewScale) || viewScale <= 0) viewScale = 0.2;
     document.documentElement.style.setProperty("--viewport-width", `${vp.width}px`);
@@ -286,6 +298,12 @@ async function bootStudio() {
     document.documentElement.style.setProperty("--slot-width", `${Math.round(vp.width * viewScale)}px`);
     document.documentElement.style.setProperty("--slot-height", `${Math.round(vp.height * viewScale)}px`);
     document.documentElement.style.setProperty("--view-scale", String(viewScale));
+    // iframe 内ポインタは設計座標のため 1。親オーバーレイ計測時のみ viewScale を渡す想定。
+    try {
+      frame.contentDocument.documentElement.dataset.previewScale = "1";
+    } catch {
+      /* cross-origin / not ready */
+    }
     frame.style.width = `${vp.width}px`;
     frame.style.height = `${vp.height}px`;
     frame.style.transform = viewScale < 0.999 ? `scale(${viewScale})` : "none";
@@ -317,6 +335,7 @@ async function bootStudio() {
     if (!layout.precipLegend && latest.precipLegend) layout.precipLegend = { ...latest.precipLegend };
     saveLayout(state.regionId, layout, state.contentId, w, h);
     postToFrame({ type: "apply-map", map: layout.map, okinawa: layout.okinawa });
+    syncLayoutShareUi(describeMapShare(state.regionId, w, h).saveMessage);
   });
   const cardScaleInput = document.getElementById("card-scale");
   const cardScaleOut = document.getElementById("card-scale-value");
@@ -338,7 +357,7 @@ async function bootStudio() {
   };
   const syncTitleScaleUi = (scale) => {
     const { w, h } = vpSize();
-    const next = Number.isFinite(scale) ? scale : loadTitleScale(w, h, state.regionId);
+    const next = Number.isFinite(scale) ? scale : loadTitleScale(w, h, state.regionId, state.contentId);
     if (titleScaleInput && document.activeElement !== titleScaleInput) {
       titleScaleInput.value = String(next);
     }
@@ -347,7 +366,7 @@ async function bootStudio() {
   const applyManualTitleScale = (scale) => {
     const next = Math.min(TITLE_SCALE_MAX, Math.max(TITLE_SCALE_MIN, Number(scale) || 1));
     const { w, h } = vpSize();
-    saveTitleScale(next, w, h, state.regionId);
+    saveTitleScale(next, w, h, state.regionId, state.contentId);
     syncTitleScaleUi(next);
     withFrameScreen((screenEl) => {
       applyTitleScale(screenEl, next);
@@ -395,12 +414,25 @@ async function bootStudio() {
     layout.cards = next.cards;
     layout.precipLegend = next.precipLegend;
     syncCardScaleUi(resetCardScale(state.contentId, state.regionId, w, h));
-    syncTitleScaleUi(resetTitleScale(w, h, state.regionId));
+    syncTitleScaleUi(resetTitleScale(w, h, state.regionId, state.contentId));
     syncMapControls();
     loadFrame();
   });
   document.getElementById("layout-commit")?.addEventListener("click", () => {
     postToFrame({ type: "freeze-layout" });
+    const { w, h } = vpSize();
+    syncLayoutShareUi(describeLayoutShare(state.contentId, state.regionId, w, h).saveMessage);
+  });
+
+  const postLegendCommand = (command) => {
+    postToFrame({ type: "legend-command", command });
+  };
+  document.getElementById("legend-auto")?.addEventListener("click", () => postLegendCommand("auto"));
+  document.getElementById("legend-fix")?.addEventListener("click", () => postLegendCommand("fix"));
+  document.getElementById("legend-unfix")?.addEventListener("click", () => postLegendCommand("unfix"));
+  document.getElementById("legend-reset")?.addEventListener("click", () => postLegendCommand("reset"));
+  document.getElementById("layout-auto-all")?.addEventListener("click", () => {
+    postToFrame({ type: "auto-layout-all" });
   });
   syncTitleScaleUi();
   regionSelect.addEventListener("change", () => {
@@ -457,6 +489,18 @@ async function bootStudio() {
     if (mapTools) mapTools.hidden = content.kind !== "map";
     if (cardTools && content.kind !== "map") cardTools.hidden = true;
     if (hint) hint.hidden = content.kind !== "map";
+    const legendTools = document.getElementById("legend-tools");
+    const isPrecip = content.id === "today_precip" || content.id === "tomorrow_precip";
+    if (legendTools) legendTools.hidden = content.kind !== "map" || !isPrecip;
+    syncLayoutShareUi();
+    syncLegendStatusUi();
+  };
+
+  const syncLegendStatusUi = (legend) => {
+    const statusEl = document.getElementById("legend-status");
+    if (!statusEl) return;
+    const pos = legend || layout.precipLegend;
+    statusEl.textContent = legendStatusLabel(pos, pos?._warnings);
   };
 
   const fillCardEditors = (cards) => {
@@ -509,6 +553,22 @@ async function bootStudio() {
       }
       if (Number.isFinite(event.data.cardScale)) syncCardScaleUi(event.data.cardScale);
     }
+    if (event.data.type === "legend" && event.data.legend) {
+      layout.precipLegend = { ...event.data.legend };
+      syncLegendStatusUi(layout.precipLegend);
+      const { w, h } = vpSize();
+      saveLayout(state.regionId, layout, state.contentId, w, h);
+    }
+    if (event.data.type === "auto-layout-all-done") {
+      layout.cards = {};
+      if (event.data.legend) layout.precipLegend = { ...event.data.legend };
+      if (event.data.map) Object.assign(layout.map, event.data.map);
+      const { w, h } = vpSize();
+      saveLayout(state.regionId, layout, state.contentId, w, h, { clearCards: true });
+      syncLegendStatusUi(layout.precipLegend);
+      syncMapControls();
+      loadFrame();
+    }
     if (event.data.type === "map" && event.data.map) {
       Object.assign(layout.map, event.data.map);
       if (event.data.okinawa) Object.assign(layout.okinawa, event.data.okinawa);
@@ -524,12 +584,13 @@ async function bootStudio() {
       const w = event.data.width || state.viewport.width;
       const h = event.data.height || state.viewport.height;
       saveLayout(state.regionId, layout, state.contentId, w, h);
+      syncLayoutShareUi(describeMapShare(state.regionId, w, h).saveMessage);
       if (Number.isFinite(event.data.cardScale)) {
         saveCardScale(state.contentId, event.data.cardScale, state.regionId, w, h);
         syncCardScaleUi(event.data.cardScale);
       }
       if (Number.isFinite(event.data.titleScale)) {
-        saveTitleScale(event.data.titleScale, w, h, state.regionId);
+        saveTitleScale(event.data.titleScale, w, h, state.regionId, state.contentId);
         syncTitleScaleUi(event.data.titleScale);
       }
       const snapshot = snapshotLayoutDefaults(
@@ -691,43 +752,27 @@ async function bootSignage() {
 
   function layoutNoteTicker() {
     const track = noteEl.querySelector(".led-note-track");
-    const items = [...noteEl.querySelectorAll(".led-note-item")];
-    if (!track || !items.length) return;
-    const viewport = noteEl.clientWidth;
-    items.forEach((item) => {
-      item.style.paddingRight = "0px";
-    });
-    const textWidth = items[0].getBoundingClientRect().width;
-    const gap = Math.max(viewport, Math.round(textWidth * 0.35), 96);
-    items.forEach((item) => {
-      item.style.paddingRight = `${gap}px`;
-    });
-    const distance = Math.max(1, textWidth + gap);
-    track.style.setProperty("--ticker-distance", `${distance}px`);
-    track.style.setProperty("--ticker-duration", `${Math.max(10, distance / 68).toFixed(2)}s`);
+    const item = track?.querySelector(".led-note-item");
+    if (!track || !item) return;
+    const textWidth = item.scrollWidth || item.offsetWidth || 480;
+    const duration = `${Math.max(10, Math.round(textWidth / 95))}s`;
+    if (track.style.getPropertyValue("--ticker-duration") === duration) return;
+    track.style.setProperty("--ticker-duration", duration);
   }
 
   function setNoteTicker(text) {
-    const next = String(text || "");
+    const next = String(text || "").trim() || "気象庁の天気予報です。";
     if (noteEl.dataset.note === next && noteEl.querySelector(".led-note-track")) {
       layoutNoteTicker();
       return;
     }
     noteEl.dataset.note = next;
-    if (next) noteEl.setAttribute("aria-label", next);
-    else noteEl.removeAttribute("aria-label");
-    noteEl.replaceChildren();
-    if (!next) return;
+    noteEl.setAttribute("aria-label", next);
+    const html = formatNoteHtml(next);
     const track = document.createElement("div");
     track.className = "led-note-track";
-    for (let i = 0; i < 2; i += 1) {
-      const item = document.createElement("span");
-      item.className = "led-note-item";
-      item.innerHTML = formatNoteHtml(next);
-      if (i > 0) item.setAttribute("aria-hidden", "true");
-      track.append(item);
-    }
-    noteEl.append(track);
+    track.innerHTML = `<span class="led-note-item">${html}</span><span class="led-note-item" aria-hidden="true">${html}</span>`;
+    noteEl.replaceChildren(track);
     window.requestAnimationFrame(() => layoutNoteTicker());
   }
 
@@ -821,7 +866,7 @@ async function bootSignage() {
       attributionEl.hidden = content.kind !== "map" || !showAuxiliary(vp, "attribution");
       syncTitleMark(content);
       const weekPoints = content.id === "weekly_weather" ? paintWeekPoints(selected) : (hideWeekPoints(), null);
-      applyTitleScale(screen, loadTitleScale(vp.width, vp.height, region.id));
+      applyTitleScale(screen, loadTitleScale(vp.width, vp.height, region.id, content.id));
       fitTitleBars(screen);
       layoutNoteTicker();
       if (document.fonts?.ready) {
@@ -848,7 +893,23 @@ async function bootSignage() {
       }
 
       const svgText = await loadMapSvg(region.mapFile);
+      screen.classList.add("is-map-pending");
       const layers = mountMap(stage, svgText, region.id);
+      const mapSvg = stage.querySelector(".map-svg svg");
+      const autofit = computeFocusMapTransform(mapSvg, region.id);
+      const fill = regionalFallbackTransform(region.id);
+      const shared = loadMapLayout(region.id, vp.width, vp.height);
+      if (shared.fromStore && Number.isFinite(Number(shared.map?.scale))) {
+        Object.assign(layout.map, shared.map);
+        if (shared.okinawa) Object.assign(layout.okinawa, shared.okinawa);
+      } else if (!isNational(region.id) && region.id !== "okinawa") {
+        Object.assign(layout.map, Number(autofit.scale) >= Number(fill.scale) ? autofit : fill);
+        if (shared.okinawa) Object.assign(layout.okinawa, shared.okinawa);
+        saveMapLayout(region.id, layout.map, layout.okinawa, vp.width, vp.height);
+      } else if (shared.okinawa) {
+        Object.assign(layout.okinawa, shared.okinawa);
+      }
+      layout.map.gen = MAP_LAYOUT_GEN;
       const pins = selected.map((city) => {
         const pos = projectCity(city, projection, region.id);
         return { ...city, ...pos };
@@ -867,9 +928,8 @@ async function bootSignage() {
         ),
         layout
       );
-      if (freezeCardLayout(laidOut, layout, {
-        force: Math.abs((cardScale || 1) - 1) > 0.01 || isCustomLayout(layout)
-      })) {
+      if (!Object.keys(savedLayout.cards || {}).length
+        && freezeCardLayout(laidOut, layout, { force: false })) {
         saveLayout(region.id, layout, content.id, vp.width, vp.height);
       }
 
@@ -931,13 +991,8 @@ async function bootSignage() {
       }
       applyMapTransform(screen, layout);
       centerCityCards(layers.cards);
-      const custom = isCustomLayout(layout);
-      if (!custom) {
-        containMapInStage(screen, layout, { recenter: true });
-        paintMapPins();
-      } else {
-        paintMapPins();
-      }
+      paintMapPins();
+      screen.classList.remove("is-map-pending");
       if (canEdit) {
         notifyStudio({ type: "map", map: { ...layout.map }, okinawa: { ...layout.okinawa } });
         notifyStudio({ type: "cards", cards: listCardPositions(layers.cards), cardScale });
@@ -950,6 +1005,7 @@ async function bootSignage() {
       lastError = error?.message || String(error);
       console.error(error);
       hideWeekPoints();
+      screen.classList.remove("is-map-pending");
       updateDebug(vp, region, content, weatherStamp);
     }
   }
@@ -992,7 +1048,7 @@ async function bootSignage() {
       const scale = Number(event.data.scale);
       if (!Number.isFinite(scale)) return;
       const vp = measure();
-      saveTitleScale(scale, vp.width, vp.height, state.regionId);
+      saveTitleScale(scale, vp.width, vp.height, state.regionId, state.contentId);
       applyTitleScale(screen, scale);
       fitTitleBars(screen);
       layoutNoteTicker();
@@ -1005,7 +1061,7 @@ async function bootSignage() {
       }
       saveLayout(state.regionId, layout, state.contentId, vp.width, vp.height);
       const cardScale = loadCardScale(state.contentId, state.regionId, vp.width, vp.height);
-      const titleScale = loadTitleScale(vp.width, vp.height, state.regionId);
+      const titleScale = loadTitleScale(vp.width, vp.height, state.regionId, state.contentId);
       notifyStudio({
         type: "layout-frozen",
         regionId: state.regionId,
@@ -1022,6 +1078,36 @@ async function bootSignage() {
         titleScale
       });
     }
+    if (event.data.type === "legend-command") {
+      const vp = measure();
+      const legend = runLegendCommand(
+        screen,
+        layout,
+        event.data.command,
+        state.regionId,
+        state.contentId,
+        vp.width,
+        vp.height
+      );
+      notifyStudio({ type: "legend", legend });
+    }
+    if (event.data.type === "auto-layout-all") {
+      const vp = measure();
+      layout.cards = {};
+      if (layout.precipLegend) {
+        layout.precipLegend.manuallyFixed = false;
+        layout.precipLegend.anchor = "bottom-right";
+      }
+      runLegendCommand(screen, layout, "reset", state.regionId, state.contentId, vp.width, vp.height);
+      containMapInStage(screen, layout, { recenter: true });
+      saveLayout(state.regionId, layout, state.contentId, vp.width, vp.height, { clearCards: true });
+      notifyStudio({
+        type: "auto-layout-all-done",
+        legend: layout.precipLegend,
+        map: { ...layout.map },
+        cards: {}
+      });
+    }
   });
 
   window.addEventListener("resize", () => {
@@ -1033,7 +1119,11 @@ async function bootSignage() {
     tickerLayoutTimer = window.setTimeout(() => layoutNoteTicker(), 40);
   });
   if (typeof ResizeObserver === "function") {
+    let lastNoteWidth = 0;
     new ResizeObserver(() => {
+      const width = noteEl.clientWidth || noteEl.offsetWidth;
+      if (Math.abs(width - lastNoteWidth) < 2) return;
+      lastNoteWidth = width;
       window.clearTimeout(tickerLayoutTimer);
       tickerLayoutTimer = window.setTimeout(() => layoutNoteTicker(), 40);
     }).observe(noteEl);
@@ -1075,10 +1165,10 @@ function attachForecast(city, todayPoint, content, updatedAt) {
   return { ...city, ...todayPoint, weekly: forecast.weekly };
 }
 
-/** 週間表の1ページ都市数。全国・中部は4都市ずつ（全国11地点は 4+4+3）。 */
+/** 週間表の1ページ都市数。全国・中部は4都市ずつ（全国11地点は 4+4+3）。九州7地点は 4+3。 */
 function tablePageSize(regionId) {
   const id = String(regionId || "").toLowerCase();
-  if (id === "national" || id === "chubu") return 4;
+  if (id === "national" || id === "chubu" || id === "kyushu") return 4;
   return 5;
 }
 
@@ -1100,17 +1190,35 @@ function syncTitleMark(content) {
   </svg>`;
 }
 
-/** ????????????? */
 function syncPrecipTodLegend(content, stage, layout, regionId, canEdit) {
   const host = stage?.closest(".led-body") || document.querySelector(".led-body");
+  const screen = host?.closest(".led-screen") || document.getElementById("led-screen");
   if (!host) return;
   host.querySelectorAll(".precip-tod-legend").forEach((node) => node.remove());
   const show = content.id === "today_precip" || content.id === "tomorrow_precip";
   if (!show) return;
   host.insertAdjacentHTML("beforeend", renderPrecipTodLegend());
-  if (layout) applyPrecipLegend(host, layout);
+  const w = Number.parseFloat(screen?.style?.getPropertyValue("--led-width")) || screen?.clientWidth || 0;
+  const h = Number.parseFloat(screen?.style?.getPropertyValue("--led-height")) || screen?.clientHeight || 0;
+  if (layout && screen) {
+    if (shouldAutoPlaceLegend(layout.precipLegend)) {
+      autoPlacePrecipLegend(screen, layout, { width: w, height: h });
+    }
+    applyPrecipLegend(host, layout, w, h);
+    const layer = host.querySelector(".map-cards");
+    if (layer && nudgeCardsAwayFromLegend(layer, layout, screen)) {
+      if (shouldAutoPlaceLegend(layout.precipLegend)) {
+        autoPlacePrecipLegend(screen, layout, { force: true, width: w, height: h });
+        applyPrecipLegend(host, layout, w, h);
+      }
+    }
+  }
   if (canEdit && layout && regionId) {
-    bindPrecipLegendEditor(layout, regionId, content.id);
+    bindPrecipLegendEditor(layout, regionId, content.id, (pos) => {
+      if (window.parent !== window) {
+        window.parent.postMessage({ source: "led-signage", type: "legend", legend: pos }, window.location.origin);
+      }
+    });
   }
 }
 

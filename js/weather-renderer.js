@@ -52,9 +52,9 @@ export function renderLeader(position) {
 export async function renderCityCard(point, position, options = {}) {
   const temps = `
         <span class="city-card-temps">
-          <b class="temp-max">${Math.round(point.tempMax)}</b><small>℃</small>
+          <b class="temp-max">${Math.round(point.tempMax)}</b>
           <span class="temp-slash">/</span>
-          <b class="temp-min">${Math.round(point.tempMin)}</b><small>℃</small>
+          <b class="temp-min">${Math.round(point.tempMin)}</b>
         </span>`;
   if (options.layout === "pop") {
     const morning = Number.isFinite(point.morning) ? point.morning : point.pop;
