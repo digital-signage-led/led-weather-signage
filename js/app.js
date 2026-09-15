@@ -2,7 +2,7 @@
  * Studio / signage bootstrap. Studio drives the iframe viewport.
  */
 
-import { APP_VERSION, DATA_VERSION, MAP_VERSION } from "./version.js?v=pref424";
+import { APP_VERSION, DATA_VERSION, MAP_VERSION } from "./version.js?v=pref425";
 import {
   canonicalContent,
   canonicalRegion,
