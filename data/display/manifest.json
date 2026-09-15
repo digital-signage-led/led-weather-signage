@@ -1,8 +1,8 @@
 {
-  "version": 1,
-  "updated_at": "2026-09-15T13:54:27.706Z",
-  "published_at": "2026-09-15T13:54:27.706Z",
-  "publisher": "init",
+  "version": 2,
+  "updated_at": "2026-09-15T13:56:27.537Z",
+  "published_at": "2026-09-15T13:56:27.537Z",
+  "publisher": "studio-e2e",
   "commit": "",
   "contents": {
     "today_weather": {
@@ -56,8 +56,8 @@
       "status": "published"
     },
     "temperature_24h": {
-      "version": 1,
-      "updated_at": "2026-09-15T13:54:27.706Z",
+      "version": 2,
+      "updated_at": "2026-09-15T13:56:27.537Z",
       "status": "published"
     },
     "precip_probability_trend": {
@@ -147,6 +147,17 @@
     }
   },
   "history": [
+    {
+      "version": 2,
+      "published_at": "2026-09-15T13:56:27.537Z",
+      "content_id": "temperature_24h",
+      "scope": "content",
+      "pref_id": "",
+      "station_id": "",
+      "publisher": "studio-e2e",
+      "commit": "",
+      "status": "published"
+    },
     {
       "version": 1,
       "published_at": "2026-09-15T13:54:27.706Z",
