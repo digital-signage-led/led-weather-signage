@@ -597,6 +597,7 @@ svg.jma-icon {
   flex: 0 0 auto;
   min-width: 0;
   width: max-content;
+  max-height: 100%;
   font-size: calc(var(--header-title-height) * 0.5);
   font-weight: 900;
   line-height: 1;

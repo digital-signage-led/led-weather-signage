@@ -381,7 +381,7 @@ export function fitTitleBars(screen) {
     el.style.fontSize = "";
     // CSS 未適用時の clientHeight 暴走を防ぐ
     const height = Math.min(bar.clientHeight || cssHeight, cssHeight * 1.25, 120);
-    let size = Math.max(10, Math.min(height * ratio, cssHeight * 0.85));
+    let size = Math.max(10, Math.min(height * ratio, cssHeight * 0.5));
     el.style.fontSize = `${size}px`;
     let steps = 0;
     const extras = Math.max(0, bar.scrollWidth - el.scrollWidth);
@@ -391,7 +391,8 @@ export function fitTitleBars(screen) {
         : el.scrollWidth;
       return extras + textW > maxW + 0.5
         || extras + textW > bar.clientWidth + 0.5
-        || el.scrollWidth > el.clientWidth + 0.5;
+        || el.scrollWidth > el.clientWidth + 0.5
+        || el.scrollHeight > bar.clientHeight + 0.5;
     };
     while (steps < 48 && size > 10 && overflows()) {
       size -= 0.5;
@@ -404,7 +405,7 @@ export function fitTitleBars(screen) {
   shrinkToFit(
     titleEl,
     screen.querySelector(".led-title-bar:not(.led-sub-bar)"),
-    0.62,
+    0.5,
     cssTitleH,
     titleFitProbes(screen, titleEl?.textContent)
   );

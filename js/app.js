@@ -36,7 +36,7 @@ import {
   partitionTablePages,
   readViewport,
   showAuxiliary
-} from "./viewport.js?v=pref416";
+} from "./viewport.js?v=pref419";
 import { msUntilIconPhaseChange } from "./jma-icons.js?v=pref388";
 import { fetchJmaWeather } from "./jma-live.js?v=pref388";
 import { buildWeekPoints, fetchWeekAlert, renderWeekPointsHtml } from "./week-points.js?v=pref388";
@@ -676,7 +676,8 @@ async function bootStudio() {
 }
 
 async function bootSignage() {
-  // 初回は同梱 weather.json で即表示。ハング時のみ 8 秒後に強制表示
+  // 気象庁最新を先に取り、同梱データとの二重描画（残像）を避ける。ハング時のみ 8 秒後に強制表示
+  const liveReady = pullLiveWeatherAndRender();
   window.setTimeout(() => document.documentElement.classList.remove("is-boot"), 8000);
   await loadCatalog();
   await initLayoutDefaults();
@@ -1136,13 +1137,12 @@ async function bootSignage() {
 
   persistView();
   try {
+    await liveReady;
     await render();
   } finally {
     document.documentElement.classList.remove("is-boot");
   }
-  // 画面は同梱データで出したあと、気象庁最新へ差し替え → 発表時刻に合わせて再取得
   const refreshLive = () => pullLiveWeatherAndRender(render);
-  refreshLive();
   scheduleJmaRefresh(refreshLive);
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "visible" && needsJmaRefresh()) {
