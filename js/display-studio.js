@@ -3,8 +3,8 @@
  */
 import { generatePublicUrls } from "./public-urls.js?v=pref427";
 import { getContent } from "./catalog.js?v=pref427";
-import { getPrefecture, getStation, listStations } from "./location-masters.js?v=pref427";
-import { capabilityForContent } from "./content-registry.js?v=pref427";
+import { getPrefecture, getStation, listStations } from "./location-masters.js?v=pref432";
+import { capabilityForContent } from "./content-registry.js?v=pref432";
 import {
   clearDraft,
   loadDisplayBundle,
@@ -15,7 +15,7 @@ import {
 } from "./display-config.js?v=pref427";
 
 function scopeLabel(scope, prefId, stationId) {
-  if (scope === "station") return `${getStation(stationId).station_name}観測地点のみ`;
+  if (scope === "station") return `${getStation(stationId)?.station_name || stationId}観測地点のみ`;
   if (scope === "prefecture") return `${getPrefecture(prefId).pref_name}のみ`;
   return "コンテンツ全体";
 }

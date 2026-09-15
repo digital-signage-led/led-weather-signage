@@ -10,6 +10,8 @@ const TYPHOON = "https://www.jma.go.jp/bosai/typhoon/data/targetTc.json";
 const NOWC_N1 = "https://www.jma.go.jp/bosai/jmatile/data/nowc/targetTimes_N1.json";
 const NOWC_N2 = "https://www.jma.go.jp/bosai/jmatile/data/nowc/targetTimes_N2.json";
 const NOWC_N3 = "https://www.jma.go.jp/bosai/jmatile/data/nowc/targetTimes_N3.json";
+const RISK_TIMES = "https://www.jma.go.jp/bosai/jmatile/data/risk/targetTimes.json";
+const RASRF_TIMES = "https://www.jma.go.jp/bosai/jmatile/data/rasrf/targetTimes.json";
 
 function num(v) {
   if (v === "" || v == null) return null;
@@ -50,6 +52,16 @@ export async function fetchTyphoonList() {
 export async function fetchNowcTimes(kind) {
   const url = kind === "n2" ? NOWC_N2 : kind === "n3" ? NOWC_N3 : NOWC_N1;
   const rec = await cachedFetchJson(`nowc:${kind}`, url, 60_000);
+  return Array.isArray(rec.data) ? rec.data : [];
+}
+
+export async function fetchRiskTimes() {
+  const rec = await cachedFetchJson("risk:times", RISK_TIMES, 60_000);
+  return Array.isArray(rec.data) ? rec.data : [];
+}
+
+export async function fetchRasrfTimes() {
+  const rec = await cachedFetchJson("rasrf:times", RASRF_TIMES, 60_000);
   return Array.isArray(rec.data) ? rec.data : [];
 }
 

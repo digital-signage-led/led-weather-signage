@@ -7,7 +7,8 @@
   "scripts": {
     "start": "node scripts/preview-server.mjs",
     "maps": "node scripts/build-maps.mjs",
-    "test": "node scripts/test-catalog.mjs && node scripts/test-viewport.mjs && node scripts/test-v1-registry.mjs && node scripts/test-display-config.mjs",
+    "stations": "node scripts/build-jma-stations.mjs",
+    "test": "node scripts/test-catalog.mjs && node scripts/test-viewport.mjs && node scripts/test-v1-registry.mjs && node scripts/test-display-config.mjs && node scripts/test-jma-stations.mjs && node scripts/test-v1-live-sources.mjs && node scripts/test-rain-timeline.mjs",
     "test:catalog": "node scripts/test-catalog.mjs",
     "test:viewport": "node scripts/test-viewport.mjs",
     "test:visual": "node scripts/visual-regression.mjs",

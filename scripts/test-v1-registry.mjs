@@ -25,24 +25,30 @@ const EXISTING = ["today_weather", "today_precip", "tomorrow_weather", "tomorrow
 const NEW_IDS = [
   "hourly_weather", "hourly_precip", "hourly_temperature", "today_tomorrow_temperature",
   "temperature_24h", "precip_probability_trend", "rainfall_trend", "wind_speed_trend", "weekly_temperature",
-  "rain_nowcast", "rain_forecast",
+  "rain_forecast",
   "kikikuru_landslide", "kikikuru_inundation", "kikikuru_flood",
   "weather_warning", "early_warning", "typhoon", "lightning_nowcast", "tornado_nowcast",
   "amedas_temperature", "amedas_rainfall", "amedas_wind"
 ];
 
-assert(contents.length === 28, "28 contents");
+assert(contents.length === 27, "27 contents");
 assert(contents.slice(0, 6).map((c) => c.id).join() === EXISTING.join(), "existing 6 unchanged");
-assert(NEW_IDS.every((id) => contents.some((c) => c.id === id)), "22 new content ids");
+assert(NEW_IDS.every((id) => contents.some((c) => c.id === id)), "21 new content ids");
+assert(!contents.some((c) => c.id === "rain_nowcast"), "rain_nowcast not a studio content");
+assert(contents.find((c) => c.id === "rain_forecast")?.name === "雨の予報", "rain_forecast display name");
+assert(contents.filter((c) => c.category === "map").length === 1, "one rain/map content");
+const rainPrefs = prefectures.filter((p) => p.enabled).length;
+assert(rainPrefs === 47, `rain_forecast 47 prefs (${rainPrefs})`);
 assert(prefectures.length === 47, `47 prefs (${prefectures.length})`);
 assert(prefectures.every((p) => p.pref_id && p.pref_name && p.region_id && p.enabled), "pref fields");
-assert(stations.length > 0, "stations exist");
+assert(stations.length > 1000, `stations exist (${stations.length})`);
 assert(stations.every((s) => s.station_id && s.pref_id), "station ids");
 assert(stations.some((s) => s.station_id === "44132" && s.temperature_available), "tokyo 44132 temp");
+assert(stations.filter((s) => s.pref_id === "akita").length > 10, "akita many stations");
 assert(["national", "hokkaido", "tohoku", "kanto", "chubu", "kinki", "chugoku", "shikoku", "kyushu", "okinawa"].every((id) => regions.some((r) => r.id === id)), "10 regions stay");
 assert(contents.filter((c) => EXISTING.includes(c.id)).every((c) => c.location_scope === "region"), "existing stay region scope");
 assert(contents.find((c) => c.id === "temperature_24h").status === "live", "24h temp live");
-assert(contents.filter((c) => c.id.startsWith("kikikuru_")).every((c) => c.status === "DATA_SOURCE_PENDING"), "kikikuru pending");
+assert(contents.filter((c) => c.id.startsWith("kikikuru_")).every((c) => c.status === "live" && c.data_source.startsWith("jma_risk")), "kikikuru live jma risk");
 
 let existingUrls = 0;
 for (const region of regions) {

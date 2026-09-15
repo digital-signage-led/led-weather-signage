@@ -2,8 +2,8 @@
  * 有効な公開URLだけを生成する。
  */
 import { listRegions, listContents } from "./catalog.js?v=pref426";
-import { capabilityForContent, isExistingContent } from "./content-registry.js?v=pref426";
-import { listPrefectures, listStations } from "./location-masters.js?v=pref426";
+import { isExistingContent, stationMatchesContent } from "./content-registry.js?v=pref432";
+import { getAvailableStations, listPrefectures } from "./location-masters.js?v=pref432";
 
 export function publicBasePath() {
   const path = location.pathname;
@@ -24,9 +24,9 @@ export function buildPublicUrl({ contentId, regionId, prefId, stationId }) {
 export function generatePublicUrls() {
   const rows = [];
   for (const content of listContents()) {
-    if (!content.enabled) continue;
+    if (!content.enabled || content.hidden_from_studio || content.legacy || content.alias_of) continue;
     const scope = content.location_scope || "region";
-    const status = content.status === "DATA_SOURCE_PENDING" ? "DATA_SOURCE_PENDING" : "公開";
+    const status = content.status === "DATA_SOURCE_PENDING" ? "PENDING" : "LIVE";
     if (scope === "region") {
       for (const region of listRegions()) {
         rows.push({
@@ -36,7 +36,7 @@ export function generatePublicUrls() {
           scope,
           target: region.name,
           url: buildPublicUrl({ contentId: content.id, regionId: region.id }),
-          status: isExistingContent(content.id) ? "公開" : status
+          status: isExistingContent(content.id) ? "LIVE" : status
         });
       }
     } else if (scope === "national") {
@@ -62,9 +62,7 @@ export function generatePublicUrls() {
         });
       }
     } else if (scope === "station") {
-      const cap = capabilityForContent(content.id);
-      for (const st of listStations()) {
-        if (cap && st[cap] !== true) continue;
+      for (const st of getAvailableStations({ contentId: content.id })) {
         rows.push({
           group: "観測地点",
           name: content.name,

@@ -1,7 +1,12 @@
 /**
- * 28コンテンツの参照。既存6の ID / kind は contents.json 先頭を正本とする。
+ * 27コンテンツの参照。既存6の ID / kind は contents.json 先頭を正本とする。
+ * rain_nowcast は rain_forecast の legacy alias（catalog.canonicalContent）。
  */
 import { getContent, listContents } from "./catalog.js?v=pref426";
+
+export const LEGACY_CONTENT_ALIASES = {
+  rain_nowcast: "rain_forecast"
+};
 
 export const EXISTING_CONTENT_IDS = [
   "today_weather",
@@ -47,6 +52,7 @@ export function groupedContents() {
   const groups = [];
   const seen = new Set();
   for (const item of listContents()) {
+    if (item.hidden_from_studio || item.legacy || item.alias_of) continue;
     const key = item.category || "forecast";
     if (!seen.has(key)) {
       seen.add(key);
@@ -57,12 +63,45 @@ export function groupedContents() {
   return groups;
 }
 
+export const REQUIRED_STATION_ELEMENTS = {
+  hourly_temperature: ["temperature"],
+  temperature_24h: ["temperature"],
+  amedas_temperature: ["temperature"],
+  rainfall_trend: ["rainfall"],
+  amedas_rainfall: ["rainfall"],
+  wind_speed_trend: ["wind_speed"],
+  amedas_wind: ["wind_direction", "wind_speed"]
+};
+
+export const STATION_TYPE_GROUPS = {
+  官: "気象台等",
+  四: "アメダス（気温・雨・風）",
+  三: "アメダス（複数要素）",
+  雨: "雨量観測所",
+  雪: "積雪観測所"
+};
+
+export function requiredStationElements(contentId) {
+  return REQUIRED_STATION_ELEMENTS[contentId] || getContent(contentId)?.required_station_elements || [];
+}
+
+export function stationHasElements(station, elements) {
+  if (!station || !elements?.length) return true;
+  return elements.every((key) => (
+    station.elements?.[key] === true
+    || station[`${key}_available`] === true
+    || (key === "wind_speed" && station.wind_available === true)
+  ));
+}
+
+export function stationMatchesContent(station, contentId) {
+  return stationHasElements(station, requiredStationElements(contentId));
+}
+
 export function capabilityForContent(contentId) {
-  const id = contentId;
-  if (id === "temperature_24h" || id === "hourly_temperature" || id === "amedas_temperature") {
-    return "temperature_available";
-  }
-  if (id === "rainfall_trend" || id === "amedas_rainfall") return "rainfall_available";
-  if (id === "wind_speed_trend" || id === "amedas_wind") return "wind_available";
+  const req = requiredStationElements(contentId);
+  if (req.includes("temperature")) return "temperature_available";
+  if (req.includes("rainfall")) return "rainfall_available";
+  if (req.includes("wind_speed") || req.includes("wind_direction")) return "wind_available";
   return null;
 }

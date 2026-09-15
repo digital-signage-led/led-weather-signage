@@ -3,7 +3,7 @@
  * 表示区分と気象内部区分を分ける。旧IDはエイリアスで受ける。
  */
 
-const DATA_VERSION = "pref427";
+const DATA_VERSION = "pref433";
 
 const REGION_ALIASES = {
   NATIONAL: "national",
@@ -27,7 +27,8 @@ const CONTENT_ALIASES = {
   pop: "today_precip",
   tomorrow: "tomorrow_weather",
   weekly: "weekly_weather",
-  "weekly-pop": "weekly_precip"
+  "weekly-pop": "weekly_precip",
+  rain_nowcast: "rain_forecast"
 };
 
 const PROJECTION_KEYS = {

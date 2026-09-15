@@ -2,7 +2,7 @@
  * Studio / signage bootstrap. Studio drives the iframe viewport.
  */
 
-import { APP_VERSION, DATA_VERSION, MAP_VERSION } from "./version.js?v=pref430";
+import { APP_VERSION, DATA_VERSION, MAP_VERSION } from "./version.js?v=pref433";
 import { applyResolvedDisplay, bindDisplayStudio, readDraft } from "./display-studio.js?v=pref430";
 import { loadDisplayBundle, resolveDisplayConfig } from "./display-config.js?v=pref428";
 import {
@@ -15,8 +15,8 @@ import {
   listRegions,
   loadCatalog
 } from "./catalog.js?v=pref426";
-import { capabilityForContent, groupedContents, isV1Content, locationScope } from "./content-registry.js?v=pref426";
-import { getPrefecture, getStation, listPrefectures, loadLocationMasters, stationsForPref } from "./location-masters.js?v=pref426";
+import { groupedContents, isV1Content, locationScope } from "./content-registry.js?v=pref432";
+import { getAvailableStations, getPrefecture, getStation, listPrefectures, loadLocationMasters, resolveStationForContent, stationElementHint, stationTypeLabel } from "./location-masters.js?v=pref432";
 import { generatePublicUrls } from "./public-urls.js?v=pref426";
 import { adaptWeather, aggregateRegion } from "./weather-data.js?v=pref388";
 import { loadMapSvg, mountMap, placeCardsAroundMap, projectCity, computeFocusMapTransform, regionalFallbackTransform } from "./map-renderer.js?v=pref422";
@@ -222,7 +222,11 @@ async function bootStudio() {
     state.regionId = canonicalRegion(state.regionId);
     state.contentId = canonicalContent(state.contentId);
     state.prefId = getPrefecture(state.prefId).pref_id;
-    state.stationId = getStation(state.stationId).station_id;
+    state.stationId = resolveStationForContent(state.stationId, {
+      prefId: state.prefId,
+      contentId: state.contentId,
+      allowFirst: true
+    }).station?.station_id || "";
 
   const studioBar = document.getElementById("studio-bar");
   const regionSelect = document.getElementById("region-select");
@@ -529,29 +533,36 @@ async function bootStudio() {
     loadFrame();
   });
   const fillStationSelect = () => {
-    const cap = capabilityForContent(state.contentId);
-    const list = stationsForPref(state.prefId, cap);
-    const fallback = list.length ? list : stationsForPref(state.prefId);
-    stationSelect.innerHTML = fallback
-      .map((item) => `<option value="${item.station_id}">${item.station_name}</option>`)
-      .join("");
-    if (!fallback.some((item) => item.station_id === state.stationId)) {
-      state.stationId = fallback[0]?.station_id || state.stationId;
+    const list = getAvailableStations({ prefId: state.prefId, contentId: state.contentId });
+    const groups = new Map();
+    for (const item of list) {
+      const label = stationTypeLabel(item);
+      if (!groups.has(label)) groups.set(label, []);
+      groups.get(label).push(item);
+    }
+    stationSelect.innerHTML = [...groups.entries()].map(([label, items]) => (
+      `<optgroup label="${label}">${items.map((item) => (
+        `<option value="${item.station_id}">${item.station_name}　${stationElementHint(item)}</option>`
+      )).join("")}</optgroup>`
+    )).join("");
+    if (!list.some((item) => item.station_id === state.stationId)) {
+      state.stationId = list[0]?.station_id || "";
     }
     stationSelect.value = state.stationId;
   };
   const syncScopeUi = () => {
     const scope = locationScope(state.contentId);
-    if (regionField) regionField.hidden = scope === "prefecture" || scope === "station";
+    if (regionField) regionField.hidden = scope !== "region";
     if (prefField) prefField.hidden = scope !== "prefecture" && scope !== "station";
     if (stationField) stationField.hidden = scope !== "station";
     if (scope === "national") {
       state.regionId = "national";
-      regionSelect.value = "national";
+      if (regionSelect) regionSelect.value = "national";
     }
     if (scope === "prefecture" || scope === "station") {
       const pref = getPrefecture(state.prefId);
       state.regionId = pref.region_id;
+      if (regionSelect) regionSelect.value = pref.region_id;
     }
     fillStationSelect();
   };
@@ -886,7 +897,11 @@ async function bootSignage() {
   state.regionId = getRegion(state.regionId).id;
   state.contentId = getContent(state.contentId).id;
   state.prefId = getPrefecture(state.prefId).pref_id;
-  state.stationId = getStation(state.stationId).station_id;
+  state.stationId = resolveStationForContent(state.stationId, {
+    prefId: state.prefId,
+    contentId: state.contentId,
+    allowFirst: !params.get("station")
+  }).station?.station_id || state.stationId;
 
   const screen = document.getElementById("led-screen");
   const stage = document.getElementById("map-stage");
@@ -1027,7 +1042,7 @@ async function bootSignage() {
       const pref = getPrefecture(state.prefId);
       const station = getStation(state.stationId);
       const extraTitle = content.location_scope === "station"
-        ? { stationName: station.station_name }
+        ? { stationName: station?.station_name || "観測地点" }
         : content.location_scope === "prefecture"
           ? { prefName: pref.pref_name }
           : {};
@@ -1042,7 +1057,7 @@ async function bootSignage() {
           contentDoc: bundle.contentDoc,
           defaultsDoc: bundle.defaultsDoc,
           prefId: pref.pref_id,
-          stationId: station.station_id,
+          stationId: station?.station_id,
           draftLayer: draft?.content_id === content.id ? draft.layer : null
         });
         applyResolvedDisplay(screen, displayResolved);
@@ -1062,10 +1077,14 @@ async function bootSignage() {
       const result = await renderV1Content({
         content,
         prefId: pref.pref_id,
-        stationId: station.station_id,
-        setNote: setNoteTicker
+        stationId: station?.station_id,
+        setNote: setNoteTicker,
+        setStamp: (stamp) => {
+          weatherStamp = stamp || "";
+          stampEl.textContent = weatherStamp ? formatStamp(weatherStamp, !showAuxiliary(vp, "stampWeek")) : "";
+        }
       });
-      weatherStamp = result?.stamp || "";
+      weatherStamp = result?.stamp || weatherStamp || "";
       stampEl.textContent = weatherStamp ? formatStamp(weatherStamp, !showAuxiliary(vp, "stampWeek")) : "";
       layoutNoteTicker();
       lastError = "ok";
