@@ -2,8 +2,8 @@
  * Studio / signage bootstrap. Studio drives the iframe viewport.
  */
 
-import { APP_VERSION, DATA_VERSION, MAP_VERSION } from "./version.js?v=pref429";
-import { applyResolvedDisplay, bindDisplayStudio, readDraft } from "./display-studio.js?v=pref428";
+import { APP_VERSION, DATA_VERSION, MAP_VERSION } from "./version.js?v=pref430";
+import { applyResolvedDisplay, bindDisplayStudio, readDraft } from "./display-studio.js?v=pref430";
 import { loadDisplayBundle, resolveDisplayConfig } from "./display-config.js?v=pref428";
 import {
   canonicalContent,
@@ -136,9 +136,19 @@ const SITE_STORE = "led-signage-site";
 
 const params = new URLSearchParams(window.location.search);
 const studioFlag = String(params.get("studio") || "").toLowerCase();
-const isStudio = studioFlag === "1" || studioFlag === "true" || studioFlag === "yes"
+let studioHop = false;
+try {
+  studioHop = sessionStorage.getItem("led-force-studio") === "1";
+  if (studioHop) sessionStorage.removeItem("led-force-studio");
+} catch {
+  studioHop = false;
+}
+const isStudio = window.__LED_FORCE_STUDIO__ === true
+  || studioFlag === "1" || studioFlag === "true" || studioFlag === "yes"
   || /studio\.html$/i.test(window.location.pathname)
-  || window.location.hash === "#studio";
+  || window.location.hash === "#studio"
+  || studioHop;
+if (isStudio) window.__LED_FORCE_STUDIO__ = true;
 const isDebug = params.get("debug") === "1";
 const canEdit = params.get("edit") === "1";
 
@@ -178,10 +188,11 @@ if (isStudio) {
 function productionUrl(regionId, contentId, extra = {}) {
   const next = new URL(window.location.href);
   let path = next.pathname === "/view" ? "/view" : next.pathname;
+  if (/studio\.html$/i.test(path)) path = path.replace(/studio\.html$/i, "");
   if (path !== "/view" && !path.endsWith("/") && !/\.html$/i.test(path)) path += "/";
   next.pathname = path;
   next.search = "";
-  const content = getContent(contentId);
+  const content = getContent(contentId) || { location_scope: "region" };
   const scope = content.location_scope || "region";
   next.searchParams.set("content", canonicalContent(contentId));
   if (scope === "region" || scope === "national" || !isV1Content(content)) {

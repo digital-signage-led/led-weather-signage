@@ -59,7 +59,7 @@ function fillLayer(root, layer) {
   const g = root.querySelector("#v1-graph-scale-value");
   if (t) t.textContent = Number(layer.title_scale || 1).toFixed(2);
   const s = root.querySelector("#v1-stamp-value");
-  if (s) s.textContent = Number(layer.stamp_scale ?? layer.title_scale || 1).toFixed(2);
+  if (s) s.textContent = Number(layer.stamp_scale ?? layer.title_scale ?? 1).toFixed(2);
   if (g) g.textContent = Number(layer.graph_scale || 1).toFixed(2);
 }
 

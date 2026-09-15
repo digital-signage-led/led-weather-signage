@@ -47,9 +47,10 @@ let regions = [];
 let contents = [];
 
 export async function loadCatalog() {
+  const base = (typeof window !== "undefined" && window.__LED_BASE__) || "";
   const [regionDoc, contentDoc] = await Promise.all([
-    fetch(`data/regions.json?v=${DATA_VERSION}`).then((res) => res.json()),
-    fetch(`data/contents.json?v=${DATA_VERSION}`).then((res) => res.json())
+    fetch(`${base}data/regions.json?v=${DATA_VERSION}`).then((res) => res.json()),
+    fetch(`${base}data/contents.json?v=${DATA_VERSION}`).then((res) => res.json())
   ]);
   regions = regionDoc.regions || [];
   contents = contentDoc.contents || [];
@@ -75,7 +76,13 @@ export function getRegion(id) {
 
 export function getContent(id) {
   const canon = canonicalContent(id);
-  return contents.find((item) => item.id === canon) || contents[0];
+  return contents.find((item) => item.id === canon) || contents[0] || {
+    id: canon,
+    name: "今日の天気",
+    location_scope: "region",
+    kind: "map",
+    enabled: true
+  };
 }
 
 export function listRegions() {

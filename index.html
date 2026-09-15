@@ -5,6 +5,10 @@
   <script>
     (function () {
       var path = location.pathname;
+      if (!/\.html$/i.test(path) && !path.endsWith("/")) {
+        location.replace(path + "/" + location.search + location.hash);
+        return;
+      }
       var dir = /\.html$/i.test(path)
         ? path.replace(/[^/]+$/, "")
         : (path.endsWith("/") ? path : path + "/");
@@ -12,6 +16,33 @@
       base.href = dir;
       document.head.appendChild(base);
       window.__LED_BASE__ = dir;
+      window.__LED_APPLY_STUDIO__ = function () {
+        var q = new URLSearchParams(location.search);
+        var flag = String(q.get("studio") || "").toLowerCase();
+        var hop = false;
+        try { hop = sessionStorage.getItem("led-force-studio") === "1"; } catch (e) {}
+        var on = window.__LED_FORCE_STUDIO__ === true
+          || flag === "1" || flag === "true" || flag === "yes"
+          || /studio\.html$/i.test(location.pathname)
+          || location.hash === "#studio"
+          || hop;
+        if (!on) return false;
+        window.__LED_FORCE_STUDIO__ = true;
+        if (hop) {
+          try { sessionStorage.removeItem("led-force-studio"); } catch (e) {}
+        }
+        var root = document.getElementById("studio-root");
+        var app = document.getElementById("app");
+        if (root) root.hidden = false;
+        if (app) app.hidden = true;
+        document.documentElement.classList.add("is-studio");
+        document.documentElement.classList.remove("is-kiosk", "is-boot");
+        if (document.body) {
+          document.body.classList.add("is-studio");
+          document.body.classList.remove("is-kiosk");
+        }
+        return true;
+      };
       window.setTimeout(function () {
         document.documentElement.classList.remove("is-boot");
       }, 2000);
@@ -241,6 +272,26 @@
     </article>
     <aside id="debug-overlay" hidden></aside>
   </div>
-  <script type="module" src="js/app.js?v=pref429"></script>
+  <script>
+    if (typeof window.__LED_APPLY_STUDIO__ === "function") window.__LED_APPLY_STUDIO__();
+  </script>
+  <script type="module">
+    try {
+      await import("./js/app.js?v=pref430");
+    } catch (error) {
+      console.error(error);
+      var status = document.getElementById("boot-status");
+      document.documentElement.classList.remove("is-boot");
+      if (window.__LED_FORCE_STUDIO__) {
+        if (status) {
+          status.style.display = "flex";
+          status.textContent = "管理画面の読込に失敗しました";
+        }
+      } else if (status) {
+        status.style.display = "flex";
+        status.textContent = "読込に失敗しました";
+      }
+    }
+  </script>
 </body>
 </html>
