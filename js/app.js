@@ -2,9 +2,9 @@
  * Studio / signage bootstrap. Studio drives the iframe viewport.
  */
 
-import { APP_VERSION, DATA_VERSION, MAP_VERSION } from "./version.js?v=pref427";
-import { applyResolvedDisplay, bindDisplayStudio, readDraft } from "./display-studio.js?v=pref427";
-import { loadDisplayBundle, resolveDisplayConfig } from "./display-config.js?v=pref427";
+import { APP_VERSION, DATA_VERSION, MAP_VERSION } from "./version.js?v=pref428";
+import { applyResolvedDisplay, bindDisplayStudio, readDraft } from "./display-studio.js?v=pref428";
+import { loadDisplayBundle, resolveDisplayConfig } from "./display-config.js?v=pref428";
 import {
   canonicalContent,
   canonicalRegion,
@@ -22,7 +22,7 @@ import { adaptWeather, aggregateRegion } from "./weather-data.js?v=pref388";
 import { loadMapSvg, mountMap, placeCardsAroundMap, projectCity, computeFocusMapTransform, regionalFallbackTransform } from "./map-renderer.js?v=pref422";
 import { MAP_LAYOUT_GEN } from "./map-layout.js?v=pref391";
 import { formatStamp, renderCityCard, renderPin, pinRadiusForViewBox, pinRadiusForMatchingScreen, pickNoteWeather, weatherTone, renderNoteIcon, renderPrecipTodLegend } from "./weather-renderer.js?v=pref396";
-import { applyCardScale, applyLockedCards, applyMapTransform, applyPrecipLegend, applyTitleScale, autoPlacePrecipLegend, bindCardEditor, bindMapControls, bindMapEditor, bindOkinawaEditor, bindPrecipLegendEditor, CARD_POS_MAX, CARD_POS_MIN, CARD_SCALE_MAX, CARD_SCALE_MIN, TITLE_SCALE_MAX, TITLE_SCALE_MIN, centerCityCards, containMapInStage, describeLayoutShare, describeMapShare, freezeCardLayout, initLayoutDefaults, isCustomLayout, isManualMapTransform, legendStatusLabel, listCardPositions, loadCardScale, loadLayout, loadMapLayout, loadTitleScale, moveLockedCard, nudgeCardsAwayFromLegend, resetCardScale, resetLayout, resetTitleScale, runLegendCommand, saveCardScale, saveLayout, saveMapLayout, saveTitleScale, shouldAutoPlaceLegend, snapshotLayoutDefaults } from "./studio-layout.js?v=pref423";
+import { applyCardScale, applyLockedCards, applyMapTransform, applyPrecipLegend, applyTitleScale, autoPlacePrecipLegend, bindCardEditor, bindMapControls, bindMapEditor, bindOkinawaEditor, bindPrecipLegendEditor, CARD_POS_MAX, CARD_POS_MIN, CARD_SCALE_MAX, CARD_SCALE_MIN, TITLE_SCALE_MAX, TITLE_SCALE_MIN, centerCityCards, containMapInStage, describeLayoutShare, describeMapShare, freezeCardLayout, initLayoutDefaults, isCustomLayout, isManualMapTransform, legendStatusLabel, listCardPositions, loadCardScale, loadLayout, loadMapLayout, loadStampScale, loadTitleScale, moveLockedCard, saveStampScale, nudgeCardsAwayFromLegend, resetCardScale, resetLayout, resetTitleScale, runLegendCommand, saveCardScale, saveLayout, saveMapLayout, saveTitleScale, shouldAutoPlaceLegend, snapshotLayoutDefaults } from "./studio-layout.js?v=pref428";
 import { expandForecast, formatNoteHtml, noteFor } from "./forecast.js?v=pref391";
 import { renderWeeklyTable } from "./table-renderer.js?v=pref417";
 import {
@@ -386,6 +386,8 @@ async function bootStudio() {
   const cardWidthInput = document.getElementById("card-width-px");
   const titleScaleInput = document.getElementById("title-scale");
   const titleScaleOut = document.getElementById("title-scale-value");
+  const stampScaleInput = document.getElementById("stamp-scale");
+  const stampScaleOut = document.getElementById("stamp-scale-value");
   // 地図4種は同じ外枠・同じ配置を使う（降水でも weather 枠）
   const cardVariant = () => (getContent(state.contentId).kind === "map" ? "weather" : (getContent(state.contentId).card === "pop" ? "pop" : "weather"));
   const applyManualCardScale = (scale) => {
@@ -406,16 +408,37 @@ async function bootStudio() {
     }
     if (titleScaleOut) titleScaleOut.textContent = Number(next).toFixed(2);
   };
+  const syncStampScaleUi = (scale) => {
+    const { w, h } = vpSize();
+    const next = Number.isFinite(scale) ? scale : loadStampScale(w, h, state.regionId, state.contentId);
+    if (stampScaleInput && document.activeElement !== stampScaleInput) {
+      stampScaleInput.value = String(next);
+    }
+    if (stampScaleOut) stampScaleOut.textContent = Number(next).toFixed(2);
+  };
   const applyManualTitleScale = (scale) => {
     const next = Math.min(TITLE_SCALE_MAX, Math.max(TITLE_SCALE_MIN, Number(scale) || 1));
     const { w, h } = vpSize();
     saveTitleScale(next, w, h, state.regionId, state.contentId);
     syncTitleScaleUi(next);
+    const stamp = loadStampScale(w, h, state.regionId, state.contentId);
     withFrameScreen((screenEl) => {
-      applyTitleScale(screenEl, next);
+      applyTitleScale(screenEl, next, stamp);
       fitTitleBars(screenEl);
     });
-    postToFrame({ type: "set-title-scale", scale: next });
+    postToFrame({ type: "set-title-scale", scale: next, stampScale: stamp });
+  };
+  const applyManualStampScale = (scale) => {
+    const next = Math.min(TITLE_SCALE_MAX, Math.max(TITLE_SCALE_MIN, Number(scale) || 1));
+    const { w, h } = vpSize();
+    saveStampScale(next, w, h, state.regionId, state.contentId);
+    syncStampScaleUi(next);
+    const title = loadTitleScale(w, h, state.regionId, state.contentId);
+    withFrameScreen((screenEl) => {
+      applyTitleScale(screenEl, title, next);
+      fitTitleBars(screenEl);
+    });
+    postToFrame({ type: "set-title-scale", scale: title, stampScale: next });
   };
   const syncCardScaleUi = (scale) => {
     const next = Number.isFinite(scale)
@@ -437,6 +460,11 @@ async function bootStudio() {
     const scale = Number(titleScaleInput.value);
     if (!Number.isFinite(scale)) return;
     applyManualTitleScale(scale);
+  });
+  stampScaleInput?.addEventListener("input", () => {
+    const scale = Number(stampScaleInput.value);
+    if (!Number.isFinite(scale)) return;
+    applyManualStampScale(scale);
   });
   cardScaleInput?.addEventListener("input", () => {
     const scale = Number(cardScaleInput.value);
@@ -806,6 +834,7 @@ async function bootStudio() {
   persistStudio();
   syncChrome();
   syncCardScaleUi();
+  syncStampScaleUi();
   contentSelect.addEventListener("change", syncChrome);
   const displayUi = bindDisplayStudio({
     root: studioBar,
@@ -814,6 +843,14 @@ async function bootStudio() {
       if (!keepDraft) {/* preview flag comes from draft store */}
       loadFrame();
       displayUi.refreshMeta();
+    },
+    applyLive: (layer) => {
+      withFrameScreen((screenEl) => {
+        applyResolvedDisplay(screenEl, layer);
+        applyTitleScale(screenEl, layer.title_scale, layer.stamp_scale);
+        fitTitleBars(screenEl);
+      });
+      postToFrame({ type: "apply-display", layer });
     }
   });
   contentSelect.addEventListener("change", () => displayUi.refreshMeta());
@@ -995,9 +1032,13 @@ async function bootSignage() {
           draftLayer: draft?.content_id === content.id ? draft.layer : null
         });
         applyResolvedDisplay(screen, displayResolved);
-        applyTitleScale(screen, displayResolved.title_scale);
+        applyTitleScale(screen, displayResolved.title_scale, displayResolved.stamp_scale);
       } catch {
-        applyTitleScale(screen, loadTitleScale(vp.width, vp.height, region.id, content.id));
+        applyTitleScale(
+          screen,
+          loadTitleScale(vp.width, vp.height, region.id, content.id),
+          loadStampScale(vp.width, vp.height, region.id, content.id)
+        );
       }
       fitTitleBars(screen);
       attributionEl.hidden = true;
@@ -1078,7 +1119,11 @@ async function bootSignage() {
       attributionEl.hidden = content.kind !== "map" || !showAuxiliary(vp, "attribution");
       syncTitleMark(content);
       const weekPoints = content.id === "weekly_weather" ? paintWeekPoints(selected) : (hideWeekPoints(), null);
-      applyTitleScale(screen, loadTitleScale(vp.width, vp.height, region.id, content.id));
+      applyTitleScale(
+        screen,
+        loadTitleScale(vp.width, vp.height, region.id, content.id),
+        loadStampScale(vp.width, vp.height, region.id, content.id)
+      );
       fitTitleBars(screen);
       layoutNoteTicker();
       if (document.fonts?.ready) {
@@ -1262,7 +1307,17 @@ async function bootSignage() {
       if (!Number.isFinite(scale)) return;
       const vp = measure();
       saveTitleScale(scale, vp.width, vp.height, state.regionId, state.contentId);
-      applyTitleScale(screen, scale);
+      const stamp = Number(event.data.stampScale);
+      if (Number.isFinite(stamp)) {
+        saveStampScale(stamp, vp.width, vp.height, state.regionId, state.contentId);
+      }
+      applyTitleScale(screen, scale, Number.isFinite(stamp) ? stamp : loadStampScale(vp.width, vp.height, state.regionId, state.contentId));
+      fitTitleBars(screen);
+      layoutNoteTicker();
+    }
+    if (event.data.type === "apply-display") {
+      applyResolvedDisplay(screen, event.data.layer || {});
+      applyTitleScale(screen, event.data.layer?.title_scale, event.data.layer?.stamp_scale);
       fitTitleBars(screen);
       layoutNoteTicker();
     }

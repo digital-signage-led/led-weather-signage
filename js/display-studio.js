@@ -35,6 +35,7 @@ function impactCount(state, scope) {
 function currentLayer(root) {
   return {
     title_scale: Number(root.querySelector("#v1-title-scale")?.value || 1),
+    stamp_scale: Number(root.querySelector("#v1-stamp-scale")?.value || root.querySelector("#v1-title-scale")?.value || 1),
     graph_scale: Number(root.querySelector("#v1-graph-scale")?.value || 1),
     graph_x: Number(root.querySelector("#v1-graph-x")?.value || 0),
     graph_y: Number(root.querySelector("#v1-graph-y")?.value || 0),
@@ -48,6 +49,7 @@ function fillLayer(root, layer) {
     if (el && value != null) el.value = String(value);
   };
   set("#v1-title-scale", layer.title_scale);
+  set("#v1-stamp-scale", layer.stamp_scale ?? layer.title_scale);
   set("#v1-graph-scale", layer.graph_scale);
   set("#v1-graph-x", layer.graph_x);
   set("#v1-graph-y", layer.graph_y);
@@ -56,10 +58,12 @@ function fillLayer(root, layer) {
   const t = root.querySelector("#v1-title-value");
   const g = root.querySelector("#v1-graph-scale-value");
   if (t) t.textContent = Number(layer.title_scale || 1).toFixed(2);
+  const s = root.querySelector("#v1-stamp-value");
+  if (s) s.textContent = Number(layer.stamp_scale ?? layer.title_scale || 1).toFixed(2);
   if (g) g.textContent = Number(layer.graph_scale || 1).toFixed(2);
 }
 
-export function bindDisplayStudio({ root, state, reloadPreview }) {
+export function bindDisplayStudio({ root, state, reloadPreview, applyLive }) {
   const tools = root.querySelector("#v1-display-tools");
   const confirmEl = root.querySelector("#publish-confirm");
   const resultEl = root.querySelector("#publish-result");
@@ -127,11 +131,13 @@ export function bindDisplayStudio({ root, state, reloadPreview }) {
     refreshMeta();
     reloadPreview?.(false);
   }));
-  ["#v1-title-scale", "#v1-graph-scale", "#v1-graph-x", "#v1-graph-y", "#v1-ticker-enabled"].forEach((sel) => {
+  ["#v1-title-scale", "#v1-stamp-scale", "#v1-graph-scale", "#v1-graph-x", "#v1-graph-y", "#v1-ticker-enabled"].forEach((sel) => {
     root.querySelector(sel)?.addEventListener("input", () => {
       root.querySelector("#publish-state").textContent = "未保存の変更";
       if (sel === "#v1-title-scale") root.querySelector("#v1-title-value").textContent = Number(root.querySelector(sel).value).toFixed(2);
+      if (sel === "#v1-stamp-scale") root.querySelector("#v1-stamp-value").textContent = Number(root.querySelector(sel).value).toFixed(2);
       if (sel === "#v1-graph-scale") root.querySelector("#v1-graph-scale-value").textContent = Number(root.querySelector(sel).value).toFixed(2);
+      applyLive?.(currentLayer(root));
     });
   });
   root.querySelector("#display-draft")?.addEventListener("click", saveDraft);
@@ -232,6 +238,7 @@ export function bindDisplayStudio({ root, state, reloadPreview }) {
 export function applyResolvedDisplay(screen, resolved) {
   if (!screen || !resolved) return;
   screen.style.setProperty("--title-scale", String(resolved.title_scale || 1));
+  screen.style.setProperty("--stamp-scale", String(resolved.stamp_scale || resolved.title_scale || 1));
   screen.style.setProperty("--v1-graph-scale", String(resolved.graph_scale || 1));
   screen.style.setProperty("--v1-graph-x", `${Number(resolved.graph_x) || 0}px`);
   screen.style.setProperty("--v1-graph-y", `${Number(resolved.graph_y) || 0}px`);

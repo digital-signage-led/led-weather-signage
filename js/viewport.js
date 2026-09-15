@@ -381,7 +381,8 @@ export function fitTitleBars(screen) {
     el.style.fontSize = "";
     // CSS 未適用時の clientHeight 暴走を防ぐ
     const height = Math.min(bar.clientHeight || cssHeight, cssHeight * 1.25, 120);
-    let size = Math.max(10, Math.min(height * ratio, cssHeight * 0.5));
+    const cap = el.classList.contains("led-stamp") ? 0.78 : 0.5;
+    let size = Math.max(10, Math.min(height * ratio, cssHeight * cap));
     el.style.fontSize = `${size}px`;
     let steps = 0;
     const extras = Math.max(0, bar.scrollWidth - el.scrollWidth);

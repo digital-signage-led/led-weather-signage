@@ -58,6 +58,7 @@ const CARD_SIZE_KEY_LEGACY_V3 = "led-weather-card-size-v3";
 const CARD_SIZE_KEY_LEGACY_V2 = "led-weather-card-size-v2";
 const TITLE_SCALE_KEY = "led-weather-title-scale-v3";
 const TITLE_SCALE_KEY_LEGACY = "led-weather-title-scale-v2";
+const STAMP_SCALE_KEY = "led-weather-stamp-scale-v1";
 
 /** リポジトリ同梱の完成配置。localStorage に無い解像度だけ補完する。 */
 let shippedDefaults = { layouts: {}, cardScales: {}, titleScales: {} };
@@ -983,9 +984,41 @@ export function resetTitleScale(width = 0, height = 0, regionId = "national", co
   return 1;
 }
 
-export function applyTitleScale(screen, scale) {
+export function loadStampScale(width = 0, height = 0, regionId = "national", contentId = "today_weather") {
+  try {
+    const all = JSON.parse(localStorage.getItem(STAMP_SCALE_KEY) || "{}") || {};
+    const { groupKey } = titleScaleKeys(width, height, regionId, contentId);
+    const stored = Number(all[groupKey]);
+    if (Number.isFinite(stored) && stored > 0) {
+      return clamp(stored, TITLE_SCALE_MIN, TITLE_SCALE_MAX);
+    }
+  } catch {
+    /* inherit title */
+  }
+  return loadTitleScale(width, height, regionId, contentId);
+}
+
+export function saveStampScale(scale, width = 0, height = 0, regionId = "national", contentId = "today_weather") {
+  const all = (() => {
+    try {
+      return JSON.parse(localStorage.getItem(STAMP_SCALE_KEY) || "{}") || {};
+    } catch {
+      return {};
+    }
+  })();
+  const { groupKey } = titleScaleKeys(width, height, regionId, contentId);
+  all[groupKey] = clamp(scale, TITLE_SCALE_MIN, TITLE_SCALE_MAX);
+  localStorage.setItem(STAMP_SCALE_KEY, JSON.stringify(all));
+}
+
+export function applyTitleScale(screen, scale, stampScale) {
   if (!screen) return;
-  screen.style.setProperty("--title-scale", String(clamp(scale, TITLE_SCALE_MIN, TITLE_SCALE_MAX)));
+  const title = clamp(scale, TITLE_SCALE_MIN, TITLE_SCALE_MAX);
+  const stamp = Number.isFinite(Number(stampScale))
+    ? clamp(stampScale, TITLE_SCALE_MIN, TITLE_SCALE_MAX)
+    : title;
+  screen.style.setProperty("--title-scale", String(title));
+  screen.style.setProperty("--stamp-scale", String(stamp));
 }
 
 export function applyLockedCards(placed, layout) {

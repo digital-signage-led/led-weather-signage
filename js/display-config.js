@@ -16,12 +16,13 @@ export const SYSTEM_DEFAULTS = {
   box_x: null,
   box_y: null,
   ticker_enabled: true,
+  stamp_scale: 1,
   graph_scale: 1,
   graph_x: 0,
   graph_y: 0
 };
 
-const SCALE = { title_scale: [0.6, 2.8], map_scale: [0.4, 6.5], box_scale: [0.28, 3], graph_scale: [0.5, 2.5] };
+const SCALE = { title_scale: [0.6, 2.8], stamp_scale: [0.6, 2.8], map_scale: [0.4, 6.5], box_scale: [0.28, 3], graph_scale: [0.5, 2.5] };
 const SHIFT = { map_x: [-280, 280], map_y: [-280, 280], graph_x: [-280, 280], graph_y: [-280, 280], map_rotation: [-40, 40] };
 
 export function emptyContentDoc(contentId) {

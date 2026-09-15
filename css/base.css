@@ -510,13 +510,18 @@ html.is-edit .led-footer {
   padding: 0 calc(var(--header-title-height) * 0.28) 0 max(var(--safe-margin-x, 40px), calc(var(--header-title-height) * 0.16));
   background: var(--bg-header);
   border-radius: 0 var(--box-radius) var(--box-radius) 0;
-  overflow: hidden;
+  overflow: visible;
   box-sizing: border-box;
 }
 
 .led-title-bar:not(.led-sub-bar) {
   height: var(--header-title-height);
   gap: 0.35em;
+  overflow: hidden;
+}
+
+.led-sub-bar {
+  overflow: visible;
 }
 
 .led-title-mark {
@@ -670,8 +675,10 @@ svg.jma-icon {
   font-weight: 900;
   line-height: 1;
   white-space: nowrap;
-  overflow: hidden;
+  overflow: visible;
   color: var(--text-title);
+  transform: scale(calc(var(--stamp-scale, var(--title-scale, 1)) / var(--title-scale, 1)));
+  transform-origin: left center;
 }
 
 .led-note,

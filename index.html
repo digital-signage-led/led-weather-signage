@@ -59,7 +59,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/base.css?v=pref427">
+  <link rel="stylesheet" href="css/base.css?v=pref428">
   <link rel="stylesheet" href="css/weather.css?v=pref417">
   <link rel="stylesheet" href="css/v1-content.css?v=pref427">
 </head>
@@ -102,6 +102,9 @@
           <label>タイトル大きさ <span id="v1-title-value">1.00</span>
             <input id="v1-title-scale" type="range" min="0.6" max="2.8" step="0.02" value="1">
           </label>
+          <label>更新時刻の大きさ <span id="v1-stamp-value">1.00</span>
+            <input id="v1-stamp-scale" type="range" min="0.6" max="2.8" step="0.02" value="1">
+          </label>
           <label>グラフ大きさ <span id="v1-graph-scale-value">1.00</span>
             <input id="v1-graph-scale" type="range" min="0.5" max="2.5" step="0.02" value="1">
           </label>
@@ -141,6 +144,10 @@
         <label>
           タイトル大きさ <span id="title-scale-value">1.00</span>
           <input id="title-scale" type="range" min="0.6" max="2.8" step="0.02" value="1">
+        </label>
+        <label>
+          更新時刻の大きさ <span id="stamp-scale-value">1.00</span>
+          <input id="stamp-scale" type="range" min="0.6" max="2.8" step="0.02" value="1">
         </label>
         <label>
           列島 拡大 <span id="map-scale-value">1.00</span>
@@ -234,6 +241,6 @@
     </article>
     <aside id="debug-overlay" hidden></aside>
   </div>
-  <script type="module" src="js/app.js?v=pref427"></script>
+  <script type="module" src="js/app.js?v=pref428"></script>
 </body>
 </html>
