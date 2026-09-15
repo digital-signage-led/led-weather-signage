@@ -2,7 +2,7 @@
  * Studio / signage bootstrap. Studio drives the iframe viewport.
  */
 
-import { APP_VERSION, DATA_VERSION, MAP_VERSION } from "./version.js?v=pref381";
+import { APP_VERSION, DATA_VERSION, MAP_VERSION } from "./version.js?v=pref382";
 import {
   canonicalContent,
   canonicalRegion,
@@ -12,13 +12,13 @@ import {
   listContents,
   listRegions,
   loadCatalog
-} from "./catalog.js?v=pref381";
-import { adaptWeather, aggregateRegion } from "./weather-data.js?v=pref381";
-import { loadMapSvg, mountMap, placeCardsAroundMap, projectCity } from "./map-renderer.js?v=pref381";
-import { formatStamp, renderCityCard, renderPin, pinRadiusForViewBox, pinRadiusForMatchingScreen, pickNoteWeather, weatherTone, renderNoteIcon, renderPrecipTodLegend } from "./weather-renderer.js?v=pref381";
-import { applyCardScale, applyLockedCards, applyMapTransform, applyPrecipLegend, applyTitleScale, bindCardEditor, bindMapControls, bindMapEditor, bindOkinawaEditor, bindPrecipLegendEditor, CARD_POS_MAX, CARD_POS_MIN, CARD_SCALE_MAX, CARD_SCALE_MIN, TITLE_SCALE_MAX, TITLE_SCALE_MIN, centerCityCards, containMapInStage, freezeCardLayout, initLayoutDefaults, isCustomLayout, listCardPositions, loadCardScale, loadLayout, loadTitleScale, moveLockedCard, resetCardScale, resetLayout, resetTitleScale, saveCardScale, saveLayout, saveTitleScale, snapshotLayoutDefaults } from "./studio-layout.js?v=pref381";
-import { expandForecast, formatNoteHtml, noteFor } from "./forecast.js?v=pref381";
-import { renderWeeklyTable } from "./table-renderer.js?v=pref381";
+} from "./catalog.js?v=pref382";
+import { adaptWeather, aggregateRegion } from "./weather-data.js?v=pref382";
+import { loadMapSvg, mountMap, placeCardsAroundMap, projectCity } from "./map-renderer.js?v=pref382";
+import { formatStamp, renderCityCard, renderPin, pinRadiusForViewBox, pinRadiusForMatchingScreen, pickNoteWeather, weatherTone, renderNoteIcon, renderPrecipTodLegend } from "./weather-renderer.js?v=pref382";
+import { applyCardScale, applyLockedCards, applyMapTransform, applyPrecipLegend, applyTitleScale, bindCardEditor, bindMapControls, bindMapEditor, bindOkinawaEditor, bindPrecipLegendEditor, CARD_POS_MAX, CARD_POS_MIN, CARD_SCALE_MAX, CARD_SCALE_MIN, TITLE_SCALE_MAX, TITLE_SCALE_MIN, centerCityCards, containMapInStage, freezeCardLayout, initLayoutDefaults, isCustomLayout, listCardPositions, loadCardScale, loadLayout, loadTitleScale, moveLockedCard, resetCardScale, resetLayout, resetTitleScale, saveCardScale, saveLayout, saveTitleScale, snapshotLayoutDefaults } from "./studio-layout.js?v=pref382";
+import { expandForecast, formatNoteHtml, noteFor } from "./forecast.js?v=pref382";
+import { renderWeeklyTable } from "./table-renderer.js?v=pref382";
 import {
   DEFAULT_STUDIO_VIEWPORT,
   FIXED_DESIGN,
@@ -34,10 +34,10 @@ import {
   partitionTablePages,
   readViewport,
   showAuxiliary
-} from "./viewport.js?v=pref381";
-import { msUntilIconPhaseChange } from "./jma-icons.js?v=pref381";
-import { fetchJmaWeather } from "./jma-live.js?v=pref381";
-import { buildWeekPoints, fetchWeekAlert, renderWeekPointsHtml } from "./week-points.js?v=pref381";
+} from "./viewport.js?v=pref382";
+import { msUntilIconPhaseChange } from "./jma-icons.js?v=pref382";
+import { fetchJmaWeather } from "./jma-live.js?v=pref382";
+import { buildWeekPoints, fetchWeekAlert, renderWeekPointsHtml } from "./week-points.js?v=pref382";
 
 /** 府県天気予報の発表時刻（JST）。発表反映待ちで +5 分後に取りに行く。 */
 const JMA_PUBLISH_HOURS_JST = [5, 11, 17];
@@ -1084,13 +1084,8 @@ function syncTitleMark(content) {
   if (!mark) return;
   mark.dataset.kind = content.card;
   if (content.card === "pop") {
-    // 水滴は低解像度で温度計に誤認されるため、傘＋雨粒で降水を明示する
     mark.innerHTML = `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <path fill="currentColor" d="M18 30h28a14 14 0 0 0 0-28 18 18 0 0 0-34 10 12 12 0 0 0-6 18z"/>
-      <path fill="currentColor" d="M30 30v22a2 2 0 0 0 4 0V30z"/>
-      <circle cx="22" cy="48" r="3" fill="currentColor"/>
-      <circle cx="42" cy="52" r="3" fill="currentColor"/>
-      <circle cx="32" cy="58" r="2.5" fill="currentColor"/>
+      <path fill="currentColor" d="M32 8c10 16 18 26 18 36a18 18 0 1 1-36 0C14 34 22 24 32 8z"/>
     </svg>`;
     return;
   }
