@@ -65,14 +65,12 @@ export async function renderCityCard(point, position, options = {}) {
   if (options.layout === "pop") {
     const morning = Number.isFinite(point.morning) ? point.morning : point.pop;
     const noon = Number.isFinite(point.noon) ? point.noon : point.pop;
-    const night = Number.isFinite(point.night) ? point.night : point.pop;
     return `
     <article class="city-card is-pop is-vertical${position.locked ? " is-locked" : ""}" data-city-id="${point.cityId}" style="left:${position.x}%;top:${position.y}%;">
       <span class="city-card-name">${point.cityName}</span>
       <span class="city-card-pops">
         <span class="pop-slot is-morning ${popTone(morning)}"><b>${formatCardNumber(morning)}</b></span>
         <span class="pop-slot is-noon ${popTone(noon)}"><b>${formatCardNumber(noon)}</b></span>
-        <span class="pop-slot is-night ${popTone(night)}"><b>${formatCardNumber(night)}</b></span>
       </span>
     </article>`;
   }
@@ -103,7 +101,6 @@ export function renderPrecipTodLegend() {
         <div class="precip-tod-legend-box">
           <span class="is-morning">6〜12時</span>
           <span class="is-noon">12〜18時</span>
-          <span class="is-night">18〜24時</span>
         </div>
       </div>
     </aside>
