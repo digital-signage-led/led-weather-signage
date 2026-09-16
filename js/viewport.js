@@ -166,15 +166,15 @@ export function tableLayoutTokens(vp, rows = 5, titleScale = 1) {
   const rowCount = Math.max(1, Number(rows) || 5);
   const s = vp.basis || vp.minSide;
   const chrome = 1.5;
-  const gap = Math.max(3, fluidPx(s, 0.008, 3, 8));
-  const pad = fluidPx(s, 0.018, 4, 14);
+  const gap = Math.max(1, fluidPx(s, 0.005, 1, 4));
+  const pad = fluidPx(s, 0.035, 6, 28);
   const headerTitle = fluidPx(s, 0.092 * chrome, 24, Math.round(58 * chrome));
   const headerSub = fluidPx(s, 0.062 * chrome, 16, Math.round(40 * chrome));
   const footer = fluidPx(s, 0.146 * chrome, 32, Math.round(100 * chrome));
   const scale = clamp(Number(titleScale) || 1, 0.6, 2.8);
   const stackGap = clamp(headerSub * 0.18, 4, 10);
-  const topChrome = pad + (headerTitle + headerSub + stackGap) * scale + 8;
-  const bottomChrome = footer + 8;
+  const topChrome = pad + (headerTitle + headerSub + stackGap) * scale + 20;
+  const bottomChrome = 12;
   const availW = Math.max(80, vp.width - pad * 2);
   const availH = Math.max(80, vp.height - topChrome - bottomChrome);
   const dayHeadH = clamp(Math.round(availH * 0.09), 22, Math.round(s * 0.08));
@@ -186,7 +186,7 @@ export function tableLayoutTokens(vp, rows = 5, titleScale = 1) {
   const cellH = (innerH - dayHeadH - gap * rowCount) / rowCount;
   const cellMin = Math.max(8, Math.min(cellW, cellH));
   const radius = clamp(Math.round(cellMin * 0.12), 4, 14);
-  const tempFont = Math.round(clamp(cellH * (rowCount >= 5 ? 0.26 : 0.32), 14, 52));
+  const tempFont = Math.round(clamp(cellH * (rowCount >= 5 ? 0.24 : 0.28), 12, 44));
   const padY = Math.round(clamp(cellH * 0.05, 1, 8));
   const padX = Math.round(clamp(cellW * 0.05, 1, 10));
   const tempRow = Math.round(tempFont * 1.08);
