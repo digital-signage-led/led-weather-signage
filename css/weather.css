@@ -757,6 +757,7 @@ html.is-edit .precip-tod-legend.is-dragging {
   font-weight: 800;
   color: #fff;
   line-height: 1.15;
+  white-space: nowrap;
 }
 
 .precip-tod-legend-box > .is-morning {

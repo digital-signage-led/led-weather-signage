@@ -142,7 +142,7 @@ export function tokensFor(vp, content = { id: "today_weather", name: "今日の�
   };
 }
 
-/** 降水確率レジェンド（朝/昼/夜）。短辺比率で全コンテンツ共通に拡大縮小する */
+/** 降水確率レジェンド（6〜12 / 12〜18 / 18〜24）。短辺比率で全コンテンツ共通に拡大縮小する */
 function precipLegendTokens(vp) {
   const s = vp.basis || vp.minSide;
   // 576px を基準比 1。1920×1080（短辺1080）では約 1.9 倍
@@ -150,10 +150,10 @@ function precipLegendTokens(vp) {
   return {
     "--precip-legend-scale": String(Number(ratio.toFixed(3))),
     "--precip-legend-title": `${Math.round(15 * ratio)}px`,
-    "--precip-legend-label": `${Math.round(14 * ratio)}px`,
+    "--precip-legend-label": `${Math.round(12 * ratio)}px`,
     "--precip-legend-pad-y": `${Math.round(5 * ratio)}px`,
-    "--precip-legend-pad-x": `${Math.round(9 * ratio)}px`,
-    "--precip-legend-min-w": `${Math.round(48 * ratio)}px`,
+    "--precip-legend-pad-x": `${Math.round(8 * ratio)}px`,
+    "--precip-legend-min-w": `${Math.round(86 * ratio)}px`,
     "--precip-legend-radius": `${Math.round(5 * ratio)}px`,
     "--precip-legend-gap": `${Math.round(6 * ratio)}px`
   };

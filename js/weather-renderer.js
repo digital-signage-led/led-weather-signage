@@ -101,9 +101,9 @@ export function renderPrecipTodLegend() {
       <div class="precip-tod-legend-title">降水確率</div>
       <div class="precip-tod-legend-row">
         <div class="precip-tod-legend-box">
-          <span class="is-morning">朝</span>
-          <span class="is-noon">昼</span>
-          <span class="is-night">夜</span>
+          <span class="is-morning">6〜12時</span>
+          <span class="is-noon">12〜18時</span>
+          <span class="is-night">18〜24時</span>
         </div>
       </div>
     </aside>
