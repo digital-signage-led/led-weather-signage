@@ -3,12 +3,11 @@
  * 緯度経度を同じ投影で地図上の位置へ変換する。
  */
 
-import { canonicalRegion, isNational } from "./catalog.js?v=pref368";
-import { cardSizePct } from "./viewport.js?v=pref368";
-import { MAP_VERSION } from "./version.js?v=pref368";
-import { MAP_LAYOUT_GEN, MAP_SCALE_MAX, MAP_SHIFT_MAX } from "./map-layout.js?v=pref412";
+import { canonicalRegion, isNational } from "./catalog.js?v=pref387";
+import { cardSizePct } from "./viewport.js?v=pref387";
+import { MAP_VERSION } from "./version.js?v=pref387";
 
-import { jmaIconFile } from "./jma-icons.js?v=pref368";
+import { jmaIconFile } from "./jma-icons.js?v=pref387";
 
 const iconCache = new Map();
 let iconSeq = 0;
@@ -36,7 +35,7 @@ export async function loadMapSvg(mapFile = "japan.svg") {
   // 全国・地方とも共通の japan.svg。1回だけ取得し以降はメモリ再利用。
   if (!mapSvgTextPromise) {
     const file = "japan.svg";
-    mapSvgTextPromise = fetch(`${window.__LED_BASE__ || ""}maps/${file}?v=${MAP_VERSION}`)
+    mapSvgTextPromise = fetch(`maps/${file}?v=${MAP_VERSION}`)
       .then((response) => {
         if (!response.ok) throw new Error(`${file} を読み込めません`);
         return response.text();
@@ -66,7 +65,7 @@ function cloneMapSvg(svgText) {
 export async function loadIcon(weather, night = false) {
   const file = jmaIconFile(weather, night);
   if (!iconCache.has(file)) {
-    const response = await fetch(`${window.__LED_BASE__ || ""}${file}`);
+    const response = await fetch(file);
     if (!response.ok) throw new Error(`アイコンを読み込めません: ${file}`);
     iconCache.set(file, await response.text());
   }
@@ -80,7 +79,7 @@ export const MAP_CORE = { left: 0, top: 0, right: 100, bottom: 100 };
 export function mountMap(stage, svgText, regionId = "national") {
   regionId = canonicalRegion(regionId);
   stage.innerHTML = `
-    <div id="map-layer" class="map-fit">
+    <div class="map-fit">
       <div class="map-geo">
         <div class="map-core">
           <div class="map-square">
@@ -159,45 +158,57 @@ const SCREEN_FOCUS_PREFS = {
   okinawa: ["47"]
 };
 
-/** 全国共通 SVG の基準 viewBox（地方でも差し替えない）。 */
-export const NATIONAL_MAP_VIEWBOX = "0 0 100 100";
+/** 表示枠に含める隣接地方（グレーの周辺陸地）。 */
+const REGION_FRAME_NEIGHBORS = {
+  hokkaido: ["tohoku"],
+  tohoku: ["hokkaido", "kanto", "chubu"],
+  kanto: ["tohoku", "chubu"],
+  chubu: ["tohoku", "kanto", "kinki", "chugoku", "shikoku", "kyushu"],
+  kinki: ["chubu", "chugoku", "shikoku"],
+  chugoku: ["kinki", "shikoku", "kyushu"],
+  shikoku: ["kinki", "chugoku", "kyushu"],
+  kyushu: ["chugoku", "shikoku"],
+  okinawa: []
+};
 
 const PRESET_CARD_SCREENS = new Set([
   "national", "hokkaido", "tohoku", "kanto", "chubu",
   "kinki", "chugoku", "shikoku", "kyushu", "okinawa"
 ]);
 
-export function focusPrefsFor(regionId) {
+function focusPrefsFor(regionId) {
   return SCREEN_FOCUS_PREFS[canonicalRegion(regionId)] || [];
 }
 
-/** 全都道府県パスへ識別属性を付与（地方判定は JS の都道府県コード一覧で行う）。 */
-function annotatePrefAttributes(svg) {
-  if (!svg) return;
-  svg.querySelectorAll("[data-pref]").forEach((el) => {
-    const code = el.getAttribute("data-pref");
-    if (!code) return;
-    el.setAttribute("data-pref-code", code);
-    if (!el.id) el.setAttribute("id", `pref-${code}`);
-  });
+/** フォーカス県＋隣接県の pref 群（viewBox 用）。 */
+function framePrefsFor(regionId) {
+  regionId = canonicalRegion(regionId);
+  const prefs = new Set(focusPrefsFor(regionId));
+  for (const neighbor of REGION_FRAME_NEIGHBORS[regionId] || []) {
+    for (const pref of focusPrefsFor(neighbor)) prefs.add(pref);
+  }
+  return prefs;
 }
 
-/**
- * 共通地図を地方表示向けに整える。
- * 県を display:none で消さない（REGION ≠ 描画対象）。沖縄 inset の枠だけ調整する。
- */
+/** 共通地図を地方表示向けに整える（沖縄枠の扱い・遠方県の抑制）。 */
 function prepareCommonMapLayers(svg, regionId) {
-  if (!svg) return;
-  annotatePrefAttributes(svg);
+  if (!svg || isNational(regionId)) return;
   regionId = canonicalRegion(regionId);
-  if (isNational(regionId)) return;
   if (regionId === "okinawa") {
-    // 地方沖縄は inset を拡大表示。本州は残しつつ inset の白枠だけ外す。
+    svg.querySelectorAll(":scope > .map-fills, :scope > .map-borders, :scope > .map-fills-cover, :scope > .map-lakes")
+      .forEach((el) => el.setAttribute("display", "none"));
+    // 地方沖縄は全国図用の白いインセット枠は不要
     svg.querySelectorAll(".map-okinawa-inset > rect").forEach((el) => el.setAttribute("display", "none"));
     return;
   }
   const inset = svg.querySelector(".map-okinawa-inset");
   if (inset) inset.setAttribute("display", "none");
+  const keep = framePrefsFor(regionId);
+  svg.querySelectorAll("[data-pref]").forEach((el) => {
+    const id = el.getAttribute("data-pref");
+    if (id && !keep.has(id)) el.setAttribute("display", "none");
+    else el.removeAttribute("display");
+  });
 }
 
 /**
@@ -277,26 +288,35 @@ function pathInFitCore(regionId, bounds) {
   return cx >= core.minX && cx <= core.maxX && cy >= core.minY && cy <= core.maxY;
 }
 
-/**
- * 全国共通 viewBox を常に使う（沖縄地方だけ inset 拡大用の枠）。
- * 地方の寄りは CSS transform（scale/x/y）で行う。viewBox で県を切らない。
- */
+/** 枠内の県だけが見えるよう、土地の範囲へ viewBox を合わせる。 */
 function fitRegionalView(svg, pinsSvg, regionId) {
   if (!svg) return;
   regionId = canonicalRegion(regionId);
-  let view = NATIONAL_MAP_VIEWBOX;
+  const cached = viewBoxByRegion.get(regionId);
+  if (cached) {
+    svg.setAttribute("viewBox", cached);
+    if (pinsSvg) pinsSvg.setAttribute("viewBox", cached);
+    return;
+  }
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
 
-  if (regionId === "okinawa") {
-    const cached = viewBoxByRegion.get(regionId);
-    if (cached) {
-      svg.setAttribute("viewBox", cached);
-      if (pinsSvg) pinsSvg.setAttribute("viewBox", cached);
-      return;
-    }
-    let minX = Infinity;
-    let minY = Infinity;
-    let maxX = -Infinity;
-    let maxY = -Infinity;
+  const addBox = (el) => {
+    const bounds = elementBoxInSvg(el);
+    if (!bounds) return;
+    if (!pathInFitCore(regionId, bounds)) return;
+    minX = Math.min(minX, bounds.minX);
+    minY = Math.min(minY, bounds.minY);
+    maxX = Math.max(maxX, bounds.maxX);
+    maxY = Math.max(maxY, bounds.maxY);
+  };
+
+  if (isNational(regionId)) {
+    svg.querySelectorAll(".map-fills path[data-pref], .map-okinawa-inset path").forEach(addBox);
+  } else if (regionId === "okinawa") {
+    // 島の path だけを、inset の transform 後座標で枠に入れる�E�枠 rect は含めなぁE��E
     const inset = svg.querySelector(".map-okinawa-inset");
     const paths = inset?.querySelectorAll("path") || [];
     if (inset && paths.length) {
@@ -308,122 +328,56 @@ function fitRegionalView(svg, pinsSvg, regionId) {
         maxX = Math.max(maxX, bounds.maxX);
         maxY = Math.max(maxY, bounds.maxY);
       });
+    } else if (inset) {
+      addBox(inset);
     }
-    if (Number.isFinite(minX) && maxX - minX >= 2 && maxY - minY >= 2) {
-      const pad = 1.2;
-      view = `${minX - pad} ${minY - pad} ${maxX - minX + pad * 2} ${maxY - minY + pad * 2}`;
-    } else {
-      view = OKINAWA_DOCK_VIEWBOX;
-    }
-    viewBoxByRegion.set(regionId, view);
-  } else if (!viewBoxByRegion.has("national")) {
-    // 全国土地の実測（初回のみ）。以降は 0 0 100 100 系を共有。
-    let minX = Infinity;
-    let minY = Infinity;
-    let maxX = -Infinity;
-    let maxY = -Infinity;
-    svg.querySelectorAll(".map-fills path[data-pref], .map-okinawa-inset path").forEach((path) => {
-      const bounds = elementBoxInSvg(path);
-      if (!bounds) return;
-      minX = Math.min(minX, bounds.minX);
-      minY = Math.min(minY, bounds.minY);
-      maxX = Math.max(maxX, bounds.maxX);
-      maxY = Math.max(maxY, bounds.maxY);
-    });
-    if (Number.isFinite(minX) && maxX - minX > 4 && maxY - minY > 4) {
-      const pad = 1.8;
-      view = `${minX - pad} ${minY - pad} ${maxX - minX + pad * 2} ${maxY - minY + pad * 2}`;
-    }
-    viewBoxByRegion.set("national", view);
   } else {
-    view = viewBoxByRegion.get("national");
+    const keep = new Set(focusPrefsFor(regionId));
+    // 中部は西の隣接（中国・四国・九州北部）も枠に入れ、灰色の陸地が見えるようにする
+    if (regionId === "chubu") {
+      for (const id of [...SCREEN_FOCUS_PREFS.chugoku, ...SCREEN_FOCUS_PREFS.shikoku, "40", "41", "43"]) {
+        keep.add(id);
+      }
+    }
+    svg.querySelectorAll(".map-fills [data-pref]").forEach((el) => {
+      if (el.closest(".map-fills-cover")) return;
+      const pref = el.getAttribute("data-pref");
+      if (!pref || !keep.has(pref)) return;
+      addBox(el);
+    });
   }
 
+  if (!Number.isFinite(minX) || maxX - minX < 4 || maxY - minY < 4) {
+    // 沖縄inset の transform 後おおよその枠（全国ドックと同系統）。
+    const fallback = isNational(regionId)
+      ? "-2 -1.5 104.5 103"
+      : regionId === "okinawa"
+        ? OKINAWA_DOCK_VIEWBOX
+        : "0 0 100 100";
+    svg.setAttribute("viewBox", fallback);
+    if (pinsSvg) pinsSvg.setAttribute("viewBox", fallback);
+    viewBoxByRegion.set(regionId, fallback);
+    return;
+  }
+  const pad = isNational(regionId)
+    ? 1.8
+    : regionId === "okinawa"
+      ? 1.2
+      : regionId === "kyushu"
+        ? 1.1
+        : regionId === "chubu"
+          ? 2.4
+          : regionId === "tohoku"
+          ? 3.2
+          : 1.5;
+  // 中部は枠を西・南へ広げ、中国・四国・九州の灰色陸地を見せる（本州全体には広げない）
+  const padL = regionId === "chubu" ? 16 : pad;
+  const padB = regionId === "chubu" ? 8 : pad;
+  const view = `${minX - padL} ${minY - pad} ${maxX - minX + pad + padL} ${maxY - minY + pad + padB}`;
   svg.setAttribute("viewBox", view);
   if (pinsSvg) pinsSvg.setAttribute("viewBox", view);
+  viewBoxByRegion.set(regionId, view);
 }
-
-/**
- * 対象地方の都道府県 bbox から、地図レイヤー用の scale / x% / y% を求める。
- * viewBox は全国のまま。フォーカス地方がステージに収まる倍率を採用する。
- */
-export function computeFocusMapTransform(svg, regionId, {
-  margin = 0.2,
-  minScale = 0.45,
-  maxScale = MAP_SCALE_MAX
-} = {}) {
-  regionId = canonicalRegion(regionId);
-  if (!svg || isNational(regionId) || regionId === "okinawa") {
-    return { scale: 1, x: 0, y: 0, rotate: 0, gen: MAP_LAYOUT_GEN };
-  }
-
-  const vb = (svg.getAttribute("viewBox") || NATIONAL_MAP_VIEWBOX).trim().split(/[\s,]+/).map(Number);
-  const vx = vb[0];
-  const vy = vb[1];
-  const vw = vb[2] || 100;
-  const vh = vb[3] || 100;
-  const focus = new Set(focusPrefsFor(regionId));
-  let minX = Infinity;
-  let minY = Infinity;
-  let maxX = -Infinity;
-  let maxY = -Infinity;
-  svg.querySelectorAll(".map-fills path[data-pref]").forEach((path) => {
-    if (path.closest(".map-fills-cover")) return;
-    const pref = path.getAttribute("data-pref");
-    if (!pref || !focus.has(pref)) return;
-    const bounds = elementBoxInSvg(path);
-    if (!bounds) return;
-    if (!pathInFitCore(regionId, bounds)) return;
-    minX = Math.min(minX, bounds.minX);
-    minY = Math.min(minY, bounds.minY);
-    maxX = Math.max(maxX, bounds.maxX);
-    maxY = Math.max(maxY, bounds.maxY);
-  });
-  if (!Number.isFinite(minX) || maxX <= minX || maxY <= minY) {
-    return regionalFallbackTransform(regionId);
-  }
-
-  const focusW = (maxX - minX) * (1 + margin * 2);
-  const focusH = (maxY - minY) * (1 + margin * 2);
-  let scale = Math.min(vw / focusW, vh / focusH);
-  if (!Number.isFinite(scale) || scale <= 0) scale = 1;
-  scale = Math.min(maxScale, Math.max(minScale, scale));
-
-  const cx = (minX + maxX) / 2;
-  const cy = (minY + maxY) / 2;
-  const nx = (cx - vx) / vw;
-  const ny = (cy - vy) / vh;
-  const x = scale * 100 * (0.5 - nx);
-  const y = scale * 100 * (0.48 - ny);
-  if (scale < 1.25) return regionalFallbackTransform(regionId);
-  return {
-    scale: Math.round(scale * 1000) / 1000,
-    x: Math.round(Math.max(-MAP_SHIFT_MAX, Math.min(MAP_SHIFT_MAX, x)) * 100) / 100,
-    y: Math.round(Math.max(-MAP_SHIFT_MAX, Math.min(MAP_SHIFT_MAX, y)) * 100) / 100,
-    rotate: 0,
-    gen: MAP_LAYOUT_GEN
-  };
-}
-
-const REGION_FALLBACK_TRANSFORM = {
-  hokkaido: { scale: 1.95, x: -64, y: 64 },
-  tohoku: { scale: 2.4, x: -46, y: 15 },
-  kanto: { scale: 4.8, x: -66, y: -65 },
-  chubu: { scale: 2.4, x: -7, y: -31 },
-  kinki: { scale: 4.7, x: 40, y: -106 },
-  chugoku: { scale: 4.2, x: 96, y: -88 },
-  shikoku: { scale: 5.1, x: 104, y: -148 },
-  kyushu: { scale: 2.7, x: 100, y: -97 }
-};
-
-export function regionalFallbackTransform(regionId) {
-  const fallback = REGION_FALLBACK_TRANSFORM[canonicalRegion(regionId)];
-  if (!fallback) return { scale: 1, x: 0, y: 0, rotate: 0, gen: MAP_LAYOUT_GEN };
-  return { ...fallback, rotate: 0, gen: MAP_LAYOUT_GEN };
-}
-
-/** 保存済み map 変換が現行座標系として妥当か。 */
-export { isValidMapTransform, MAP_LAYOUT_GEN, MAP_SCALE_MAX, MAP_SHIFT_MAX } from "./map-layout.js?v=pref412";
 
 function applyScreenFocus(svg, regionId) {
   const prefs = focusPrefsFor(regionId);
@@ -435,7 +389,6 @@ function applyScreenFocus(svg, regionId) {
     const wantFocus = focusSet.has(id);
     el.classList.toggle("map-as-focus", wantFocus);
     el.classList.toggle("map-as-dim", !wantFocus);
-    el.removeAttribute("display");
   });
 }
 
@@ -449,10 +402,19 @@ function paintNeighborLand(svg, regionId = "") {
   if (!svg) return;
   regionId = canonicalRegion(regionId);
   const national = isNational(regionId);
+  if (national) {
+    // 全国は CSS の地方色を使う。灰色で上書きしない。
+    svg.querySelectorAll("[data-pref]").forEach((el) => {
+      el.classList.remove("map-as-dim", "map-as-focus");
+      el.removeAttribute("fill");
+      el.style.removeProperty("fill");
+      el.style.removeProperty("stroke");
+      el.style.removeProperty("stroke-width");
+    });
+    return;
+  }
   const focusPrefs = new Set(focusPrefsFor(regionId));
-  // メイン地方は緑、周辺はグレー（REGION 強調 ≠ 周辺を消す）
   const focusFill = "#76c85a";
-  const dimFill = "#d0d5db";
   const focusStroke = national
     ? `stroke: none !important;`
     : `stroke: #ffffff !important;
@@ -471,9 +433,10 @@ function paintNeighborLand(svg, regionId = "") {
     }
     .map-fills.map-dim > path,
     .map-fills .map-as-dim {
-      fill: ${dimFill} !important;
+      fill: #b4b8bf !important;
       fill-rule: nonzero !important;
-      stroke: none !important;
+      stroke: #9aa0a8 !important;
+      stroke-width: 0.08 !important;
     }
   `;
   svg.insertBefore(style, svg.firstChild);
@@ -492,16 +455,19 @@ function paintNeighborLand(svg, regionId = "") {
       el.style.removeProperty("vector-effect");
     }
   };
-  const nodes = svg.querySelectorAll(".map-fills.map-dim path, .map-fills .map-as-dim");
+  const nodes = svg.querySelectorAll(".map-fills [data-pref]");
   for (const el of nodes) {
     if (el.closest(".map-borders, .map-borders-inner, .map-borders-coast, .map-fills-cover")) continue;
     const pref = el.getAttribute("data-pref");
-    if (pref && focusPrefs.has(pref)) continue;
-    el.setAttribute("fill", "#d0d5db");
+    if (!pref || focusPrefs.has(pref)) continue;
+    el.classList.add("map-as-dim");
+    el.classList.remove("map-as-focus");
+    el.setAttribute("fill", "#b4b8bf");
     el.setAttribute("fill-rule", "nonzero");
-    el.style.setProperty("fill", "#d0d5db", "important");
+    el.style.setProperty("fill", "#b4b8bf", "important");
     el.style.setProperty("fill-rule", "nonzero", "important");
-    el.style.setProperty("stroke", "none", "important");
+    el.style.setProperty("stroke", "#9aa0a8", "important");
+    el.style.setProperty("stroke-width", "0.08", "important");
   }
   const focus = svg.querySelectorAll(".map-fills.map-focus path, .map-fills .map-as-focus");
   for (const el of focus) {
@@ -703,17 +669,17 @@ export function estimateCardSizePct(viewportOrRegion, regionId = "national") {
 /** 箱同士が被らない位置。ピンは観測地点のまま。 */
 const CARD_SLOTS = {
   national: {
-    sapporo: { x: 86, y: 14 },
-    naha: { x: 13, y: 28 },
-    niigata: { x: 64, y: 26 },
-    sendai: { x: 88, y: 40 },
-    hiroshima: { x: 13, y: 54 },
-    nagoya: { x: 46, y: 50 },
-    tokyo: { x: 88, y: 60 },
-    fukuoka: { x: 8, y: 74 },
-    osaka: { x: 40, y: 74 },
-    kanazawa: { x: 34, y: 40 },
-    kochi: { x: 30, y: 63 }
+    sapporo: { x: 95.0564, y: 11.4879 },
+    sendai: { x: 81.3, y: 33.7 },
+    niigata: { x: 46.4509, y: 31.1949 },
+    kanazawa: { x: 29.2319, y: 38.3736 },
+    tokyo: { x: 73.1388, y: 57.01 },
+    nagoya: { x: 55.3398, y: 74.4348 },
+    osaka: { x: 38.5, y: 74.3957 },
+    hiroshima: { x: 11.0776, y: 44.2893 },
+    fukuoka: { x: 0.3, y: 69.8 },
+    kochi: { x: 22.1, y: 74.3957 },
+    naha: { x: -25.3784, y: 36.5659 }
   },
   kinki: {
     kyoto: { x: 22, y: 38 },
@@ -728,24 +694,24 @@ const CARD_SLOTS = {
     utsunomiya: { x: 84, y: 14 },
     maebashi: { x: 16, y: 46 },
     mito: { x: 84, y: 34 },
-    saitama: { x: 16, y: 62 },
+    saitama: { x: 18, y: 62 },
     tokyo: { x: 84, y: 52 },
     yokohama: { x: 40, y: 86 },
     chiba: { x: 84, y: 72 }
   },
   chubu: {
-    niigata: { x: 82, y: 14 },
-    sado: { x: 62, y: 10 },
-    nagano: { x: 78, y: 28 },
-    kofu: { x: 88, y: 46 },
-    toyama: { x: 78, y: 38 },
-    kanazawa: { x: 18, y: 36 },
-    fukui: { x: 16, y: 50 },
-    takayama: { x: 72, y: 52 },
-    gifu: { x: 18, y: 64 },
-    nagoya: { x: 78, y: 66 },
-    shizuoka: { x: 82, y: 80 },
-    tsu: { x: 48, y: 84 }
+    sado: { x: 50, y: 10 },
+    kanazawa: { x: 16, y: 26 },
+    fukui: { x: 16, y: 48 },
+    gifu: { x: 16, y: 70 },
+    niigata: { x: 84, y: 16 },
+    nagano: { x: 84, y: 36 },
+    kofu: { x: 84, y: 56 },
+    shizuoka: { x: 84, y: 76 },
+    toyama: { x: 64, y: 32 },
+    takayama: { x: 64, y: 52 },
+    nagoya: { x: 66, y: 72 },
+    tsu: { x: 40, y: 78 }
   },
   kyushu: {
     fukuoka: { x: 64, y: 16 },
@@ -764,8 +730,8 @@ const CARD_SLOTS = {
     yamagata: { x: 18, y: 50 },
     sendai: { x: 80, y: 56 },
     aizuwakamatsu: { x: 18, y: 66 },
-    fukushima: { x: 24, y: 80 },
-    iwaki: { x: 78, y: 78 }
+    fukushima: { x: 24, y: 74.3957 },
+    iwaki: { x: 78, y: 74.3957 }
   },
   shikoku: {
     matsuyama: { x: 16, y: 42 },
@@ -774,17 +740,17 @@ const CARD_SLOTS = {
     kochi: { x: 48, y: 82 }
   },
   hokkaido: {
-    wakkanai: { x: 28, y: 10 },
-    abashiri: { x: 80, y: 12 },
-    kitami: { x: 58, y: 18 },
-    asahikawa: { x: 46, y: 28 },
-    nemuro: { x: 88, y: 30 },
-    otaru: { x: 12, y: 44 },
-    sapporo: { x: 30, y: 54 },
-    obihiro: { x: 62, y: 44 },
-    kushiro: { x: 82, y: 46 },
-    muroran: { x: 38, y: 66 },
-    hakodate: { x: 16, y: 82 }
+    wakkanai: { x: 53.3623, y: 11.2331 },
+    kitami: { x: 66.0435, y: 28.1772 },
+    asahikawa: { x: 54.9855, y: 33.926 },
+    abashiri: { x: 74.855, y: 33.6425 },
+    otaru: { x: 25.0435, y: 43.6135 },
+    sapporo: { x: 42.3752, y: 39.0563 },
+    muroran: { x: 43.8696, y: 64.5829 },
+    hakodate: { x: 20.4203, y: 74.2669 },
+    obihiro: { x: 55.7681, y: 71.3108 },
+    kushiro: { x: 68.4492, y: 73.182 },
+    nemuro: { x: 79.9565, y: 69.1626 }
   },
   chugoku: {
     matsue: { x: 48, y: 24 },
@@ -801,99 +767,8 @@ const CARD_SLOTS = {
   }
 };
 
-const CARD_SLOTS_POP = {
-  national: {
-    sapporo: { x: 86, y: 13 },
-    naha: { x: 13, y: 28 },
-    niigata: { x: 66, y: 26 },
-    sendai: { x: 88, y: 40 },
-    hiroshima: { x: 12, y: 52 },
-    nagoya: { x: 46, y: 50 },
-    tokyo: { x: 88, y: 60 },
-    fukuoka: { x: 8, y: 74 },
-    osaka: { x: 38, y: 76 },
-    kanazawa: { x: 34, y: 40 },
-    kochi: { x: 28, y: 63 }
-  },
-  kanto: {
-    utsunomiya: { x: 80, y: 16 },
-    maebashi: { x: 18, y: 52 },
-    mito: { x: 80, y: 36 },
-    saitama: { x: 18, y: 66 },
-    tokyo: { x: 80, y: 54 },
-    yokohama: { x: 46, y: 86 },
-    chiba: { x: 80, y: 72 }
-  },
-  tohoku: {
-    aomori: { x: 70, y: 12 },
-    akita: { x: 18, y: 28 },
-    miyakoIwate: { x: 84, y: 28 },
-    morioka: { x: 78, y: 42 },
-    yamagata: { x: 18, y: 50 },
-    sendai: { x: 80, y: 56 },
-    aizuwakamatsu: { x: 18, y: 66 },
-    fukushima: { x: 24, y: 80 },
-    iwaki: { x: 78, y: 78 }
-  },
-  hokkaido: {
-    wakkanai: { x: 28, y: 10 },
-    abashiri: { x: 80, y: 12 },
-    kitami: { x: 58, y: 18 },
-    asahikawa: { x: 46, y: 28 },
-    nemuro: { x: 88, y: 30 },
-    otaru: { x: 12, y: 44 },
-    sapporo: { x: 30, y: 54 },
-    obihiro: { x: 62, y: 44 },
-    kushiro: { x: 82, y: 46 },
-    muroran: { x: 38, y: 66 },
-    hakodate: { x: 16, y: 82 }
-  },
-  chubu: {
-    niigata: { x: 82, y: 14 },
-    sado: { x: 62, y: 10 },
-    nagano: { x: 78, y: 28 },
-    kofu: { x: 88, y: 46 },
-    toyama: { x: 78, y: 38 },
-    kanazawa: { x: 18, y: 36 },
-    fukui: { x: 16, y: 50 },
-    takayama: { x: 72, y: 52 },
-    gifu: { x: 18, y: 64 },
-    nagoya: { x: 78, y: 66 },
-    shizuoka: { x: 82, y: 80 },
-    tsu: { x: 48, y: 84 }
-  },
-  kinki: {
-    otsu: { x: 78, y: 16 },
-    kyoto: { x: 18, y: 28 },
-    kobe: { x: 14, y: 46 },
-    osaka: { x: 16, y: 64 },
-    nara: { x: 82, y: 52 },
-    wakayama: { x: 18, y: 84 },
-    tsu: { x: 84, y: 78 }
-  },
-  chugoku: {
-    tottori: { x: 82, y: 14 },
-    matsue: { x: 48, y: 16 },
-    okayama: { x: 84, y: 48 },
-    hiroshima: { x: 36, y: 72 },
-    yamaguchi: { x: 14, y: 72 }
-  },
-  shikoku: {
-    takamatsu: { x: 80, y: 16 },
-    matsuyama: { x: 14, y: 40 },
-    tokushima: { x: 84, y: 54 },
-    kochi: { x: 48, y: 82 }
-  },
-  kyushu: {
-    fukuoka: { x: 66, y: 14 },
-    saga: { x: 14, y: 32 },
-    oita: { x: 84, y: 26 },
-    nagasaki: { x: 14, y: 50 },
-    kumamoto: { x: 84, y: 48 },
-    miyazaki: { x: 84, y: 70 },
-    kagoshima: { x: 16, y: 74 }
-  }
-};
+/** 降水も天気と同じ親スロット（地域地図の子）。 */
+const CARD_SLOTS_POP = CARD_SLOTS;
 
 /**
  * 箱は観測地点�E�緯度経度のピン�E��E上へ置く。重なるときだけ少しずらす、E
@@ -917,12 +792,13 @@ export function placeCardsAroundMap(items, cardSize, regionId = "national", vari
   const placed = items.map((item) => {
     const pin = coreToStage(item.pinX, item.pinY);
     const nudge = stationNudge(item, regionId, halfW, halfH);
-    const preset = slots[regionId]?.[item.cityId] || CARD_SLOTS[regionId]?.[item.cityId];
+    const regionSlot = slots[regionId]?.[item.cityId] || CARD_SLOTS[regionId]?.[item.cityId];
+    const citySlot = Number.isFinite(Number(item.cardX)) && Number.isFinite(Number(item.cardY))
+      ? { x: Number(item.cardX), y: Number(item.cardY) }
+      : null;
+    const preset = regionSlot || citySlot;
     const slot = preset
-      ? {
-          x: clamp(preset.x, leftSafe, rightSafe),
-          y: clamp(preset.y, topSafe, bottomSafe)
-        }
+      ? { x: Number(preset.x), y: Number(preset.y) }
       : fitBesidePin(pin, nudge, halfW, topSafe, bottomSafe);
     const offMap = pin.x < -4 || pin.x > 104 || pin.y < -4 || pin.y > 104;
     return {
@@ -1039,6 +915,32 @@ function keepNearStation(placed, maxDist, halfW, topSafe, bottomSafe) {
     }
     item.x = clamp(item.x, halfW, 100 - halfW);
     item.y = clamp(item.y, topSafe, bottomSafe);
+  }
+}
+
+export function evenRowGaps(placed, cardW, cardH, bounds = {}) {
+  const minGap = cardW + 1.8;
+  const yTol = Math.max(cardH * 0.4, 6);
+  const left = bounds.left ?? 0;
+  const right = bounds.right ?? 100;
+  const used = new Set();
+  const sorted = [...placed].sort((a, b) => a.x - b.x);
+  for (const seed of sorted) {
+    if (used.has(seed.cityId)) continue;
+    const row = sorted.filter((item) => !used.has(item.cityId) && Math.abs(item.y - seed.y) <= yTol);
+    if (row.length < 2) continue;
+    const span = row[row.length - 1].x - row[0].x;
+    if (span > 58) continue;
+    const midY = row.reduce((sum, item) => sum + item.y, 0) / row.length;
+    const need = minGap * (row.length - 1);
+    const midX = (row[0].x + row[row.length - 1].x) / 2;
+    let start = midX - need / 2;
+    start = clamp(start, left, right - need);
+    row.forEach((item, index) => {
+      item.x = clamp(start + index * minGap, left, right);
+      item.y = midY;
+      used.add(item.cityId);
+    });
   }
 }
 

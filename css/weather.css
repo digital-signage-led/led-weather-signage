@@ -1,7 +1,8 @@
 ﻿.map-stage {
-  position: relative;
-  width: 100%;
-  height: 100%;
+  position: absolute;
+  inset: 0 0 var(--footer-height) 0;
+  width: auto;
+  height: auto;
   background: var(--bg-sea);
   overflow: hidden;
   display: flex;
@@ -63,22 +64,48 @@ html.is-edit .map-cards {
   width: calc(100% * var(--map-scale, 1) * var(--map-fit, 1));
   height: calc(100% * var(--map-scale, 1) * var(--map-fit, 1));
   left: calc(50% - 50% * var(--map-scale, 1) * var(--map-fit, 1) + var(--map-x, 0%));
-  top: calc(50% - 50% * var(--map-scale, 1) * var(--map-fit, 1) + var(--map-y, 0%));
+  top: calc(50% - 50% * var(--map-scale, 1) * var(--map-fit, 1) + var(--map-y, 0%) - var(--map-lift, 0%));
   transform: none;
   transform-origin: 50% 50%;
   overflow: visible;
 }
 
-/* 全国共通 SVG + transform で地方へ寄る（地方別 --map-fit 特例は廃止） */
-.led-screen {
-  --map-fit: 1;
+/* 蜈ｱ騾・japan.svg + 蟇ｾ雎｡蝨ｰ譁ｹ縺ｸ縺ｮ蟇・ｊ・医き繝ｼ繝牙・縺ｮ菴咏區縺ｯ contain 蛛ｴ縺ｧ遒ｺ菫晢ｼ・*/
+.led-screen[data-region="national"] {
+  --map-fit: 0.96;
 }
 
-.led-screen.is-map-pending .map-geo,
-.led-screen.is-map-pending .map-cards,
-.led-screen.is-map-pending .map-leaders,
-.led-screen.is-map-pending .map-pins {
-  visibility: hidden;
+.led-screen[data-region="kyushu"] {
+  --map-fit: 1.08;
+}
+
+.led-screen[data-region="kinki"] {
+  --map-fit: 0.96;
+}
+
+/* 東北は縦長で右端が切れやすいので縮小して全体を収める */
+.led-screen[data-region="tohoku"] {
+  --map-fit: 0.82;
+}
+
+.led-screen[data-region="kanto"],
+.led-screen[data-region="chugoku"],
+.led-screen[data-region="shikoku"] {
+  --map-fit: 0.98;
+}
+
+/* 中部は縦長（佐渡〜津）。縮小して南端を帯の上に収める */
+.led-screen[data-region="chubu"] {
+  --map-fit: 0.7;
+  --map-lift: 3%;
+}
+
+.led-screen[data-region="hokkaido"] {
+  --map-fit: 1.14;
+}
+
+.led-screen[data-region="okinawa"] {
+  --map-fit: 0.94;
 }
 
 .led-screen.is-map-rotated .map-geo {
@@ -161,7 +188,7 @@ html.is-edit .map-cards {
 .led-screen:not([data-region="national"]) .map-svg .map-fills.map-dim > path,
 .led-screen:not([data-region="national"]) .map-svg .map-fills-cover.map-dim path,
 .led-screen:not([data-region="national"]) .map-svg .map-fills .map-as-dim {
-  fill: var(--map-neighbor, #d0d5db) !important;
+  fill: var(--map-neighbor, #b4b8bf) !important;
   fill-rule: nonzero !important;
   stroke: none !important;
 }
@@ -174,48 +201,60 @@ html.is-edit .map-cards {
   fill-rule: evenodd;
 }
 
+.led-screen[data-region="national"] .map-svg .map-fills path[data-pref] {
+  fill: var(--map-land, #76c85a) !important;
+}
+
 .led-screen[data-region="national"] .map-svg .map-fills [data-region="HOKKAIDO"],
+.led-screen[data-region="national"] .map-svg .map-fills [data-region="HOKKAIDO"] path,
 .led-screen[data-region="national"] .map-svg .map-fills-cover [data-region="HOKKAIDO"] {
-  fill: var(--map-hokkaido);
+  fill: var(--map-hokkaido) !important;
 }
 
 .led-screen[data-region="national"] .map-svg .map-fills [data-region="TOHOKU"],
+.led-screen[data-region="national"] .map-svg .map-fills [data-region="TOHOKU"] path,
 .led-screen[data-region="national"] .map-svg .map-fills-cover [data-region="TOHOKU"] {
-  fill: var(--map-tohoku);
+  fill: var(--map-tohoku) !important;
 }
 
 .led-screen[data-region="national"] .map-svg .map-fills [data-region="KANTO"],
+.led-screen[data-region="national"] .map-svg .map-fills [data-region="KANTO"] path,
 .led-screen[data-region="national"] .map-svg .map-fills-cover [data-region="KANTO"] {
-  fill: var(--map-kanto);
+  fill: var(--map-kanto) !important;
 }
 
 .led-screen[data-region="national"] .map-svg .map-fills [data-region="CHUBU"],
+.led-screen[data-region="national"] .map-svg .map-fills [data-region="CHUBU"] path,
 .led-screen[data-region="national"] .map-svg .map-fills-cover [data-region="CHUBU"] {
-  fill: var(--map-chubu);
+  fill: var(--map-chubu) !important;
 }
 
 .led-screen[data-region="national"] .map-svg .map-fills [data-region="KINKI"],
+.led-screen[data-region="national"] .map-svg .map-fills [data-region="KINKI"] path,
 .led-screen[data-region="national"] .map-svg .map-fills-cover [data-region="KINKI"] {
-  fill: var(--map-kinki);
+  fill: var(--map-kinki) !important;
 }
 
 .led-screen[data-region="national"] .map-svg .map-fills [data-region="CHUGOKU"],
+.led-screen[data-region="national"] .map-svg .map-fills [data-region="CHUGOKU"] path,
 .led-screen[data-region="national"] .map-svg .map-fills-cover [data-region="CHUGOKU"] {
-  fill: var(--map-chugoku);
+  fill: var(--map-chugoku) !important;
 }
 
 .led-screen[data-region="national"] .map-svg .map-fills [data-region="SHIKOKU"],
+.led-screen[data-region="national"] .map-svg .map-fills [data-region="SHIKOKU"] path,
 .led-screen[data-region="national"] .map-svg .map-fills-cover [data-region="SHIKOKU"] {
-  fill: var(--map-shikoku);
+  fill: var(--map-shikoku) !important;
 }
 
 .led-screen[data-region="national"] .map-svg .map-fills [data-region="KYUSHU"],
+.led-screen[data-region="national"] .map-svg .map-fills [data-region="KYUSHU"] path,
 .led-screen[data-region="national"] .map-svg .map-fills-cover [data-region="KYUSHU"] {
-  fill: var(--map-kyushu);
+  fill: var(--map-kyushu) !important;
 }
 
 .map-svg .map-fills.map-dim {
-  fill: var(--map-neighbor, #d0d5db);
+  fill: var(--map-neighbor, #b4b8bf);
 }
 
 .map-svg .map-borders,
@@ -391,15 +430,20 @@ html.is-edit .city-card.is-dragging {
   border: none;
   border-radius: var(--box-radius);
   padding: var(--card-pad-y, 4px) var(--card-pad-x, 6px);
-  display: grid;
-  grid-template-rows: minmax(0, 1fr) auto auto;
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-items: center;
-  gap: 2px;
+  justify-content: flex-start;
+  gap: var(--card-gap, 4px);
   line-height: 1.05;
   box-shadow: 0 1px 2px rgba(8, 28, 64, 0.12);
   white-space: nowrap;
   overflow: hidden;
+}
+
+.city-card:not(.is-pop) .city-card-name,
+.city-card:not(.is-pop) .city-card-row {
+  overflow: visible;
 }
 
 .city-card.is-dragging {
@@ -426,51 +470,63 @@ html.is-edit .city-card.is-dragging {
 }
 
 .city-card-row {
-  display: block;
-  grid-row: 3;
-  min-width: 0;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  flex: 0 0 auto;
   width: 100%;
+  min-width: 0;
   max-width: 100%;
+  gap: 0.15em;
   overflow: hidden;
-  padding-bottom: 0;
-  text-align: center;
+  padding-bottom: 0.08em;
+  position: relative;
+  z-index: 2;
+  box-sizing: border-box;
 }
 
 .city-card-name {
   display: block;
-  grid-row: 2;
   width: 100%;
   box-sizing: border-box;
-  font-size: var(--font-city);
+  font-size: min(var(--font-city), calc((var(--card-box-w) - 10px) / 4.3));
   font-weight: 900;
   color: var(--text-primary);
+  flex: 0 0 auto;
   min-width: 0;
   max-width: 100%;
   overflow: hidden;
   text-overflow: clip;
   white-space: nowrap;
   text-align: center;
-  line-height: 1.05;
+  line-height: 1.15;
+  letter-spacing: -0.04em;
+  position: relative;
+  z-index: 2;
 }
 
 .city-card-temps {
   font-family: var(--font-main);
-  font-size: var(--font-city);
-  font-weight: 900;
-  letter-spacing: 0;
-  display: block;
-  min-width: 0;
+  font-size: var(--font-temp);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  flex: 0 0 auto;
   width: 100%;
+  min-width: 0;
   max-width: 100%;
-  overflow: hidden;
+  min-height: 1em;
+  gap: 0.04em;
+  overflow: visible;
   line-height: 1.05;
   box-sizing: border-box;
-  text-align: center;
 }
 
 .temp-max { color: var(--temp-max); }
 .temp-min { color: var(--temp-min); }
-.temp-slash { color: #7aa0b8; font-size: 1em; }
+.temp-slash { color: #7aa0b8; font-size: 0.78em; }
 
 .city-card-temps b,
 .forecast-temps b {
@@ -488,14 +544,21 @@ html.is-edit .city-card.is-dragging {
 }
 
 .city-card-temps small {
-  font-size: 1em;
+  font-size: 0.55em;
   margin-left: 0.02em;
 }
 
-/* 繧｢繧､繧ｳ繝ｳ縺ｨ蜷後§菴咲ｽｮ縺ｮ繝懊ャ繧ｯ繧ｹ縲ゅΞ繧､繝､繝ｼ縺ｯ繧｢繧､繧ｳ繝ｳ縺御ｸ翫ゆｸ九・蝨ｰ蜷阪・豌玲ｸｩ繧呈ｽｰ縺輔↑縺・*/
+.city-card:not(.is-pop) {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) max-content max-content;
+  gap: 1px;
+  justify-content: center;
+  align-items: stretch;
+  justify-items: center;
+}
+
 .city-card-icon-stack {
   position: relative;
-  grid-row: 1;
   width: 100%;
   height: 100%;
   max-width: 100%;
@@ -503,6 +566,7 @@ html.is-edit .city-card.is-dragging {
   display: flex;
   min-width: 0;
   min-height: 0;
+  align-self: stretch;
   align-items: center;
   justify-content: center;
   overflow: hidden;
@@ -534,13 +598,20 @@ html.is-edit .city-card.is-dragging {
   height: 100%;
   max-width: 100%;
   max-height: 100%;
-  display: inline-flex;
+  display: flex;
   flex: 1 1 auto;
   min-width: 0;
   min-height: 0;
   align-items: center;
   justify-content: center;
   overflow: hidden;
+}
+
+.city-card .city-card-icon-stack .wx-icon svg {
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
 }
 
 .city-card.is-pop .city-card-icon-stack {
@@ -566,15 +637,11 @@ html.is-edit .city-card.is-dragging {
 }
 
 .city-card.is-pop {
-  grid-template-rows: auto minmax(0, 1fr);
+  flex-direction: column;
   align-items: center;
-  justify-items: center;
+  justify-content: space-evenly;
   gap: var(--card-gap, 4px);
   padding: var(--card-pad-y, 4px) var(--card-pad-x, 6px);
-}
-
-.city-card.is-pop .city-card-name {
-  grid-row: 1;
 }
 
 .city-card-pops {
@@ -583,7 +650,7 @@ html.is-edit .city-card.is-dragging {
   align-items: stretch;
   justify-content: center;
   flex-wrap: nowrap;
-  grid-row: 2;
+  flex: 1 1 auto;
   width: 100%;
   min-width: 0;
   min-height: 0;
@@ -645,23 +712,8 @@ html.is-edit .city-card.is-dragging {
 html.is-edit .precip-tod-legend.is-editable {
   pointer-events: auto;
   cursor: grab;
-  touch-action: none;
-  user-select: none;
-  -webkit-user-select: none;
   outline: 1px dashed #3d7eff;
   outline-offset: 2px;
-}
-
-html.is-edit .precip-tod-legend.is-fixed {
-  outline-color: #2a9d5c;
-}
-
-html:not(.is-edit) .precip-tod-legend {
-  pointer-events: none !important;
-  cursor: default !important;
-  outline: none !important;
-  touch-action: none;
-  user-select: none;
 }
 
 html.is-edit .precip-tod-legend.is-dragging {
@@ -734,20 +786,7 @@ html.is-edit .precip-tod-legend.is-dragging {
 
 .led-screen[data-content="weekly_weather"],
 .led-screen[data-content="weekly_precip"] {
-  background: var(--bg-sea);
-}
-
-.background-decoration {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  overflow: hidden;
-}
-
-.led-screen[data-content="weekly_weather"] .background-decoration,
-.led-screen[data-content="weekly_precip"] .background-decoration {
-  background: url("../img/weekly-frame.svg?v=pref389") no-repeat center / 100% 100%;
+  background: var(--bg-sea) url("../img/weekly-frame.svg?v=pref387") no-repeat center / 100% 100%;
 }
 
 .led-screen[data-content="weekly_weather"] .led-header,
@@ -772,16 +811,15 @@ html.is-edit .precip-tod-legend.is-dragging {
   --forecast-city-bg: #cfe6f5;
   --forecast-cell-bg: rgba(255, 255, 255, 0.94);
   position: absolute;
-  left: var(--safe-margin-x, 40px);
-  right: var(--safe-margin-x, 40px);
-  width: auto;
-  max-width: calc(100% - (var(--safe-margin-x, 40px) * 2));
+  left: var(--footer-gap);
+  right: var(--footer-gap);
   top: calc(
     var(--footer-gap)
-    + (var(--header-title-height) + var(--header-height) + 10px) * var(--title-scale, 1)
-    + 12px
+    + (var(--header-title-height) + var(--header-height) + clamp(4px, calc(var(--header-height) * 0.18), 10px))
+      * var(--title-scale, 1)
+    + 20px
   );
-  bottom: calc(var(--footer-height) + var(--safe-margin-bottom, 16px) + 8px);
+  bottom: calc(var(--footer-height) + 14px);
   display: flex;
   flex-direction: column;
   min-width: 0;
@@ -889,44 +927,69 @@ html.is-edit .precip-tod-legend.is-dragging {
   flex-direction: column;
   padding: var(--week-pad-y, 0.08em) var(--week-pad-x, 0.08em);
   background: var(--forecast-cell-bg);
-  overflow: hidden;
 }
 
 .forecast-cell.is-weather {
   display: grid;
-  grid-template-rows: minmax(0, 2.1fr) minmax(0, 0.8fr);
-  align-items: center;
+  grid-template-rows: minmax(0, 1fr) var(--week-temp-row, 1.5em);
+  align-items: stretch;
   justify-items: center;
   gap: 0;
-  padding: var(--week-pad-y, 0.02em) var(--week-pad-x, 0.02em);
-}
-
-.forecast-cell.is-weather .wx-icon {
-  grid-row: 1;
-  width: min(var(--icon-week, 88px), 100%);
-  height: min(var(--icon-week, 88px), 100%);
-  max-width: 100%;
-  max-height: 100%;
-  flex: unset;
-  min-width: 0;
-  min-height: 0;
+  padding: 2px 2px 3px;
   overflow: hidden;
 }
 
-.forecast-cell.is-weather .wx-icon svg {
+.week-icon-slot {
+  min-width: 0;
+  min-height: 0;
   width: 100%;
   height: 100%;
-  max-width: 100%;
-  max-height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.forecast-grid .forecast-cell.is-weather .wx-icon {
+  box-sizing: border-box;
+  width: auto;
+  height: 84%;
+  max-width: 88%;
+  max-height: 84%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  aspect-ratio: 90 / 60;
+}
+
+.forecast-grid .forecast-cell.is-weather .wx-icon svg,
+.forecast-grid .forecast-cell.is-weather svg.jma-icon {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  flex: 0 0 auto;
+  object-fit: contain;
+}
+
+.forecast-table[data-rows="5"] .forecast-cell.is-weather .wx-icon {
+  height: 88%;
+  max-width: 92%;
+  max-height: 88%;
 }
 
 .forecast-cell.is-weather .forecast-temps {
-  grid-row: 2;
-  align-self: center;
+  flex: 0 0 var(--week-temp-row, 1.5em);
+  height: var(--week-temp-row, 1.5em);
+  line-height: 1.15;
   font-size: var(--font-week-temp, var(--font-temp));
-  font-weight: 800;
-  flex: unset;
-  max-height: 100%;
+  max-width: 100%;
+  overflow: visible;
+  position: relative;
+  z-index: 2;
 }
 
 .forecast-temps {

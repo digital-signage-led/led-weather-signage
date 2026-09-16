@@ -23,8 +23,8 @@ export const DEFAULT_STUDIO_VIEWPORT = { ...FIXED_DESIGN };
 
 const MIN_W = 160;
 const MIN_H = 120;
-const MAX_W = 7680;
-const MAX_H = 4320;
+const MAX_W = 1920;
+const MAX_H = 1080;
 
 export function clamp(n, min, max) {
   return Math.min(max, Math.max(min, n));
@@ -98,10 +98,7 @@ export function cardBoxPx(vp, variant = "weather") {
 /** 画面chrome（ヘッダー／フッター／地図カード）用トークン */
 export function tokensFor(vp, content = { id: "today_weather", name: "今日の天気", card: "weather" }) {
   const s = vp.basis || vp.minSide;
-  const contentId = content.id || "today_weather";
-  const weatherTitle = contentId === "today_weather" || contentId === "tomorrow_weather";
-  const precipTitle = contentId === "today_precip" || contentId === "tomorrow_precip";
-  const longTitle = precipTitle || (!weatherTitle && `${content.name || ""}`.length >= 6);
+  const longTitle = `${content.name || ""}`.length >= 6;
   const titleRatio = longTitle ? 0.046 : 0.06;
   const popTight = content.card === "pop";
   const box = cardBoxPx(vp, content.kind === "map" ? "weather" : (popTight ? "pop" : "weather"));
@@ -115,16 +112,9 @@ export function tokensFor(vp, content = { id: "today_weather", name: "今日の�
     "--font-title": `${fluidPx(s, 0.039 * chrome, 10, Math.round(34 * chrome))}px`,
     "--font-main-title": `${fluidPx(s, titleRatio * chrome, 12, Math.round(48 * chrome))}px`,
     "--font-stamp": `${fluidPx(s, 0.025 * chrome, 9, Math.round(22 * chrome))}px`,
-    "--font-note": `${fluidPx(s, 0.032 * chrome, 11, 36)}px`,
-    "--font-ticker-fixed": `${fluidPx(s, 0.026 * chrome, 10, 28)}px`,
-    "--safe-margin-x": `${Math.max(24, Math.round(vp.width * 0.02084))}px`,
-    "--safe-margin-top": `${Math.max(16, Math.round(vp.height * 0.0297))}px`,
-    "--safe-margin-bottom": `${Math.max(12, Math.round(vp.height * 0.0222))}px`,
-    "--font-city": `${Math.min(
-      fluidPx(s, popTight ? 0.056 : 0.05, 13, 38),
-      Math.max(13, Math.round(box.w * 0.2))
-    )}px`,
-    "--font-temp": `${fluidPx(s, popTight ? 0.056 : 0.074, 14, 64)}px`,
+    "--font-note": `${fluidPx(s, 0.049 * chrome, 11, Math.round(40 * chrome))}px`,
+    "--font-city": `${Math.min(fluidPx(s, popTight ? 0.056 : 0.062, 12, 52), Math.round(box.w * 0.22))}px`,
+    "--font-temp": `${Math.min(fluidPx(s, popTight ? 0.056 : 0.074, 14, 64), Math.round(box.w * 0.2))}px`,
     "--font-pop": `${fluidPx(s, 0.04, 11, 32)}px`,
     "--font-pop-lg": `${fluidPx(s, popTight ? 0.068 : 0.058, 14, 56)}px`,
     "--font-week": `${fluidPx(s, 0.028, 10, 24)}px`,
@@ -134,10 +124,12 @@ export function tokensFor(vp, content = { id: "today_weather", name: "今日の�
     "--footer-height": `${fluidPx(s, 0.146 * chrome, 32, Math.round(100 * chrome))}px`,
     "--footer-gap": `${fluidPx(s, 0.035 * chrome, 6, Math.round(28 * chrome))}px`,
     "--safe-inset": `${fluidPx(s, 0.056, 8, 36)}px`,
-    "--icon-card": `${Math.min(box.w, Math.round(box.h * 0.62))}px`,
+    "--icon-card": popTight
+      ? `${fluidPx(s, 0.05, 16, 72)}px`
+      : `${Math.max(40, box.h - Math.round(box.w * 0.28 * 1.15) - Math.round(box.w * 0.2 * 1.05) - fluidPx(s, 0.014, 3, 12) * 2 - fluidPx(s, 0.01, 2, 8) * 2)}px`,
     "--icon-note": `${fluidPx(s, 0.076 * chrome, 14, Math.round(56 * chrome))}px`,
-    "--card-pad-y": `${fluidPx(s, 0.008, 2, 6)}px`,
-    "--card-pad-x": `${fluidPx(s, 0.01, 2, 8)}px`,
+    "--card-pad-y": `${fluidPx(s, 0.014, 3, 12)}px`,
+    "--card-pad-x": `${fluidPx(s, 0.016, 3, 14)}px`,
     "--card-gap": `${fluidPx(s, 0.01, 2, 8)}px`,
     "--card-meta-gap": `${fluidPx(s, 0.006, 2, 6)}px`,
     "--box-radius": `${fluidPx(s, 0.01, 2, 8)}px`,
@@ -172,15 +164,16 @@ function precipLegendTokens(vp) {
  */
 export function tableLayoutTokens(vp, rows = 5, titleScale = 1) {
   const rowCount = Math.max(1, Number(rows) || 5);
-  const scale = clamp(Number(titleScale) || 1, 0.6, 2.8);
   const s = vp.basis || vp.minSide;
   const chrome = 1.5;
   const gap = Math.max(1, fluidPx(s, 0.005, 1, 4));
-  const pad = fluidPx(s, 0.035 * chrome, 6, Math.round(28 * chrome));
+  const pad = fluidPx(s, 0.035, 6, 28);
   const headerTitle = fluidPx(s, 0.092 * chrome, 24, Math.round(58 * chrome));
   const headerSub = fluidPx(s, 0.062 * chrome, 16, Math.round(40 * chrome));
   const footer = fluidPx(s, 0.146 * chrome, 32, Math.round(100 * chrome));
-  const topChrome = pad + (headerTitle + headerSub + 10) * scale + 12;
+  const scale = clamp(Number(titleScale) || 1, 0.6, 2.8);
+  const stackGap = clamp(headerSub * 0.18, 4, 10);
+  const topChrome = pad + (headerTitle + headerSub + stackGap) * scale + 20;
   const bottomChrome = footer + 14;
   const availW = Math.max(80, vp.width - pad * 2);
   const availH = Math.max(80, vp.height - topChrome - bottomChrome);
@@ -193,6 +186,12 @@ export function tableLayoutTokens(vp, rows = 5, titleScale = 1) {
   const cellH = (innerH - dayHeadH - gap * rowCount) / rowCount;
   const cellMin = Math.max(8, Math.min(cellW, cellH));
   const radius = clamp(Math.round(cellMin * 0.12), 4, 14);
+  const tempFont = Math.round(clamp(cellH * (rowCount >= 5 ? 0.24 : 0.28), 12, 44));
+  const padY = Math.round(clamp(cellH * 0.05, 1, 8));
+  const padX = Math.round(clamp(cellW * 0.05, 1, 10));
+  const tempRow = Math.round(tempFont * 1.2);
+  const iconH = Math.max(28, cellH - tempRow - padY * 2);
+  const iconW = Math.max(28, cellW - padX * 2);
 
   return {
     "--forecast-rows": String(rowCount),
@@ -208,10 +207,11 @@ export function tableLayoutTokens(vp, rows = 5, titleScale = 1) {
     "--font-week-label": `${Math.round(clamp(cellMin * 0.26, 11, 24))}px`,
     "--font-week-value": `${Math.round(clamp(cellMin * 0.55, 14, 52))}px`,
     "--font-week-unit": `${Math.round(clamp(cellMin * 0.22, 10, 18))}px`,
-    "--font-week-temp": `${Math.round(clamp(cellH * 0.28, 14, 46))}px`,
-    "--icon-week": `${Math.round(clamp(Math.min(cellH * 0.84, cellW * 0.98), 24, 112))}px`,
-    "--week-pad-y": `${Math.round(clamp(cellH * 0.03, 1, 6))}px`,
-    "--week-pad-x": `${Math.round(clamp(cellW * 0.03, 1, 8))}px`
+    "--font-week-temp": `${tempFont}px`,
+    "--week-temp-row": `${tempRow}px`,
+    "--icon-week": `${Math.round(clamp(Math.min(iconW, iconH * 1.5), 36, 280))}px`,
+    "--week-pad-y": `${padY}px`,
+    "--week-pad-x": `${padX}px`
   };
 }
 
@@ -279,11 +279,12 @@ export function applyViewport(element, vp, regionId, content, options = {}) {
 /** 週間表描画後に、行数に応じたセル基準トークンを適用 */
 export function applyTableLayout(element, vp, rows) {
   if (!element) return;
-  const titleScale = Math.max(0.6, Number.parseFloat(getComputedStyle(element).getPropertyValue("--title-scale")) || 1);
+  const titleScale = Number.parseFloat(getComputedStyle(element).getPropertyValue("--title-scale")) || 1;
   const tokens = tableLayoutTokens(vp, rows, titleScale);
   for (const [key, value] of Object.entries(tokens)) {
     element.style.setProperty(key, value);
   }
+  element.style.setProperty("--weather-icon-size", tokens["--icon-week"]);
 }
 
 export function cityLimit(vp, regionId, content, available = 12) {
@@ -291,17 +292,7 @@ export function cityLimit(vp, regionId, content, available = 12) {
   if (content.kind === "table") {
     return Math.min(5, wanted);
   }
-  const region = String(regionId || "").toLowerCase();
-  if (region === "hokkaido" || region === "tohoku" || region === "chubu") {
-    return wanted;
-  }
-  const cardW = vp.width * (content.card === "pop" ? 0.22 : 0.2);
-  const cardH = vp.height * (content.card === "pop" ? 0.12 : 0.11);
-  const budget = Math.round((vp.area * 0.4) / Math.max(1, cardW * cardH));
-  let max = clamp(budget, 4, wanted);
-  if (vp.shape === "portrait" || vp.size === "tiny") max = Math.min(max, Math.max(4, wanted - 2));
-  if (vp.shape === "ultrawide") max = Math.min(wanted, max + 1);
-  return Math.min(wanted, max);
+  return wanted;
 }
 
 /** 週間表ページ分割。余り1件だけになる分割を避ける */
@@ -344,27 +335,6 @@ export function cardSizePct(vp, regionId, variant = "weather") {
   };
 }
 
-function measureTitleTextPx(el, text) {
-  if (!el) return 0;
-  const cs = getComputedStyle(el);
-  const ctx = (measureTitleTextPx.ctx ||= document.createElement("canvas").getContext("2d"));
-  ctx.font = `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
-  return ctx.measureText(text || "").width;
-}
-
-function titleFitProbes(screen, fallback) {
-  const id = screen?.dataset?.content || "";
-  const raw = String(fallback || "").trim();
-  const region = raw.includes("｜") ? raw.slice(0, raw.indexOf("｜")) : "";
-  if (region && (id === "today_weather" || id === "tomorrow_weather")) {
-    return [`${region}｜今日の天気`, `${region}｜明日の天気`];
-  }
-  if (region && (id === "today_precip" || id === "tomorrow_precip")) {
-    return [`${region}｜今日の降水確率`, `${region}｜明日の降水確率`];
-  }
-  return [raw];
-}
-
 /** タイトルと更新日時をバーの高さに合わせ、画面幅に収まるまで小さくする */
 export function fitTitleBars(screen) {
   if (!screen) return;
@@ -373,114 +343,63 @@ export function fitTitleBars(screen) {
   const reserve = points ? points.getBoundingClientRect().width + gap : 0;
   const titleScale = Math.max(0.6, Number.parseFloat(getComputedStyle(screen).getPropertyValue("--title-scale")) || 1);
   const maxW = Math.max(72, (screen.clientWidth - gap - reserve) / titleScale);
-  const cssTitleH = parseFloat(getComputedStyle(screen).getPropertyValue("--header-title-height")) || 40;
-  const cssSubH = parseFloat(getComputedStyle(screen).getPropertyValue("--header-height")) || 28;
 
-  const shrinkToFit = (el, bar, ratio, cssHeight, probes = null) => {
+  const shrinkToFit = (el, bar, ratio) => {
     if (!el || !bar) return;
     el.style.fontSize = "";
-    // CSS 未適用時の clientHeight 暴走を防ぐ
-    const height = Math.min(bar.clientHeight || cssHeight, cssHeight * 1.25, 120);
-    const cap = el.classList.contains("led-stamp") ? 0.78 : 0.5;
-    let size = Math.max(10, Math.min(height * ratio, cssHeight * cap));
+    const height = bar.clientHeight || 32;
+    let size = Math.max(10, height * ratio);
     el.style.fontSize = `${size}px`;
     let steps = 0;
-    const extras = Math.max(0, bar.scrollWidth - el.scrollWidth);
-    const overflows = () => {
-      const textW = probes?.length
-        ? Math.max(...probes.map((text) => measureTitleTextPx(el, text)))
-        : el.scrollWidth;
-      return extras + textW > maxW + 0.5
-        || extras + textW > bar.clientWidth + 0.5
-        || el.scrollWidth > el.clientWidth + 0.5
-        || el.scrollHeight > bar.clientHeight + 0.5;
-    };
-    while (steps < 48 && size > 10 && overflows()) {
+    while (
+      steps < 48
+      && size > 10
+      && (bar.scrollWidth > maxW + 0.5 || bar.scrollWidth > bar.clientWidth + 0.5 || el.scrollWidth > el.clientWidth + 0.5)
+    ) {
       size -= 0.5;
       el.style.fontSize = `${size}px`;
       steps += 1;
     }
   };
 
-  const titleEl = screen.querySelector(".led-title");
   shrinkToFit(
-    titleEl,
+    screen.querySelector(".led-title"),
     screen.querySelector(".led-title-bar:not(.led-sub-bar)"),
-    0.5,
-    cssTitleH,
-    titleFitProbes(screen, titleEl?.textContent)
+    0.62
   );
   shrinkToFit(
     screen.querySelector(".led-stamp"),
     screen.querySelector(".led-sub-bar"),
-    0.5,
-    cssSubH
+    0.5
   );
-}
-
-function layoutWidth(el) {
-  if (!el) return 0;
-  const prevOverflow = el.style.overflow;
-  const prevWidth = el.style.width;
-  const prevFlex = el.style.flex;
-  el.style.overflow = "visible";
-  el.style.width = "max-content";
-  el.style.flex = "0 0 auto";
-  const width = Math.max(el.scrollWidth, el.offsetWidth);
-  el.style.overflow = prevOverflow;
-  el.style.width = prevWidth;
-  el.style.flex = prevFlex;
-  return width;
 }
 
 export function fitCityCardNames(root = document) {
   const cards = root.querySelectorAll?.(".city-card") || [];
   cards.forEach((card) => {
-    const name = card.querySelector(".city-card-name");
-    const temps = card.querySelector(".city-card-temps");
-    const icon = card.querySelector(".city-card-icon-stack");
-    const cs = getComputedStyle(card);
-    const padX = (parseFloat(cs.paddingLeft) || 0) + (parseFloat(cs.paddingRight) || 0);
-    const padY = (parseFloat(cs.paddingTop) || 0) + (parseFloat(cs.paddingBottom) || 0);
-    const gap = parseFloat(cs.rowGap || cs.gap) || 4;
-    const innerW = Math.max(20, card.clientWidth - padX);
-    const innerH = Math.max(20, card.clientHeight - padY);
-    if (name) name.style.fontSize = "";
-    if (temps) temps.style.fontSize = "";
-    if (icon) {
-      icon.style.width = "";
-      icon.style.height = "";
-      icon.style.maxHeight = "";
-      icon.style.flex = "";
-    }
-    let size = parseFloat(getComputedStyle(name || temps || card).fontSize) || 16;
-    const applyText = () => {
-      const px = `${size}px`;
-      if (name) name.style.fontSize = px;
-      if (temps) temps.style.fontSize = px;
+    const pad = (() => {
+      const s = getComputedStyle(card);
+      return (parseFloat(s.paddingLeft) || 0) + (parseFloat(s.paddingRight) || 0);
+    })();
+    const maxW = Math.max(16, card.clientWidth - pad);
+    const shrink = (el) => {
+      if (!el) return;
+      el.style.fontSize = "";
+      el.style.letterSpacing = "";
+      const chars = Math.max(1, (el.textContent || "").trim().length);
+      let size = Math.min(parseFloat(getComputedStyle(el).fontSize) || 16, maxW / (chars * 0.98));
+      el.style.fontSize = `${size}px`;
+      let steps = 0;
+      while (steps < 48 && size > 8 && el.scrollWidth > el.clientWidth + 0.5) {
+        size -= 0.5;
+        el.style.fontSize = `${size}px`;
+        steps += 1;
+      }
+      if (el.scrollWidth > el.clientWidth + 0.5) {
+        el.style.letterSpacing = "-0.06em";
+      }
     };
-    const textHeight = () => {
-      let h = 0;
-      if (name) h += name.offsetHeight;
-      if (temps) h += temps.offsetHeight;
-      if (name && temps) h += gap;
-      return h;
-    };
-    applyText();
-    let steps = 0;
-    while (steps < 64 && size > 8) {
-      const textH = textHeight();
-      const tooWide = layoutWidth(name) > innerW + 0.5 || layoutWidth(temps) > innerW + 0.5;
-      const iconMin = icon ? Math.min(innerW, innerH * 0.42) : 0;
-      const tooTall = icon
-        ? textH + gap + iconMin > innerH + 1
-        : textH > innerH + 1;
-      if (!tooWide && !tooTall) break;
-      size -= 0.5;
-      applyText();
-      steps += 1;
-    }
-    applyText();
+    shrink(card.querySelector(".city-card-name"));
   });
 }
 

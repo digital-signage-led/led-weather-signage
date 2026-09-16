@@ -1,12 +1,12 @@
-﻿/**
+/**
  * Weekly weather / precip table renderer.
  */
 
-import { canonicalContent } from "./catalog.js?v=pref368";
-import { loadIcon } from "./map-renderer.js?v=pref368";
-import { weatherTone } from "./weather-renderer.js?v=pref368";
-import { popTone } from "./forecast.js?v=pref368";
-import { jmaLabel } from "./jma-icons.js?v=pref368";
+import { canonicalContent } from "./catalog.js?v=pref387";
+import { loadIcon } from "./map-renderer.js?v=pref387";
+import { weatherTone } from "./weather-renderer.js?v=pref387";
+import { popTone } from "./forecast.js?v=pref387";
+import { isNightHours, jmaLabel } from "./jma-icons.js?v=pref387";
 
 /** 1ページの上限行。ページ都市数がこれ未満ならその数で描く（1行だけは避ける） */
 const TABLE_ROW_MAX = 5;
@@ -45,7 +45,7 @@ export async function renderWeeklyTable(cities, contentId) {
   }
 
   return `
-    <div class="forecast-table" data-content="${contentId}" style="--forecast-rows:${slots}">
+    <div class="forecast-table" data-content="${contentId}" data-rows="${slots}" style="--forecast-rows:${slots}">
       <div class="forecast-grid">
         ${head.join("")}
         ${body.join("")}
@@ -61,10 +61,14 @@ function weekdayClass(label) {
 }
 
 async function renderWeatherCell(day) {
-  const icon = await loadIcon(day.weather, false);
+  const night = Boolean(day.today) && isNightHours();
+  const icon = await loadIcon(day.weather, night);
+  const when = night ? "\u591c" : "\u663c";
   return `
     <div class="forecast-cell is-weather${day.today ? " is-today" : ""}">
-      <span class="wx-icon ${weatherTone(day.weather)}" aria-label="${day.weatherLabel || jmaLabel(day.weather)}">${icon}</span>
+      <span class="week-icon-slot">
+        <span class="wx-icon ${weatherTone(day.weather)}" aria-label="${when} ${day.weatherLabel || jmaLabel(day.weather)}">${icon}</span>
+      </span>
       <span class="forecast-temps">
         <b class="temp-max">${formatTemp(day.tempMax)}</b>
         <span class="temp-slash">/</span>

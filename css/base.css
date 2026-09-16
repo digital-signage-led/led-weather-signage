@@ -9,7 +9,7 @@
   --bg-footer: #08357f;
   --note-accent: #ffd400;
   --map-land: #76c85a;
-  --map-neighbor: #d0d5db;
+  --map-neighbor: #b4b8bf;
   --map-hokkaido: #73c4e6;
   --map-tohoku: #f3d25c;
   --map-kanto: #7ec85a;
@@ -153,64 +153,6 @@ body.is-kiosk #app {
   padding: 0 10px;
 }
 
-.studio-publish {
-  flex: 1 1 100%;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px 16px;
-  padding: 8px 0;
-  border-top: 1px solid #314563;
-}
-
-.studio-edit-target,
-.studio-publish-state {
-  margin: 0;
-  color: #d5deea;
-  font-size: 12px;
-}
-
-.studio-publish-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.studio-publish-confirm,
-.studio-publish-result,
-.studio-publish-history {
-  flex: 1 1 100%;
-  color: #f4f7fb;
-  font-size: 12px;
-}
-
-.studio-url-catalog {
-  flex: 1 1 100%;
-}
-
-.studio-url-catalog button {
-  height: 34px;
-}
-
-.studio-url-table {
-  width: 100%;
-  margin-top: 8px;
-  font-size: 11px;
-  color: #d5deea;
-  border-collapse: collapse;
-}
-
-.studio-url-table th,
-.studio-url-table td {
-  border-bottom: 1px solid #314563;
-  padding: 4px 6px;
-  text-align: left;
-}
-
-.studio-url-table code {
-  font-size: 10px;
-  word-break: break-all;
-}
-
 .studio-bar input[type="number"] {
   min-width: 88px;
   width: 96px;
@@ -316,45 +258,15 @@ body.is-kiosk #app {
 
 .studio-metrics {
   margin-left: auto;
-  font-size: 12px;
-  line-height: 1.45;
+  font-size: 13px;
   color: #7eb8d8;
   font-weight: 800;
   align-self: center;
 }
 
-.studio-layout-share {
-  margin: 0;
-  font-weight: 700;
-}
-
-.studio-legend-tools {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px 8px;
-}
-
-.studio-legend-tools[hidden] {
-  display: none !important;
-}
-
-.studio-legend-heading {
-  font-size: 12px;
-  font-weight: 800;
-  color: #9eb0c8;
-  margin-right: 4px;
-}
-
-.studio-legend-tools button {
-  height: 28px;
-  padding: 0 10px;
-  font-size: 12px;
-}
-
 #preview-stage {
   position: relative;
-  overflow: hidden;
+  overflow: auto;
   min-height: 0;
   height: 100%;
   padding: 16px;
@@ -507,21 +419,16 @@ html.is-edit .led-footer {
   height: var(--header-height);
   min-width: 0;
   gap: 0.3em;
-  padding: 0 calc(var(--header-title-height) * 0.28) 0 max(var(--safe-margin-x, 40px), calc(var(--header-title-height) * 0.16));
+  padding: 0 calc(var(--header-title-height) * 0.28) 0 calc(var(--header-title-height) * 0.16);
   background: var(--bg-header);
   border-radius: 0 var(--box-radius) var(--box-radius) 0;
-  overflow: visible;
+  overflow: hidden;
   box-sizing: border-box;
 }
 
 .led-title-bar:not(.led-sub-bar) {
   height: var(--header-title-height);
   gap: 0.35em;
-  overflow: hidden;
-}
-
-.led-sub-bar {
-  overflow: visible;
 }
 
 .led-title-mark {
@@ -549,6 +456,11 @@ html.is-edit .led-footer {
   max-height: min(3.6em, 36%);
 }
 
+.forecast-cell.is-weather .wx-icon {
+  max-width: none;
+  max-height: none;
+}
+
 .wx-icon svg,
 svg.jma-icon {
   max-width: 100%;
@@ -558,93 +470,69 @@ svg.jma-icon {
 .led-footer {
   left: 0;
   right: 0;
-  bottom: var(--safe-margin-bottom, 16px);
+  bottom: 10px;
   width: auto;
-  max-width: 100%;
+  max-width: none;
   height: var(--footer-height);
-  max-height: var(--footer-height);
   justify-content: stretch;
   padding: 0;
   background: none;
   color: var(--text-inverse);
-  overflow: hidden;
 }
 
-.led-note-bar.ticker,
 .led-note-bar {
   position: relative;
-  display: grid;
-  grid-template-columns:
-    minmax(64px, calc(var(--footer-height) * 1.12))
-    minmax(0, 1fr)
-    minmax(7.2em, 11em);
+  display: flex;
   align-items: stretch;
   width: 100%;
-  max-width: 100%;
+  max-width: none;
   height: 100%;
   min-width: 0;
-  box-sizing: border-box;
-  padding-left: var(--safe-margin-x, 40px);
-  padding-right: var(--safe-margin-x, 40px);
   background: var(--bg-footer);
   border-radius: 0;
   overflow: hidden;
 }
 
-.led-note-bar > * {
-  min-width: 0;
-  box-sizing: border-box;
-}
-
-.led-note-mark,
-.ticker-icon {
+.led-note-mark {
   position: relative;
-  width: auto;
-  max-width: none;
+  flex: 0 0 var(--footer-height);
+  width: var(--footer-height);
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
-  z-index: 1;
+  background: var(--note-accent);
 }
 
-.led-note-arrow {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  fill: var(--note-accent);
-}
-
-/* 黄色矢印上の天気アイコンを囲む円 */
 .led-note-icon-box {
-  position: absolute;
-  left: 10%;
-  top: 50%;
+  position: relative;
   z-index: 1;
   width: calc(var(--footer-height) * 0.78);
   height: calc(var(--footer-height) * 0.78);
   display: grid;
   place-items: center;
-  transform: translateY(-50%);
   box-sizing: border-box;
-  background: rgba(255, 255, 255, 0.92);
+  background: var(--bg-card);
   border: 0;
-  border-radius: 50%;
-  box-shadow: none;
+  border-radius: calc(var(--box-radius) * 1.6);
+  box-shadow: 0 1px 2px rgba(8, 28, 64, 0.12);
   pointer-events: none;
+  overflow: hidden;
 }
 
 .led-note-mark .wx-icon {
   position: relative;
-  left: auto;
-  top: auto;
-  transform: none;
   z-index: 1;
-  width: 78%;
-  height: 62%;
-  max-width: 100%;
-  max-height: 100%;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+}
+
+.led-note-mark .wx-icon svg {
+  width: 148%;
+  height: 148%;
+  max-width: none;
+  max-height: none;
 }
 
 .led-note-mark .wx-icon.is-sunny,
@@ -660,7 +548,6 @@ svg.jma-icon {
   flex: 0 0 auto;
   min-width: 0;
   width: max-content;
-  max-height: 100%;
   font-size: calc(var(--header-title-height) * 0.5);
   font-weight: 900;
   line-height: 1;
@@ -675,74 +562,37 @@ svg.jma-icon {
   font-weight: 900;
   line-height: 1;
   white-space: nowrap;
-  overflow: visible;
+  overflow: hidden;
   color: var(--text-title);
-  transform: scale(calc(var(--stamp-scale, var(--title-scale, 1)) / var(--title-scale, 1)));
-  transform-origin: left center;
 }
 
-.led-note,
-.ticker-message {
-  position: relative;
-  z-index: 0;
+.led-note {
+  flex: 1 1 0;
   min-width: 0;
-  max-width: 100%;
-  display: block;
+  display: flex;
+  align-items: center;
   height: 100%;
-  padding: 0 10px 0 12px;
-  font-size: var(--font-note, 28px);
+  padding: 0 12px 0 0.25em;
+  font-size: var(--font-note);
   font-weight: 800;
   line-height: var(--footer-height);
   overflow: hidden;
-  isolation: isolate;
   text-align: left;
-  color: var(--text-inverse, #fff);
 }
 
-.ticker-current,
-.ticker-temp,
-.ticker-wind {
-  position: relative;
-  z-index: 2;
+.led-note-track {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 0.45em;
-  font-size: var(--font-ticker-fixed, var(--font-note));
-  font-weight: 800;
-  line-height: 1.15;
-  white-space: nowrap;
-  overflow: hidden;
-  color: var(--text-inverse);
-  background: var(--bg-footer);
-}
-
-.ticker-current {
-  border-left: 1px solid rgba(255, 255, 255, 0.22);
-  padding-left: 0.7em;
-}
-
-.led-note-track,
-.ticker-track {
-  position: absolute;
-  left: 0;
-  top: 0;
-  display: inline-flex;
   align-items: center;
   height: 100%;
   width: max-content;
-  max-width: none;
-  white-space: nowrap;
-  color: var(--text-inverse, #fff);
-  transform: none;
-  animation: led-note-marquee var(--ticker-duration, 16s) linear infinite;
+  will-change: transform;
+  animation: led-note-ticker var(--ticker-duration, 16s) linear infinite;
 }
 
 .led-note-item {
   flex: 0 0 auto;
   white-space: nowrap;
   line-height: var(--footer-height);
-  padding-right: 4em;
 }
 
 .led-note-item .note-icon {
@@ -766,31 +616,26 @@ svg.jma-icon {
 }
 
 @keyframes led-note-ticker {
-  0% { transform: translate3d(var(--ticker-start, 100%), 0, 0); }
-  100% { transform: translate3d(calc(var(--ticker-start, 100%) - var(--ticker-distance, 50%)), 0, 0); }
+  0%, 10% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(calc(-1 * var(--ticker-distance, 50%)), 0, 0); }
 }
 
-@keyframes led-note-marquee {
-  from { transform: translateX(0); }
-  to { transform: translateX(-50%); }
-}
-
-.jma-credit,
-.ticker-source {
-  position: relative;
+.jma-credit {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
   z-index: 2;
   display: flex;
   align-items: center;
-  justify-content: flex-end;
   margin: 0;
-  padding: 0 0 0 0.6em;
+  padding: 0 0.85em 0 1.6em;
   font-size: var(--font-attr, 11px);
   font-weight: 400;
   letter-spacing: 0.02em;
   line-height: 1.2;
-  color: rgba(255, 255, 255, 0.72);
+  color: rgba(255, 255, 255, 0.62);
   white-space: nowrap;
-  overflow: hidden;
   background: var(--bg-footer);
   border: none;
   pointer-events: none;

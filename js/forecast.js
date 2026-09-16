@@ -3,8 +3,8 @@
  * HTML は JMA API を呼ばない。雪など季節外れのコードを循環させない。
  */
 
-import { canonicalContent, getContent as contentFromCatalog } from "./catalog.js?v=pref368";
-import { isWetWeather, jmaLabel, jmaTone, resolveWeatherCode } from "./jma-icons.js?v=pref368";
+import { canonicalContent, getContent as contentFromCatalog } from "./catalog.js?v=pref387";
+import { isWetWeather, jmaLabel, jmaTone, resolveWeatherCode } from "./jma-icons.js?v=pref387";
 
 const WEEKDAYS = ["日", "月", "火", "水", "木", "金", "土"];
 
@@ -74,11 +74,7 @@ export function expandForecast(point, updatedAt) {
   return { tomorrow, periods, tomorrowPeriods, weekly };
 }
 
-export const TICKER_FIXED = {
-  current: "現在の気象状況",
-  temp: "🌡 28.4℃",
-  wind: "北西 6.2m/s"
-};
+const LOCAL_CONDITIONS = "現在の気象状況　🌡 28.4℃　💨 北西 6.2m/s　☔ 1時間雨量 0.4mm";
 
 /** ノート用。絵文字の風・傘アイコンを線画へ差し替える */
 export function formatNoteHtml(text) {
@@ -115,17 +111,16 @@ export function noteFor(contentId, regionId, weather, points) {
     else if (tone === "is-snow") base = "明日は雪の所があります。";
     else if (tone === "is-rain") base = "明日は雨の所があります。傘をご用意ください。";
     else base = "明日はおおむね穏やかです。";
-  }   else if (content === "weekly_precip") base = "向こう一週間の降水確率と湿度です。";
+  } else if (content === "weekly_precip") base = "向こう一週間の降水確率と湿度です。";
   else base = "向こう一週間の天気です。";
   return appendLocalConditions(base);
 }
 
 function appendLocalConditions(text) {
-  const local = `${TICKER_FIXED.current}　${TICKER_FIXED.temp}　💨 ${TICKER_FIXED.wind}`;
   const base = String(text || "").trim();
-  if (!base) return local;
-  if (base.includes(TICKER_FIXED.current)) return base;
-  return `${base}　　${local}`;
+  if (!base) return LOCAL_CONDITIONS;
+  if (base.includes("現在の気象状況")) return base;
+  return `${base}　　${LOCAL_CONDITIONS}`;
 }
 
 function strongestTone(points) {

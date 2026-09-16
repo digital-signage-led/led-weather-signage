@@ -1,0 +1,12 @@
+---
+description: 確定した地図配置をAI更新で戻さない
+alwaysApply: true
+---
+
+# 配置の上書き禁止
+
+- ユーザーが「確定」した地域の `layout-defaults.json` カード座標・地図（scale/rotate/x/y）・`CARD_SLOTS`・`locations.json` の `cardX`/`cardY` は、その地域の再配置を頼まれたとき以外は書き換えない。
+- 全国は確定済み。`LOCKED_REGIONS` の national は同梱座標が正。全国の座標を「直す」「揃える」してはいけない。
+- 別地域の修正のために `layout-defaults.json` の全体 `rev` を上げない。他地方の viewport を触らない。
+- キャッシュ `?v=pref` を上げるときも、配置ファイルを一緒に書き換えない。
+---

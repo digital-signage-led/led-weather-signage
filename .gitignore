@@ -1,13 +1,11 @@
-.env
-.env.*
 tmp-preview/
+tmp-region-maps/
 tmp-*.png
 node_modules/
 src/maps/source/
 *.zip
 
 tests/current/
-tests/.chrome-safe/
 tmp-head-*
 tmp-*.js
 tmp-*.html

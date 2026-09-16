@@ -24,19 +24,10 @@ const REGION_IDS = ["national", "hokkaido", "tohoku", "kanto", "chubu", "kinki",
 const CONTENT_IDS = ["today_weather", "today_precip", "tomorrow_weather", "tomorrow_precip", "weekly_weather", "weekly_precip"];
 const HIDDEN_NAMES = ["関東甲信", "北陸", "東海", "九州北部", "九州南部・奄美", "九州南部"];
 
-const existing = contents.filter((item) => CONTENT_IDS.includes(item.id));
 assert(regions.length === 10, `region count ${regions.length}`);
-assert(existing.length === 6, `existing content count ${existing.length}`);
-assert(contents.length === 19, `official content count ${contents.length}`);
-assert(canonicalContent("rain_nowcast") === "rain_forecast", "alias rain_nowcast → rain_forecast");
-assert(canonicalContent("hourly_weather") === "hourly_forecast", "alias hourly_weather → hourly_forecast");
-assert(canonicalContent("temperature_24h") === "amedas_temperature", "alias temperature_24h");
-assert(!contents.some((item) => item.id === "rain_nowcast"), "rain_nowcast hidden from catalog list");
-assert(contents.find((item) => item.id === "rain_forecast")?.name === "雨の予報", "rain_forecast name");
-assert(contents.find((item) => item.id === "hourly_forecast")?.name === "時間別予報", "hourly_forecast name");
-assert(contents.slice(0, 6).every((item, i) => item.id === CONTENT_IDS[i]), "existing six content ids stay first and unchanged");
+assert(contents.length === 6, `content count ${contents.length}`);
 assert(regions.every((item) => REGION_IDS.includes(item.id)), "region ids match spec");
-assert(existing.every((item) => CONTENT_IDS.includes(item.id)), "content ids match spec");
+assert(contents.every((item) => CONTENT_IDS.includes(item.id)), "content ids match spec");
 assert(regions.every((item) => !HIDDEN_NAMES.includes(item.name)), "retired names are not in the region master");
 assert(contents.some((item) => item.id === "tomorrow_precip"), "tomorrow_precip exists");
 
@@ -54,7 +45,7 @@ assert(canonicalContent("weekly-pop") === "weekly_precip", "alias weekly-pop");
 
 let patterns = 0;
 for (const region of regions) {
-  for (const content of existing) {
+  for (const content of contents) {
     patterns += 1;
     const title = `${region.name}｜${content.name}`;
     assert(title.includes("｜"), `title ${title}`);

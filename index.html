@@ -2,56 +2,10 @@
 <html lang="ja" class="is-boot">
 <head>
   <meta charset="UTF-8">
-  <script>
-    (function () {
-      var path = location.pathname;
-      if (!/\.html$/i.test(path) && !path.endsWith("/")) {
-        location.replace(path + "/" + location.search + location.hash);
-        return;
-      }
-      var dir = /\.html$/i.test(path)
-        ? path.replace(/[^/]+$/, "")
-        : (path.endsWith("/") ? path : path + "/");
-      var base = document.createElement("base");
-      base.href = dir;
-      document.head.appendChild(base);
-      window.__LED_BASE__ = dir;
-      window.__LED_APPLY_STUDIO__ = function () {
-        var q = new URLSearchParams(location.search);
-        var flag = String(q.get("studio") || "").toLowerCase();
-        var hop = false;
-        try { hop = sessionStorage.getItem("led-force-studio") === "1"; } catch (e) {}
-        var on = window.__LED_FORCE_STUDIO__ === true
-          || flag === "1" || flag === "true" || flag === "yes"
-          || /studio\.html$/i.test(location.pathname)
-          || location.hash === "#studio"
-          || hop;
-        if (!on) return false;
-        window.__LED_FORCE_STUDIO__ = true;
-        if (hop) {
-          try { sessionStorage.removeItem("led-force-studio"); } catch (e) {}
-        }
-        var root = document.getElementById("studio-root");
-        var app = document.getElementById("app");
-        if (root) root.hidden = false;
-        if (app) app.hidden = true;
-        document.documentElement.classList.add("is-studio");
-        document.documentElement.classList.remove("is-kiosk", "is-boot");
-        if (document.body) {
-          document.body.classList.add("is-studio");
-          document.body.classList.remove("is-kiosk");
-        }
-        return true;
-      };
-      window.setTimeout(function () {
-        document.documentElement.classList.remove("is-boot");
-      }, 2000);
-    })();
-  </script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="color-scheme" content="light">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <title>今日の天気</title>
+  <title>天気予報サイネージ</title>
   <style>
     html.is-boot { background: #c8ebff; }
     html.is-boot .led-screen { visibility: hidden; }
@@ -69,8 +23,6 @@
       letter-spacing: 0.06em;
     }
     html.is-boot #boot-status { display: flex; }
-  </style>
-  <style>
     /* 外部CSS未読込時の最低限フォールバック（本定義は weather.css） */
     .forecast-grid {
       display: grid;
@@ -90,15 +42,14 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/base.css?v=pref428">
-  <link rel="stylesheet" href="css/weather.css?v=pref417">
-  <link rel="stylesheet" href="css/v1-content.css?v=pref434">
+  <link rel="stylesheet" href="css/base.css?v=pref424">
+  <link rel="stylesheet" href="css/weather.css?v=pref439">
 </head>
 <body>
   <p id="boot-status" role="status">読込中</p>
   <div id="studio-root" hidden>
     <form class="studio-bar" id="studio-bar">
-      <label id="region-field">
+      <label>
         地域
         <select id="region-select" name="region"></select>
       </label>
@@ -106,62 +57,6 @@
         コンテンツ
         <select id="content-select" name="content"></select>
       </label>
-      <label id="pref-field" hidden>
-        都道府県
-        <select id="pref-select" name="pref"></select>
-      </label>
-      <label id="station-field" hidden>
-        観測地点
-        <select id="station-select" name="station"></select>
-      </label>
-      <div class="studio-url-catalog">
-        <button type="button" id="url-catalog-toggle">公開URL一覧</button>
-        <div id="url-catalog-panel" hidden></div>
-      </div>
-      <section class="studio-publish" id="studio-publish">
-        <div class="studio-edit-target">
-          <p>編集対象：<strong id="edit-target-name">—</strong></p>
-          <p>現在の編集範囲：<strong id="edit-scope-label">コンテンツ全体</strong></p>
-          <fieldset>
-            <legend>適用範囲</legend>
-            <label><input type="radio" name="edit-scope" value="content" checked> 全体</label>
-            <label><input type="radio" name="edit-scope" value="prefecture"> 都道府県</label>
-            <label><input type="radio" name="edit-scope" value="station"> 観測地点</label>
-          </fieldset>
-        </div>
-        <div id="v1-display-tools" hidden>
-          <label>タイトル大きさ <span id="v1-title-value">1.00</span>
-            <input id="v1-title-scale" type="range" min="0.6" max="2.8" step="0.02" value="1">
-          </label>
-          <label>更新時刻の大きさ <span id="v1-stamp-value">1.00</span>
-            <input id="v1-stamp-scale" type="range" min="0.6" max="2.8" step="0.02" value="1">
-          </label>
-          <label>グラフ大きさ <span id="v1-graph-scale-value">1.00</span>
-            <input id="v1-graph-scale" type="range" min="0.5" max="2.5" step="0.02" value="1">
-          </label>
-          <label>グラフ 左右
-            <input id="v1-graph-x" type="range" min="-280" max="280" step="1" value="0">
-          </label>
-          <label>グラフ 上下
-            <input id="v1-graph-y" type="range" min="-280" max="280" step="1" value="0">
-          </label>
-          <label><input type="checkbox" id="v1-ticker-enabled" checked> Ticker</label>
-        </div>
-        <p class="studio-publish-state">状態：<strong id="publish-state">未変更</strong>　本番：<span id="publish-live-ver">—</span>　下書き：<span id="publish-draft-ver">なし</span></p>
-        <p class="studio-publish-state">影響URL：<strong id="publish-impact">—</strong></p>
-        <label>管理者パスワード
-          <input id="publish-secret" type="password" autocomplete="current-password">
-        </label>
-        <div class="studio-publish-actions">
-          <button type="button" id="display-discard">変更を破棄</button>
-          <button type="button" id="display-revert">公開済みに戻す</button>
-          <button type="button" id="display-draft">下書き保存</button>
-          <button type="button" id="display-publish">本番公開</button>
-        </div>
-        <div id="publish-confirm" class="studio-publish-confirm" hidden></div>
-        <pre id="publish-result" class="studio-publish-result" hidden></pre>
-        <div id="publish-history" class="studio-publish-history"></div>
-      </section>
       <label>
         幅
         <input id="viewport-width" name="vw" type="number" min="160" max="7680" step="1" value="1920">
@@ -177,12 +72,8 @@
           <input id="title-scale" type="range" min="0.6" max="2.8" step="0.02" value="1">
         </label>
         <label>
-          更新時刻の大きさ <span id="stamp-scale-value">1.00</span>
-          <input id="stamp-scale" type="range" min="0.6" max="2.8" step="0.02" value="1">
-        </label>
-        <label>
           列島 拡大 <span id="map-scale-value">1.00</span>
-          <input id="map-scale" type="range" min="0.4" max="6.5" step="0.02" value="1">
+          <input id="map-scale" type="range" min="0.4" max="3.6" step="0.02" value="1">
         </label>
         <label>
           列島 回転 <span id="map-rotate-value">0°</span>
@@ -190,11 +81,11 @@
         </label>
         <label>
           列島 左右
-          <input id="map-x" type="range" min="-280" max="280" step="0.5" value="0">
+          <input id="map-x" type="range" min="-48" max="48" step="0.5" value="0">
         </label>
         <label>
           列島 上下
-          <input id="map-y" type="range" min="-280" max="280" step="0.5" value="0">
+          <input id="map-y" type="range" min="-48" max="48" step="0.5" value="0">
         </label>
         <label>
           ボックス大きさ <span id="card-scale-value">1.00</span>
@@ -205,22 +96,14 @@
           ボックス幅
           <input id="card-width-px" name="cardw" type="number" min="28" max="720" step="1" value="160">
         </label>
-        <div id="legend-tools" class="studio-legend-tools" hidden>
-        <span class="studio-legend-heading">降水凡例 <span id="legend-status">自動配置中</span></span>
-        <button type="button" id="legend-auto">凡例を自動配置</button>
-        <button type="button" id="legend-fix">凡例位置を固定</button>
-        <button type="button" id="legend-unfix">凡例の固定を解除</button>
-        <button type="button" id="legend-reset">凡例位置をリセット</button>
-        <button type="button" id="layout-auto-all">全要素を自動配置</button>
-      </div>
-      <button type="button" id="layout-commit">配置を固定</button>
+        <button type="button" id="layout-commit">配置を固定</button>
         <button type="button" id="layout-reset">配置リセット</button>
       </div>
       <div id="card-tools" class="studio-card-tools" hidden>
         <span class="studio-card-heading">ボックス位置 左右％ / 上下％</span>
         <div id="card-editors"></div>
       </div>
-      <p class="studio-hint">地図はプレビュー上でドラッグで移動、Ctrl＋ホイールで拡大縮小できます（ホイールだけでは上下移動）。「列島」スライダーでも調整できます。白い天気ボックスをドラッグすると位置を変えられます。「配置を固定」で今の配置を保存し、天気更新や再読み込みでもリセットしません。今日の天気⇔明日の天気、今日の降水⇔明日の降水で配置とタイトル大きさを共有します（天気と降水は別）。同じ縦横比なら解像度が違っても配置を共有します。</p>
+      <p class="studio-hint">地図は地域が親です。北海道を動かすと北海道の今日／明日の天気・降水が同じ位置になります。東北・中部などほかの地方も同じです。プレビュー上でドラッグで移動、Ctrl＋ホイールで拡大縮小（ホイールだけでは上下移動）。白い天気ボックスをドラッグすると位置を変えられます。「配置を固定」で保存します。地図・タイトル・ボックスは解像度ごとに別保存です。</p>
       <div class="studio-metrics" id="preview-metrics"></div>
     </form>
     <div id="preview-stage">
@@ -232,7 +115,6 @@
 
   <div id="app">
     <article class="led-screen" id="led-screen">
-      <div class="background-decoration" id="weekly-deco" aria-hidden="true"></div>
       <header class="led-header">
         <div class="led-title-stack">
           <div class="led-title-bar">
@@ -255,43 +137,20 @@
         <div class="map-stage" id="map-stage"></div>
       </div>
       <div class="map-attribution" id="map-attribution"></div>
-      <footer class="led-footer ticker">
-        <div class="led-note-bar ticker">
-          <div class="ticker-icon led-note-mark" aria-hidden="true">
-            <svg class="led-note-arrow" viewBox="0 0 140 80" preserveAspectRatio="none">
-              <path d="M0 0H86L140 40L86 80H0Z"/>
-            </svg>
+      <footer class="led-footer">
+        <div class="led-note-bar">
+          <span class="led-note-mark" aria-hidden="true">
             <span class="led-note-icon-box">
               <span class="wx-icon" id="led-note-icon"></span>
             </span>
-          </div>
-          <div class="ticker-message led-note" id="led-note"></div>
-          <p class="ticker-source jma-credit">出典：<a href="https://www.jma.go.jp/bosai/forecast/">気象庁</a>（jma.go.jp）</p>
+          </span>
+          <div class="led-note" id="led-note"></div>
+          <p class="jma-credit">出典：<a href="https://www.jma.go.jp/bosai/forecast/">気象庁</a>（jma.go.jp）</p>
         </div>
       </footer>
     </article>
     <aside id="debug-overlay" hidden></aside>
   </div>
-  <script>
-    if (typeof window.__LED_APPLY_STUDIO__ === "function") window.__LED_APPLY_STUDIO__();
-  </script>
-  <script type="module">
-    try {
-      await import("./js/app.js?v=pref434");
-    } catch (error) {
-      console.error(error);
-      var status = document.getElementById("boot-status");
-      document.documentElement.classList.remove("is-boot");
-      if (window.__LED_FORCE_STUDIO__) {
-        if (status) {
-          status.style.display = "flex";
-          status.textContent = "管理画面の読込に失敗しました";
-        }
-      } else if (status) {
-        status.style.display = "flex";
-        status.textContent = "読込に失敗しました";
-      }
-    }
-  </script>
+  <script type="module" src="js/app.js?v=pref453"></script>
 </body>
 </html>

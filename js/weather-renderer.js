@@ -2,9 +2,9 @@
  * 天気カードとアイコン描画。気象JSONだけを受け取り、元データAPIには依存しない。
  */
 
-import { loadIcon } from "./map-renderer.js?v=pref368";
-import { popTone } from "./forecast.js?v=pref368";
-import { isNightHours, jmaLabel, jmaRank, jmaTone } from "./jma-icons.js?v=pref368";
+import { loadIcon } from "./map-renderer.js?v=pref387";
+import { popTone } from "./forecast.js?v=pref387";
+import { isNightHours, jmaLabel, jmaRank, jmaTone } from "./jma-icons.js?v=pref387";
 
 export function pickNoteWeather(points) {
   return points.reduce((best, point) => (
@@ -49,12 +49,17 @@ export function renderLeader(position) {
   `;
 }
 
+function formatCardNumber(value) {
+  const n = Number(value);
+  return Number.isFinite(n) ? String(Math.round(n)) : "--";
+}
+
 export async function renderCityCard(point, position, options = {}) {
   const temps = `
         <span class="city-card-temps">
-          <b class="temp-max">${Math.round(point.tempMax)}</b>
+          <b class="temp-max">${formatCardNumber(point.tempMax)}</b><small>℃</small>
           <span class="temp-slash">/</span>
-          <b class="temp-min">${Math.round(point.tempMin)}</b>
+          <b class="temp-min">${formatCardNumber(point.tempMin)}</b><small>℃</small>
         </span>`;
   if (options.layout === "pop") {
     const morning = Number.isFinite(point.morning) ? point.morning : point.pop;
@@ -64,9 +69,9 @@ export async function renderCityCard(point, position, options = {}) {
     <article class="city-card is-pop is-vertical${position.locked ? " is-locked" : ""}" data-city-id="${point.cityId}" style="left:${position.x}%;top:${position.y}%;">
       <span class="city-card-name">${point.cityName}</span>
       <span class="city-card-pops">
-        <span class="pop-slot is-morning ${popTone(morning)}"><b>${Math.round(morning)}</b></span>
-        <span class="pop-slot is-noon ${popTone(noon)}"><b>${Math.round(noon)}</b></span>
-        <span class="pop-slot is-night ${popTone(night)}"><b>${Math.round(night)}</b></span>
+        <span class="pop-slot is-morning ${popTone(morning)}"><b>${formatCardNumber(morning)}</b></span>
+        <span class="pop-slot is-noon ${popTone(noon)}"><b>${formatCardNumber(noon)}</b></span>
+        <span class="pop-slot is-night ${popTone(night)}"><b>${formatCardNumber(night)}</b></span>
       </span>
     </article>`;
   }

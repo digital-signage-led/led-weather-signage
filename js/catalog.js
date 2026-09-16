@@ -3,7 +3,7 @@
  * 表示区分と気象内部区分を分ける。旧IDはエイリアスで受ける。
  */
 
-const DATA_VERSION = "pref434";
+const DATA_VERSION = "pref445";
 
 const REGION_ALIASES = {
   NATIONAL: "national",
@@ -27,17 +27,7 @@ const CONTENT_ALIASES = {
   pop: "today_precip",
   tomorrow: "tomorrow_weather",
   weekly: "weekly_weather",
-  "weekly-pop": "weekly_precip",
-  rain_nowcast: "rain_forecast",
-  hourly_weather: "hourly_forecast",
-  hourly_precip: "hourly_forecast",
-  hourly_temperature: "hourly_forecast",
-  precip_probability_trend: "hourly_forecast",
-  temperature_24h: "amedas_temperature",
-  rainfall_trend: "amedas_rainfall",
-  wind_speed_trend: "amedas_wind",
-  weekly_temperature: "weekly_weather",
-  today_tomorrow_temperature: "today_weather"
+  "weekly-pop": "weekly_precip"
 };
 
 const PROJECTION_KEYS = {
@@ -57,10 +47,9 @@ let regions = [];
 let contents = [];
 
 export async function loadCatalog() {
-  const base = (typeof window !== "undefined" && window.__LED_BASE__) || "";
   const [regionDoc, contentDoc] = await Promise.all([
-    fetch(`${base}data/regions.json?v=${DATA_VERSION}`).then((res) => res.json()),
-    fetch(`${base}data/contents.json?v=${DATA_VERSION}`).then((res) => res.json())
+    fetch(`data/regions.json?v=${DATA_VERSION}`).then((res) => res.json()),
+    fetch(`data/contents.json?v=${DATA_VERSION}`).then((res) => res.json())
   ]);
   regions = regionDoc.regions || [];
   contents = contentDoc.contents || [];
@@ -86,13 +75,7 @@ export function getRegion(id) {
 
 export function getContent(id) {
   const canon = canonicalContent(id);
-  return contents.find((item) => item.id === canon) || contents[0] || {
-    id: canon,
-    name: "今日の天気",
-    location_scope: "region",
-    kind: "map",
-    enabled: true
-  };
+  return contents.find((item) => item.id === canon) || contents[0];
 }
 
 export function listRegions() {
@@ -126,8 +109,7 @@ export function citiesForRegion(cities, region) {
   ));
 }
 
-export function contentTitle(region, content, extra = {}) {
-  if (extra.stationName) return `${extra.stationName}｜${content.name}`;
-  if (extra.prefName) return `${extra.prefName}｜${content.name}`;
-  return `${region.name}｜${content.name}`;
+export function contentTitle(region, content) {
+  const name = content.title || content.name;
+  return `${region.name}｜${name}`;
 }
