@@ -4,8 +4,8 @@
  * 北海道の今日/明日×天気/降水はその子、東北も同様。地方同士では共有しない。
  */
 
-import { canonicalContent, canonicalRegion } from "./catalog.js?v=pref483";
-import { DATA_VERSION } from "./version.js?v=pref483";
+import { canonicalContent, canonicalRegion } from "./catalog.js?v=pref485";
+import { DATA_VERSION } from "./version.js?v=pref485";
 
 const STORAGE_KEY = "led-weather-layout-v7";
 const STORAGE_KEY_LEGACY = "led-weather-layout-v4";
@@ -15,7 +15,7 @@ const CARD_SIZE_KEY_LEGACY_V2 = "led-weather-card-size-v2";
 const TITLE_SCALE_KEY = "led-weather-title-scale-v4";
 const TITLE_SCALE_KEY_LEGACY = "led-weather-title-scale-v2";
 
-/** リポジトリ同梱の完成配置。管理画面の記憶があれば本番URLでもそれを使う。 */
+/** リポジトリ同梱の完成配置。公開URLは同梱を使い、管理画面だけ手元の記憶を使う。 */
 let shippedDefaults = { layouts: {}, cardScales: {}, titleScales: {} };
 
 function isKioskRuntime() {
@@ -264,17 +264,26 @@ export function loadLayout(regionId, contentId = "today_weather", width = 0, hei
     const shared = saved?.sharedMap && (saved.sharedMap.map || Object.keys(saved.sharedMap.cards || {}).length)
       ? saved.sharedMap
       : null;
-    const slice = shared || localSlice || shippedExact || shippedNear;
+    const shippedSlice = shippedExact || shippedNear;
+    const slice = isKioskRuntime()
+      ? (shippedSlice || shared || localSlice)
+      : (shared || localSlice || shippedSlice);
     if (!slice && !saved) return emptyLayout(regionId);
     const entry = layoutEntryFrom(slice || saved || {});
-    const shippedCards = (shippedExact || shippedNear)?.cards || {};
+    const shippedCards = shippedSlice?.cards || {};
     const localCards = (shared?.cards || localSlice?.cards || entry.cards) || {};
     const shippedIds = Object.keys(shippedCards);
     const localIds = Object.keys(localCards);
     const overlap = shippedIds.filter((id) => localCards[id]);
     const localLooksForeign = shippedIds.length > 0 && localIds.length > 0
       && overlap.length === 0;
-    if (localIds.length && !localLooksForeign) {
+    if (isKioskRuntime() && shippedIds.length) {
+      const shippedEntry = layoutEntryFrom(shippedSlice);
+      entry.map = shippedEntry.map;
+      entry.okinawa = shippedEntry.okinawa;
+      entry.precipLegend = shippedEntry.precipLegend;
+      entry.cards = { ...shippedCards };
+    } else if (localIds.length && !localLooksForeign) {
       entry.cards = { ...localCards };
     } else if (shippedIds.length) {
       entry.cards = { ...shippedCards };
@@ -623,7 +632,9 @@ export function loadCardScale(contentId = "today_weather", regionId = "national"
     const all = readCardScaleStore();
     const keys = cardScaleLookupKeys(contentId, regionId, width, height);
     let value;
-    const stores = [all, shippedDefaults.cardScales];
+    const stores = isKioskRuntime()
+      ? [shippedDefaults.cardScales, all]
+      : [all, shippedDefaults.cardScales];
     for (const store of stores) {
       if (Number.isFinite(value) || !store) continue;
       for (const key of keys) {
@@ -735,7 +746,7 @@ export function loadTitleScale(width = 0, height = 0, regionId = "national", con
       mapOnly ? shippedDefaults.titleScales?.[regionKey] : null,
       mapOnly ? shippedDefaults.titleScales?.[vpKey] : null
     ];
-    const order = [...localFirst, ...shippedFirst];
+    const order = isKioskRuntime() ? [...shippedFirst, ...localFirst] : [...localFirst, ...shippedFirst];
     return clamp(
       Number(order.find((value) => value != null) ) || fallback,
       TITLE_SCALE_MIN,
