@@ -5,7 +5,7 @@
  */
 
 import { canonicalContent, canonicalRegion } from "./catalog.js?v=pref466";
-import { DATA_VERSION } from "./version.js?v=pref466";
+import { DATA_VERSION } from "./version.js?v=pref482";
 
 const STORAGE_KEY = "led-weather-layout-v7";
 const STORAGE_KEY_LEGACY = "led-weather-layout-v4";
