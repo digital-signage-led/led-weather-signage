@@ -204,7 +204,7 @@ export function tableLayoutTokens(vp, rows = 5, titleScale = 1) {
     "--cell-height": `${Math.round(cellH)}px`,
     "--cell-min": `${Math.round(cellMin)}px`,
     "--font-week-day": `${Math.round(clamp(dayHeadH * 0.72, 16, 48))}px`,
-    "--font-week-city": `${Math.round(clamp(Math.min(refCellH * 0.38, cityCol * 0.3), 20, 36))}px`,
+    "--font-week-city": `${Math.round(clamp(Math.min(refCellH * 0.5, cityCol * 0.4), 22, 48))}px`,
     "--font-week-label": `${Math.round(clamp(Math.min(cellH * 0.17, cellW * 0.125), 12, 20))}px`,
     "--font-week-value": `${Math.round(clamp(Math.min(cellH * 0.32, cellW * 0.3), 18, 42))}px`,
     "--font-week-unit": `${Math.round(clamp(Math.min(cellH * 0.145, cellW * 0.125), 11, 18))}px`,
