@@ -189,7 +189,7 @@ export function tableLayoutTokens(vp, rows = 5, titleScale = 1) {
   const tempFont = Math.round(clamp(cellH * (rowCount >= 5 ? 0.24 : 0.28), 12, 44));
   const padY = Math.round(clamp(cellH * 0.05, 1, 8));
   const padX = Math.round(clamp(cellW * 0.05, 1, 10));
-  const tempRow = Math.round(tempFont * 1.2);
+  const tempRow = Math.round(tempFont * 1.08);
   const iconH = Math.max(28, cellH - tempRow - padY * 2);
   const iconW = Math.max(28, cellW - padX * 2);
 
