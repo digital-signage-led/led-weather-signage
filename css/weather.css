@@ -811,15 +811,15 @@ html.is-edit .precip-tod-legend.is-dragging {
   --forecast-city-bg: #cfe6f5;
   --forecast-cell-bg: rgba(255, 255, 255, 0.94);
   position: absolute;
-  left: var(--footer-gap);
-  right: var(--footer-gap);
+  left: 8px;
+  right: 8px;
   top: calc(
-    var(--footer-gap)
+    6px
     + (var(--header-title-height) + var(--header-height) + clamp(4px, calc(var(--header-height) * 0.18), 10px))
       * var(--title-scale, 1)
-    + 20px
+    + 8px
   );
-  bottom: calc(var(--footer-height) + 14px);
+  bottom: calc(var(--footer-height) + 6px);
   display: flex;
   flex-direction: column;
   min-width: 0;
