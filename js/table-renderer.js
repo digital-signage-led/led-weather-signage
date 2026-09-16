@@ -12,11 +12,16 @@ import { isJapaneseHoliday } from "./jp-holidays.js?v=pref470";
 /** 1ページの上限行。ページ都市数がこれ未満ならその数で描く（1行だけは避ける） */
 const TABLE_ROW_MAX = 5;
 
+export function weeklyTableRows(cities) {
+  const n = Array.isArray(cities) ? cities.length : 0;
+  if (n <= 0) return TABLE_ROW_MAX;
+  if (n === 1) return 2;
+  return Math.min(TABLE_ROW_MAX, n);
+}
+
 export async function renderWeeklyTable(cities, contentId) {
   const list = Array.isArray(cities) ? cities.slice(0, TABLE_ROW_MAX) : [];
-  let slots = list.length;
-  if (slots === 0) slots = TABLE_ROW_MAX;
-  else if (slots === 1) slots = 2; // 1都市だけの縦伸びを防ぐ
+  const slots = weeklyTableRows(list);
   const days = list[0]?.weekly || list.find((c) => c?.weekly?.length)?.weekly || [];
   const dayCount = Math.max(7, days.length || 7);
   const head = [

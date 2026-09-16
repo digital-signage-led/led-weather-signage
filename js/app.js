@@ -18,7 +18,7 @@ import { loadMapSvg, mountMap, placeCardsAroundMap, projectCity } from "./map-re
 import { formatStamp, renderCityCard, renderPin, pinRadiusForViewBox, pinRadiusForMatchingScreen, pickNoteWeather, weatherTone, renderNoteIcon, renderPrecipTodLegend } from "./weather-renderer.js?v=pref468";
 import { applyCardScale, applyLockedCards, applyMapTransform, applyPrecipLegend, applyTitleScale, bindCardEditor, bindMapControls, bindMapEditor, bindOkinawaEditor, bindPrecipLegendEditor, CARD_POS_MAX, CARD_POS_MIN, CARD_SCALE_MAX, CARD_SCALE_MIN, TITLE_SCALE_MAX, TITLE_SCALE_MIN, centerCityCards, initLayoutDefaults, listCardPositions, loadCardScale, loadLayout, loadTitleScale, moveLockedCard, resetCardScale, resetLayout, resetTitleScale, saveCardScale, saveLayout, saveTitleScale, snapshotAllLayoutDefaults, snapshotLayoutDefaults } from "./studio-layout.js?v=pref469";
 import { expandForecast, formatNoteHtml, noteFor } from "./forecast.js?v=pref468";
-import { renderWeeklyTable } from "./table-renderer.js?v=pref477";
+import { renderWeeklyTable, weeklyTableRows } from "./table-renderer.js?v=pref481";
 import {
   DEFAULT_STUDIO_VIEWPORT,
   FIXED_DESIGN,
@@ -34,7 +34,7 @@ import {
   partitionTablePages,
   readViewport,
   showAuxiliary
-} from "./viewport.js?v=pref480";
+} from "./viewport.js?v=pref481";
 import { msUntilIconPhaseChange } from "./jma-icons.js?v=pref387";
 import { fetchJmaWeather } from "./jma-live.js?v=pref387";
 import { buildWeekPoints, fetchWeekAlert, renderWeekPointsHtml } from "./week-points.js?v=pref387";
@@ -856,7 +856,7 @@ async function bootSignage() {
       }
 
       if (content.kind === "table") {
-        applyTableLayout(screen, vp, tablePageSize(region.id));
+        applyTableLayout(screen, vp, weeklyTableRows(selected));
         stage.innerHTML = await renderWeeklyTable(selected, content.id);
         syncPrecipTodLegend(content, stage, layout, region.id, false);
         if (content.id === "weekly_weather") refreshWeekAlert(selected, weekPoints);
@@ -1005,8 +1005,7 @@ async function bootSignage() {
       fitTitleBars(screen);
       const table = screen.querySelector(".forecast-table");
       if (table) {
-        const rows = Math.max(Number(table.getAttribute("data-rows")) || 4, tablePageSize(state.regionId));
-        applyTableLayout(screen, vp, rows);
+        applyTableLayout(screen, vp, Number(table.getAttribute("data-rows")) || weeklyTableRows([]));
       }
       layoutNoteTicker();
     }

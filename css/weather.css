@@ -817,7 +817,7 @@ html.is-edit .precip-tod-legend.is-dragging {
   top: calc(
     var(--footer-gap)
     + (var(--header-title-height) + var(--header-height) + clamp(4px, calc(var(--header-height) * 0.18), 10px))
-      * var(--title-scale, 1)
+      * var(--weekly-title-scale, 1.3)
     + 20px
   );
   bottom: 32px;
@@ -849,15 +849,6 @@ html.is-edit .precip-tod-legend.is-dragging {
   background: var(--forecast-line);
   border-radius: var(--forecast-radius, 10px);
   box-sizing: border-box;
-}
-
-.forecast-table[data-rows="3"] .forecast-grid,
-.forecast-table[data-rows="2"] .forecast-grid {
-  flex: 0 1 auto;
-  height: auto;
-  max-height: 100%;
-  align-content: start;
-  grid-template-rows: var(--day-head-height, 1.6em) repeat(var(--forecast-rows), minmax(0, var(--cell-height)));
 }
 
 .forecast-day-h,

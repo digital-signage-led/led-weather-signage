@@ -159,21 +159,22 @@ function precipLegendTokens(vp) {
   };
 }
 
+/** 週間表の枠は全地方で同じ（タイトル倍率に依存させない） */
+export const WEEKLY_TABLE_TITLE_SCALE = 1.3;
+
 /**
- * 週間表：デザインキャンバス内の使用可能領域 ÷ 行・列 からセル基準トークンを算出。
+ * 週間表：行数（3 / 4 / 5）だけでセルと文字サイズを決める。地方では変えない。
  */
-export function tableLayoutTokens(vp, rows = 5, titleScale = 1) {
-  const rowCount = Math.max(1, Number(rows) || 5);
+export function tableLayoutTokens(vp, rows = 5) {
+  const rowCount = Math.max(2, Math.min(5, Number(rows) || 5));
   const s = vp.basis || vp.minSide;
   const chrome = 1.5;
   const gap = Math.max(1, fluidPx(s, 0.005, 1, 4));
   const pad = fluidPx(s, 0.035, 6, 28);
   const headerTitle = fluidPx(s, 0.092 * chrome, 24, Math.round(58 * chrome));
   const headerSub = fluidPx(s, 0.062 * chrome, 16, Math.round(40 * chrome));
-  const footer = fluidPx(s, 0.146 * chrome, 32, Math.round(100 * chrome));
-  const scale = clamp(Number(titleScale) || 1, 0.6, 2.8);
   const stackGap = clamp(headerSub * 0.18, 4, 10);
-  const topChrome = pad + (headerTitle + headerSub + stackGap) * scale + 20;
+  const topChrome = pad + (headerTitle + headerSub + stackGap) * WEEKLY_TABLE_TITLE_SCALE + 20;
   const bottomChrome = 36;
   const availW = Math.max(80, vp.width - pad * 2);
   const availH = Math.max(80, vp.height - topChrome - bottomChrome);
@@ -184,10 +185,14 @@ export function tableLayoutTokens(vp, rows = 5, titleScale = 1) {
   const innerH = availH - gridPad * 2;
   const cellW = (innerW - cityCol - gap * 7) / 7;
   const cellH = (innerH - dayHeadH - gap * rowCount) / rowCount;
-  const refCellH = (innerH - dayHeadH - gap * 5) / 5;
   const cellMin = Math.max(8, Math.min(cellW, cellH));
   const radius = clamp(Math.round(cellMin * 0.12), 4, 14);
-  const tempFont = Math.round(clamp(cellH * (rowCount >= 5 ? 0.24 : 0.28), 12, 44));
+  const cityMax = rowCount <= 3 ? 58 : rowCount === 4 ? 52 : 48;
+  const labelMax = rowCount <= 3 ? 24 : rowCount === 4 ? 22 : 20;
+  const valueMax = rowCount <= 3 ? 50 : rowCount === 4 ? 46 : 42;
+  const unitMax = rowCount <= 3 ? 20 : rowCount === 4 ? 19 : 18;
+  const tempMax = rowCount <= 3 ? 52 : rowCount === 4 ? 48 : 44;
+  const tempFont = Math.round(clamp(cellH * (rowCount >= 5 ? 0.24 : 0.26), 12, tempMax));
   const padY = Math.round(clamp(cellH * 0.05, 1, 8));
   const padX = Math.round(clamp(cellW * 0.05, 1, 10));
   const tempRow = Math.round(tempFont * 1.08);
@@ -196,6 +201,7 @@ export function tableLayoutTokens(vp, rows = 5, titleScale = 1) {
 
   return {
     "--forecast-rows": String(rowCount),
+    "--weekly-title-scale": String(WEEKLY_TABLE_TITLE_SCALE),
     "--forecast-gap": `${gap}px`,
     "--forecast-radius": `${radius}px`,
     "--city-col-width": `${Math.round(cityCol)}px`,
@@ -204,10 +210,10 @@ export function tableLayoutTokens(vp, rows = 5, titleScale = 1) {
     "--cell-height": `${Math.round(cellH)}px`,
     "--cell-min": `${Math.round(cellMin)}px`,
     "--font-week-day": `${Math.round(clamp(dayHeadH * 0.72, 16, 48))}px`,
-    "--font-week-city": `${Math.round(clamp(Math.min(refCellH * 0.5, cityCol * 0.4), 22, 48))}px`,
-    "--font-week-label": `${Math.round(clamp(Math.min(cellH * 0.17, cellW * 0.125), 12, 20))}px`,
-    "--font-week-value": `${Math.round(clamp(Math.min(cellH * 0.32, cellW * 0.3), 18, 42))}px`,
-    "--font-week-unit": `${Math.round(clamp(Math.min(cellH * 0.145, cellW * 0.125), 11, 18))}px`,
+    "--font-week-city": `${Math.round(clamp(Math.min(cellH * 0.5, cityCol * 0.4), 22, cityMax))}px`,
+    "--font-week-label": `${Math.round(clamp(Math.min(cellH * 0.17, cellW * 0.125), 12, labelMax))}px`,
+    "--font-week-value": `${Math.round(clamp(Math.min(cellH * 0.32, cellW * 0.3), 18, valueMax))}px`,
+    "--font-week-unit": `${Math.round(clamp(Math.min(cellH * 0.145, cellW * 0.125), 11, unitMax))}px`,
     "--font-week-temp": `${tempFont}px`,
     "--week-temp-row": `${tempRow}px`,
     "--icon-week": `${Math.round(clamp(Math.min(iconW, iconH * 1.5), 36, 280))}px`,
@@ -280,8 +286,7 @@ export function applyViewport(element, vp, regionId, content, options = {}) {
 /** 週間表描画後に、行数に応じたセル基準トークンを適用 */
 export function applyTableLayout(element, vp, rows) {
   if (!element) return;
-  const titleScale = Number.parseFloat(getComputedStyle(element).getPropertyValue("--title-scale")) || 1;
-  const tokens = tableLayoutTokens(vp, rows, titleScale);
+  const tokens = tableLayoutTokens(vp, rows);
   for (const [key, value] of Object.entries(tokens)) {
     element.style.setProperty(key, value);
   }
