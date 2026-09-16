@@ -1,45 +1,25 @@
 /**
  * 新規V1コンテンツ。選択中の1本だけ動的読込される。
  */
-import { getPrefecture, getStation } from "../location-masters.js?v=pref432";
-import { stationMatchesContent, requiredStationElements } from "../content-registry.js?v=pref432";
-import { fetchAmedasHours, windDirLabel } from "../jma-amedas.js?v=pref426";
+import { getPrefecture, getStation } from "../location-masters.js?v=pref434";
+import { requiredStationElements, stationMatchesContent, stationRequired } from "../content-registry.js?v=pref434";
 import { loadMapSvg, mountMap } from "../map-renderer.js?v=pref422";
 import { applyMapTransform, loadMapLayout } from "../studio-layout.js?v=pref428";
 import {
   fetchNowcTimes,
-  fetchOfficeForecast,
-  fetchOfficeOverview,
   fetchOfficeWarning,
   fetchRiskTimes,
+  fetchTyphoonDetail,
   fetchTyphoonList,
   parseEarlyWarning,
-  parseHourlyPops,
-  parseHourlyWeather,
-  parseTodayTomorrowTemps,
   parseWarningItems,
-  parseWeeklyTemps
-} from "../jma-v1-data.js?v=pref433";
-import { renderLedGraph, renderPending, renderStatCards } from "./graph-renderer.js?v=pref431";
-import { LEGENDS, markEmptyIfClear, pickSlot, renderWeatherMap } from "./weather-map.js?v=pref433";
-import { renderRainForecast } from "./rain-forecast.js?v=pref433";
-
-function hourlyPoints(points, key) {
-  const byHour = new Map();
-  for (const p of points) {
-    const hour = `${p.stamp.slice(0, 10)}00`;
-    const prev = byHour.get(hour);
-    if (!prev || p.stamp > prev.stamp) byHour.set(hour, p);
-  }
-  return [...byHour.values()].map((p) => ({
-    ...p,
-    label: `${Number(p.stamp.slice(8, 10))}時`
-  })).filter((p) => Number.isFinite(Number(p[key])));
-}
-
-async function amedasSeries(station, hours = 24) {
-  return fetchAmedasHours(station.station_id, hours);
-}
+  typhoonCenter
+} from "../jma-v1-data.js?v=pref434";
+import { renderPending } from "./graph-renderer.js?v=pref434";
+import { LEGENDS, markEmptyIfClear, pickSlot, renderWeatherMap } from "./weather-map.js?v=pref434";
+import { renderRainForecast } from "./rain-forecast.js?v=pref434";
+import { renderHourlyForecast } from "./hourly-forecast.js?v=pref434";
+import { renderAmedasObservation } from "./amedas-observation.js?v=pref434";
 
 function prefZoom(pref) {
   if (pref?.pref_id === "hokkaido") return 6;
@@ -110,8 +90,8 @@ export async function renderV1Content({ content, prefId, stationId, setNote, set
   const pref = getPrefecture(prefId);
   const station = getStation(stationId);
   const office = pref?.jma_office || "130000";
-  const stationNeeded = requiredStationElements(content.id).length > 0;
-  if (stationNeeded && (!station || !stationMatchesContent(station, content.id))) {
+  const wantsStation = stationRequired(content.id) || Boolean(stationId);
+  if (wantsStation && requiredStationElements(content.id).length && (!station || !stationMatchesContent(station, content.id))) {
     const need = requiredStationElements(content.id).join("・");
     stage.innerHTML = `<section class="v1-panel" data-state="error"><p class="v1-empty">${station ? `この観測地点では${need}を観測していません。` : "指定の観測地点は利用できません。"}</p></section>`;
     setNote(station ? `${station.station_name}では${need}を観測していません。` : "観測地点を確認してください。");
@@ -125,150 +105,12 @@ export async function renderV1Content({ content, prefId, stationId, setNote, set
   }
 
   try {
-    if (content.id === "temperature_24h" || content.id === "hourly_temperature") {
-      const { latest, points } = await amedasSeries(station, 24);
-      const series = hourlyPoints(points, "temp");
-      stage.innerHTML = renderLedGraph({
-        title: "気温",
-        unit: "℃",
-        points: series,
-        valueKey: "temp",
-        color: "#e62919",
-        currentLabel: `${station.station_name} 気温`
-      });
-      setNote(`アメダス ${station.station_name}（${station.jma_name}）の気温です。`);
-      return { stamp: latest.toISOString() };
+    if (content.id === "hourly_forecast") {
+      return renderHourlyForecast({ pref, station, setNote });
     }
 
-    if (content.id === "rainfall_trend") {
-      const { latest, points } = await amedasSeries(station, 24);
-      const series = hourlyPoints(points, "precipitation1h");
-      stage.innerHTML = renderLedGraph({
-        title: "降水量",
-        unit: "mm",
-        points: series,
-        valueKey: "precipitation1h",
-        color: "#086dcc",
-        currentLabel: `${station.station_name} 1時間降水量`
-      });
-      setNote(`アメダス ${station.station_name} の1時間降水量です。`);
-      return { stamp: latest.toISOString() };
-    }
-
-    if (content.id === "wind_speed_trend") {
-      const { latest, points } = await amedasSeries(station, 24);
-      const series = hourlyPoints(points, "wind");
-      stage.innerHTML = renderLedGraph({
-        title: "風速",
-        unit: "m/s",
-        points: series,
-        valueKey: "wind",
-        color: "#0a2f7a",
-        currentLabel: `${station.station_name} 風速`
-      });
-      setNote(`アメダス ${station.station_name} の風速です。`);
-      return { stamp: latest.toISOString() };
-    }
-
-    if (content.id === "amedas_temperature") {
-      const { latest, points } = await amedasSeries(station, 24);
-      const last = [...points].reverse().find((p) => p.temp != null);
-      if (!last) throw new Error("no temp");
-      stage.innerHTML = renderStatCards([
-        { label: "現在気温", value: last.temp.toFixed(1), unit: "℃", sub: station.station_name },
-        { label: "日最高", value: last.maxTemp != null ? last.maxTemp.toFixed(1) : "—", unit: "℃" },
-        { label: "日最低", value: last.minTemp != null ? last.minTemp.toFixed(1) : "—", unit: "℃" }
-      ]);
-      setNote(`アメダス ${station.station_name} の気温です。`);
-      return { stamp: latest.toISOString() };
-    }
-
-    if (content.id === "amedas_rainfall") {
-      const { latest, points } = await amedasSeries(station, 6);
-      const last = [...points].reverse().find((p) => p.precipitation1h != null || p.precipitation10m != null);
-      if (!last) throw new Error("no rain");
-      stage.innerHTML = renderStatCards([
-        { label: "1時間降水量", value: last.precipitation1h != null ? last.precipitation1h.toFixed(1) : "—", unit: "mm", sub: station.station_name },
-        { label: "10分降水量", value: last.precipitation10m != null ? last.precipitation10m.toFixed(1) : "—", unit: "mm" }
-      ]);
-      setNote(`アメダス ${station.station_name} の降水量です。`);
-      return { stamp: latest.toISOString() };
-    }
-
-    if (content.id === "amedas_wind") {
-      const { latest, points } = await amedasSeries(station, 6);
-      const last = [...points].reverse().find((p) => p.wind != null);
-      if (!last) throw new Error("no wind");
-      stage.innerHTML = renderStatCards([
-        { label: "風速", value: last.wind.toFixed(1), unit: "m/s", sub: station.station_name },
-        { label: "風向", value: windDirLabel(last.windDirection), unit: "" }
-      ]);
-      setNote(`アメダス ${station.station_name} の風向・風速です。`);
-      return { stamp: latest.toISOString() };
-    }
-
-    if (content.id === "hourly_weather") {
-      const fc = await fetchOfficeForecast(office);
-      const rows = parseHourlyWeather(fc);
-      const ov = await fetchOfficeOverview(office);
-      if (!rows.length) {
-        stage.innerHTML = `<section class="v1-panel"><p class="v1-empty">${pref.pref_name}の時間別天気は、この配信に含まれていません。</p></section>`;
-        setNote(`${pref.pref_name}の時間別天気です。`);
-        return { stamp: fc?.[0]?.reportDatetime || "", state: "empty" };
-      }
-      stage.innerHTML = `<section class="v1-list">${rows.map((r) => `
-        <article class="v1-row"><time>${r.label}</time><p>${r.weather || r.code}</p><small>${r.wind || ""}</small></article>
-      `).join("")}</section>`;
-      setNote(ov?.headlineText || ov?.text || `${pref.pref_name}の時間別天気です。`);
-      return { stamp: fc?.[0]?.reportDatetime || "", state: "ready" };
-    }
-
-    if (content.id === "hourly_precip" || content.id === "precip_probability_trend") {
-      const fc = await fetchOfficeForecast(office);
-      const rows = parseHourlyPops(fc);
-      if (content.id === "precip_probability_trend") {
-        stage.innerHTML = renderLedGraph({
-          title: "降水確率",
-          unit: "%",
-          points: rows,
-          valueKey: "pop",
-          color: "#086dcc",
-          currentLabel: `${pref.pref_name} 降水確率`
-        });
-      } else {
-        stage.innerHTML = `<section class="v1-list">${rows.map((r) => `
-          <article class="v1-row"><time>${r.label}</time><p>${r.pop}%</p></article>
-        `).join("")}</section>`;
-      }
-      setNote(`${pref.pref_name}の降水確率です。`);
-      return { stamp: fc?.[0]?.reportDatetime || "" };
-    }
-
-    if (content.id === "today_tomorrow_temperature") {
-      const fc = await fetchOfficeForecast(office);
-      const parsed = parseTodayTomorrowTemps(fc);
-      stage.innerHTML = renderStatCards(parsed.temps.map((t) => ({
-        label: t.label,
-        value: t.temp.toFixed(0),
-        unit: "℃",
-        sub: parsed.areaName
-      })));
-      setNote(`${pref.pref_name}の今日・明日の気温です。`);
-      return { stamp: fc?.[0]?.reportDatetime || "" };
-    }
-
-    if (content.id === "weekly_temperature") {
-      const fc = await fetchOfficeForecast(office);
-      const rows = parseWeeklyTemps(fc);
-      const cards = rows.flatMap((r) => ([
-        { label: `${r.label} 最高`, value: r.max != null ? String(r.max) : "—", unit: "℃" },
-        { label: `${r.label} 最低`, value: r.min != null ? String(r.min) : "—", unit: "℃" }
-      ]));
-      stage.innerHTML = `<section class="v1-week">${cards.map((c) => `
-        <article class="v1-stat"><h3>${c.label}</h3><p><strong>${c.value}</strong><span>${c.unit}</span></p></article>
-      `).join("")}</section>`;
-      setNote(`${pref.pref_name}の週間最高・最低気温です。`);
-      return { stamp: fc?.[1]?.reportDatetime || fc?.[0]?.reportDatetime || "" };
+    if (content.id === "amedas_temperature" || content.id === "amedas_rainfall" || content.id === "amedas_wind") {
+      return renderAmedasObservation({ contentId: content.id, station, setNote });
     }
 
     if (content.id === "weather_warning") {
@@ -302,14 +144,18 @@ export async function renderV1Content({ content, prefId, stationId, setNote, set
 
     if (content.id === "typhoon") {
       const list = await fetchTyphoonList();
-      const japan = { pref_id: "tokyo", pref_name: "全国", region_id: "national", center_lat: 37.5, center_lon: 137 };
+      const details = await Promise.all(list.map((t) => fetchTyphoonDetail(t.tropicalCyclone)));
+      const centers = details.map(typhoonCenter).filter(Boolean);
+      const focus = centers[0] || { lat: 37.5, lon: 137 };
+      const japan = { pref_id: "tokyo", pref_name: "全国", region_id: "national", center_lat: focus.lat, center_lon: focus.lon };
       await paintWeatherMap(stage, {
         pref: japan,
         overlay: null,
         legend: [],
         emptyText: list.length ? "" : "現在、表示対象の台風情報はありません",
         regionId: "national",
-        tiles: false
+        tiles: true,
+        zoom: centers.length ? 5 : 4
       });
       if (list.length) {
         stage.insertAdjacentHTML("beforeend", `<section class="v1-typhoon-list">${list.map((t) => `

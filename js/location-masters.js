@@ -1,7 +1,7 @@
 /**
  * 都道府県・観測地点マスター。既存 locations.json は変更しない。
  */
-import { requiredStationElements, stationMatchesContent, STATION_TYPE_GROUPS } from "./content-registry.js?v=pref432";
+import { requiredStationElements, stationMatchesContent, STATION_TYPE_GROUPS } from "./content-registry.js?v=pref434";
 
 const DATA_VERSION = "pref432";
 

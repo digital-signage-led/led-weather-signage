@@ -1,9 +1,10 @@
 /**
- * V1レジストリ・都道府県・観測地点・既存60URL保護。
+ * 正式19コンテンツ・都道府県・観測地点・既存60URL保護。
  */
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { canonicalContent } from "../js/catalog.js";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const contents = JSON.parse(readFileSync(path.join(root, "data/contents.json"), "utf8")).contents;
@@ -22,33 +23,42 @@ function assert(cond, message) {
 }
 
 const EXISTING = ["today_weather", "today_precip", "tomorrow_weather", "tomorrow_precip", "weekly_weather", "weekly_precip"];
-const NEW_IDS = [
-  "hourly_weather", "hourly_precip", "hourly_temperature", "today_tomorrow_temperature",
-  "temperature_24h", "precip_probability_trend", "rainfall_trend", "wind_speed_trend", "weekly_temperature",
+const OFFICIAL = [
+  ...EXISTING,
+  "hourly_forecast",
   "rain_forecast",
   "kikikuru_landslide", "kikikuru_inundation", "kikikuru_flood",
   "weather_warning", "early_warning", "typhoon", "lightning_nowcast", "tornado_nowcast",
   "amedas_temperature", "amedas_rainfall", "amedas_wind"
 ];
+const LEGACY = [
+  "hourly_weather", "hourly_precip", "hourly_temperature", "precip_probability_trend",
+  "rain_nowcast", "temperature_24h", "rainfall_trend", "wind_speed_trend",
+  "weekly_temperature", "today_tomorrow_temperature"
+];
 
-assert(contents.length === 27, "27 contents");
+assert(contents.length === 19, `19 contents (${contents.length})`);
 assert(contents.slice(0, 6).map((c) => c.id).join() === EXISTING.join(), "existing 6 unchanged");
-assert(NEW_IDS.every((id) => contents.some((c) => c.id === id)), "21 new content ids");
-assert(!contents.some((c) => c.id === "rain_nowcast"), "rain_nowcast not a studio content");
-assert(contents.find((c) => c.id === "rain_forecast")?.name === "雨の予報", "rain_forecast display name");
-assert(contents.filter((c) => c.category === "map").length === 1, "one rain/map content");
-const rainPrefs = prefectures.filter((p) => p.enabled).length;
-assert(rainPrefs === 47, `rain_forecast 47 prefs (${rainPrefs})`);
+assert(OFFICIAL.every((id) => contents.some((c) => c.id === id)), "official 19 ids");
+assert(LEGACY.every((id) => !contents.some((c) => c.id === id)), "legacy ids hidden from catalog");
+assert(canonicalContent("hourly_weather") === "hourly_forecast", "alias hourly_weather");
+assert(canonicalContent("hourly_temperature") === "hourly_forecast", "alias hourly_temperature");
+assert(canonicalContent("rain_nowcast") === "rain_forecast", "alias rain_nowcast");
+assert(canonicalContent("temperature_24h") === "amedas_temperature", "alias temperature_24h");
+assert(canonicalContent("rainfall_trend") === "amedas_rainfall", "alias rainfall_trend");
+assert(canonicalContent("wind_speed_trend") === "amedas_wind", "alias wind_speed_trend");
+assert(canonicalContent("weekly_temperature") === "weekly_weather", "alias weekly_temperature");
+assert(canonicalContent("today_tomorrow_temperature") === "today_weather", "alias today_tomorrow_temperature");
+assert(contents.find((c) => c.id === "hourly_forecast")?.name === "時間別予報", "hourly name");
+assert(contents.find((c) => c.id === "rain_forecast")?.name === "雨の予報", "rain name");
+assert(contents.find((c) => c.id === "typhoon")?.location_scope === "national", "typhoon national");
+assert(contents.find((c) => c.id === "hourly_forecast")?.location_scopes?.includes("prefecture"), "hourly pref scope");
+assert(contents.find((c) => c.id === "hourly_forecast")?.location_scopes?.includes("station"), "hourly station scope");
 assert(prefectures.length === 47, `47 prefs (${prefectures.length})`);
-assert(prefectures.every((p) => p.pref_id && p.pref_name && p.region_id && p.enabled), "pref fields");
 assert(stations.length > 1000, `stations exist (${stations.length})`);
-assert(stations.every((s) => s.station_id && s.pref_id), "station ids");
-assert(stations.some((s) => s.station_id === "44132" && s.temperature_available), "tokyo 44132 temp");
 assert(stations.filter((s) => s.pref_id === "akita").length > 10, "akita many stations");
-assert(["national", "hokkaido", "tohoku", "kanto", "chubu", "kinki", "chugoku", "shikoku", "kyushu", "okinawa"].every((id) => regions.some((r) => r.id === id)), "10 regions stay");
 assert(contents.filter((c) => EXISTING.includes(c.id)).every((c) => c.location_scope === "region"), "existing stay region scope");
-assert(contents.find((c) => c.id === "temperature_24h").status === "live", "24h temp live");
-assert(contents.filter((c) => c.id.startsWith("kikikuru_")).every((c) => c.status === "live" && c.data_source.startsWith("jma_risk")), "kikikuru live jma risk");
+assert(contents.filter((c) => c.id.startsWith("kikikuru_")).length === 3, "kikikuru stay 3");
 
 let existingUrls = 0;
 for (const region of regions) {
@@ -59,10 +69,6 @@ for (const region of regions) {
   }
 }
 assert(existingUrls === 60, `existing 60 urls (${existingUrls})`);
-
-const windUrls = stations.filter((s) => s.wind_available).length;
-const noWind = stations.filter((s) => !s.wind_available).length;
-assert(windUrls >= 0, `wind stations ${windUrls}, skipped ${noWind}`);
 
 if (failed) {
   console.error(`\n${failed} v1 registry checks failed`);

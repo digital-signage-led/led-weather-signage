@@ -1,11 +1,19 @@
 /**
- * 27コンテンツの参照。既存6の ID / kind は contents.json 先頭を正本とする。
- * rain_nowcast は rain_forecast の legacy alias（catalog.canonicalContent）。
+ * 正式19コンテンツ。既存6の ID / kind は contents.json 先頭を正本とする。
  */
-import { getContent, listContents } from "./catalog.js?v=pref426";
+import { getContent, listContents } from "./catalog.js?v=pref434";
 
 export const LEGACY_CONTENT_ALIASES = {
-  rain_nowcast: "rain_forecast"
+  rain_nowcast: "rain_forecast",
+  hourly_weather: "hourly_forecast",
+  hourly_precip: "hourly_forecast",
+  hourly_temperature: "hourly_forecast",
+  precip_probability_trend: "hourly_forecast",
+  temperature_24h: "amedas_temperature",
+  rainfall_trend: "amedas_rainfall",
+  wind_speed_trend: "amedas_wind",
+  weekly_temperature: "weekly_weather",
+  today_tomorrow_temperature: "today_weather"
 };
 
 export const EXISTING_CONTENT_IDS = [
@@ -17,11 +25,26 @@ export const EXISTING_CONTENT_IDS = [
   "weekly_precip"
 ];
 
+export const OFFICIAL_V1_IDS = [
+  "hourly_forecast",
+  "rain_forecast",
+  "kikikuru_landslide",
+  "kikikuru_inundation",
+  "kikikuru_flood",
+  "weather_warning",
+  "early_warning",
+  "typhoon",
+  "lightning_nowcast",
+  "tornado_nowcast",
+  "amedas_temperature",
+  "amedas_rainfall",
+  "amedas_wind"
+];
+
 export const CATEGORY_LABELS = {
-  forecast: "予報",
+  forecast: "既存",
   hourly: "時間予報",
-  graph: "グラフ",
-  map: "雨・地図",
+  map: "雨",
   kikikuru: "キキクル",
   disaster: "防災",
   observation: "観測"
@@ -37,7 +60,10 @@ export function isV1Content(content) {
 }
 
 export function locationScope(content) {
-  return getContent(content)?.location_scope || "region";
+  const item = getContent(content);
+  const scopes = item?.location_scopes || [];
+  if (scopes.includes("station")) return "station";
+  return item?.location_scope || "region";
 }
 
 export function contentStatus(content) {
@@ -64,6 +90,7 @@ export function groupedContents() {
 }
 
 export const REQUIRED_STATION_ELEMENTS = {
+  hourly_forecast: ["temperature"],
   hourly_temperature: ["temperature"],
   temperature_24h: ["temperature"],
   amedas_temperature: ["temperature"],
@@ -83,6 +110,12 @@ export const STATION_TYPE_GROUPS = {
 
 export function requiredStationElements(contentId) {
   return REQUIRED_STATION_ELEMENTS[contentId] || getContent(contentId)?.required_station_elements || [];
+}
+
+export function stationRequired(contentId) {
+  const item = getContent(contentId);
+  if (item?.require_station === false) return false;
+  return requiredStationElements(contentId).length > 0 && locationScope(contentId) === "station";
 }
 
 export function stationHasElements(station, elements) {

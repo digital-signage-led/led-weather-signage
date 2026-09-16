@@ -94,6 +94,45 @@ export function parseHourlyPops(forecast) {
   })).filter((item) => item.pop != null);
 }
 
+export function parseForecastTemps(forecast) {
+  const ts = forecast?.[0]?.timeSeries?.find((s) => s.areas?.[0]?.temps);
+  const area = ts?.areas?.[0];
+  if (!area) return [];
+  return (ts.timeDefines || []).map((time, i) => ({
+    time,
+    label: fmtWhen(time),
+    temp: num(area.temps?.[i])
+  })).filter((item) => item.temp != null);
+}
+
+export async function fetchTyphoonDetail(tropicalCyclone) {
+  if (!tropicalCyclone) return null;
+  const url = `https://www.jma.go.jp/bosai/typhoon/data/${tropicalCyclone}/tcfcst.json`;
+  try {
+    const rec = await cachedFetchJson(`typhoon:${tropicalCyclone}`, url, 5 * 60_000);
+    return rec.data;
+  } catch {
+    return null;
+  }
+}
+
+export function typhoonCenter(detail) {
+  const points = [];
+  const walk = (node) => {
+    if (!node || typeof node !== "object") return;
+    const lat = node.lat ?? node.latitude ?? node.centerLat;
+    const lon = node.lon ?? node.longitude ?? node.centerLon ?? node.lng;
+    if (Number.isFinite(Number(lat)) && Number.isFinite(Number(lon))) {
+      points.push({ lat: Number(lat), lon: Number(lon) });
+    }
+    for (const value of Object.values(node)) {
+      if (value && typeof value === "object") walk(value);
+    }
+  };
+  walk(detail);
+  return points[0] || null;
+}
+
 export function parseTodayTomorrowTemps(forecast) {
   const ts = forecast?.[0]?.timeSeries?.find((s) => s.areas?.[0]?.temps);
   const area = ts?.areas?.[0];

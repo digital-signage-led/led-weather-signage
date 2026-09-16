@@ -3,7 +3,9 @@
 .map-stage:has(.v1-list),
 .map-stage:has(.v1-panel),
 .map-stage:has(.v1-stats),
-.map-stage:has(.v1-week) {
+.map-stage:has(.v1-week),
+.map-stage:has(.v1-hourly),
+.map-stage:has(.v1-obs) {
   align-items: stretch;
   justify-content: stretch;
 }
@@ -275,6 +277,106 @@
 
 html.is-kiosk .v1-error-detail {
   display: none;
+}
+
+.v1-hourly {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: 100%;
+  min-height: 0;
+  padding: 12px 28px 8px;
+}
+
+.v1-hourly-strip {
+  display: flex;
+  gap: 10px;
+  overflow: hidden;
+}
+
+.v1-hourly-col {
+  flex: 1;
+  min-width: 0;
+  background: #fff;
+  border-radius: 8px;
+  padding: 10px 6px;
+  text-align: center;
+}
+
+.v1-hourly-col time {
+  display: block;
+  font-size: 28px;
+  font-weight: 800;
+}
+
+.v1-hourly-wx {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-height: 110px;
+  margin-top: 6px;
+}
+
+.v1-wx-icon {
+  width: 72px;
+  height: 72px;
+}
+
+.v1-wx-text {
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.v1-hourly-pop {
+  margin: 8px 0 0;
+  font-size: 40px;
+  font-weight: 800;
+  color: #086dcc;
+}
+
+.v1-hourly-temp {
+  margin: 4px 0 0;
+  font-size: 40px;
+  font-weight: 800;
+  color: #e62919;
+}
+
+.v1-hourly-pop small,
+.v1-hourly-temp small {
+  font-size: 22px;
+}
+
+.v1-hourly-graphs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  min-height: 0;
+  flex: 1;
+}
+
+.v1-hourly-graphs .v1-graph {
+  height: 100%;
+  padding: 8px 12px;
+}
+
+.v1-hourly-graphs .v1-svg {
+  height: calc(100% - 72px);
+}
+
+.v1-obs {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  padding: 12px 28px;
+  gap: 10px;
+}
+
+.v1-obs .v1-graph {
+  flex: 1;
+  min-height: 0;
 }
 
 .v1-typhoon-list {

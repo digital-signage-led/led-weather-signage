@@ -3,8 +3,8 @@
  */
 import { generatePublicUrls } from "./public-urls.js?v=pref427";
 import { getContent } from "./catalog.js?v=pref427";
-import { getPrefecture, getStation, listStations } from "./location-masters.js?v=pref432";
-import { capabilityForContent } from "./content-registry.js?v=pref432";
+import { getPrefecture, getStation, listStations } from "./location-masters.js?v=pref434";
+import { capabilityForContent } from "./content-registry.js?v=pref434";
 import {
   clearDraft,
   loadDisplayBundle,

@@ -3,7 +3,7 @@
  * 表示区分と気象内部区分を分ける。旧IDはエイリアスで受ける。
  */
 
-const DATA_VERSION = "pref433";
+const DATA_VERSION = "pref434";
 
 const REGION_ALIASES = {
   NATIONAL: "national",
@@ -28,7 +28,16 @@ const CONTENT_ALIASES = {
   tomorrow: "tomorrow_weather",
   weekly: "weekly_weather",
   "weekly-pop": "weekly_precip",
-  rain_nowcast: "rain_forecast"
+  rain_nowcast: "rain_forecast",
+  hourly_weather: "hourly_forecast",
+  hourly_precip: "hourly_forecast",
+  hourly_temperature: "hourly_forecast",
+  precip_probability_trend: "hourly_forecast",
+  temperature_24h: "amedas_temperature",
+  rainfall_trend: "amedas_rainfall",
+  wind_speed_trend: "amedas_wind",
+  weekly_temperature: "weekly_weather",
+  today_tomorrow_temperature: "today_weather"
 };
 
 const PROJECTION_KEYS = {

@@ -2,7 +2,7 @@
  * Studio / signage bootstrap. Studio drives the iframe viewport.
  */
 
-import { APP_VERSION, DATA_VERSION, MAP_VERSION } from "./version.js?v=pref433";
+import { APP_VERSION, DATA_VERSION, MAP_VERSION } from "./version.js?v=pref434";
 import { applyResolvedDisplay, bindDisplayStudio, readDraft } from "./display-studio.js?v=pref430";
 import { loadDisplayBundle, resolveDisplayConfig } from "./display-config.js?v=pref428";
 import {
@@ -15,8 +15,8 @@ import {
   listRegions,
   loadCatalog
 } from "./catalog.js?v=pref426";
-import { groupedContents, isV1Content, locationScope } from "./content-registry.js?v=pref432";
-import { getAvailableStations, getPrefecture, getStation, listPrefectures, loadLocationMasters, resolveStationForContent, stationElementHint, stationTypeLabel } from "./location-masters.js?v=pref432";
+import { groupedContents, isV1Content, locationScope } from "./content-registry.js?v=pref434";
+import { getAvailableStations, getPrefecture, getStation, listPrefectures, loadLocationMasters, resolveStationForContent, stationElementHint, stationTypeLabel } from "./location-masters.js?v=pref434";
 import { generatePublicUrls } from "./public-urls.js?v=pref426";
 import { adaptWeather, aggregateRegion } from "./weather-data.js?v=pref388";
 import { loadMapSvg, mountMap, placeCardsAroundMap, projectCity, computeFocusMapTransform, regionalFallbackTransform } from "./map-renderer.js?v=pref422";
@@ -306,7 +306,7 @@ async function bootStudio() {
     if (locationScope(state.contentId) === "prefecture" || locationScope(state.contentId) === "station") {
       next.searchParams.set("pref", state.prefId);
     }
-    if (locationScope(state.contentId) === "station") {
+    if (locationScope(state.contentId) === "station" && state.stationId) {
       next.searchParams.set("station", state.stationId);
     }
     if (isDebug) next.searchParams.set("debug", "1");
@@ -540,12 +540,17 @@ async function bootStudio() {
       if (!groups.has(label)) groups.set(label, []);
       groups.get(label).push(item);
     }
-    stationSelect.innerHTML = [...groups.entries()].map(([label, items]) => (
+    const optional = getContent(state.contentId)?.require_station === false;
+    const groupsHtml = [...groups.entries()].map(([label, items]) => (
       `<optgroup label="${label}">${items.map((item) => (
         `<option value="${item.station_id}">${item.station_name}　${stationElementHint(item)}</option>`
       )).join("")}</optgroup>`
     )).join("");
-    if (!list.some((item) => item.station_id === state.stationId)) {
+    stationSelect.innerHTML = (optional ? `<option value="">都道府県の予報</option>` : "") + groupsHtml;
+    if (state.stationId && !list.some((item) => item.station_id === state.stationId)) {
+      state.stationId = optional ? "" : (list[0]?.station_id || "");
+    }
+    if (!optional && !state.stationId) {
       state.stationId = list[0]?.station_id || "";
     }
     stationSelect.value = state.stationId;
@@ -1018,7 +1023,7 @@ async function bootSignage() {
     if (locationScope(state.contentId) === "prefecture" || locationScope(state.contentId) === "station") {
       next.searchParams.set("pref", state.prefId);
     }
-    if (locationScope(state.contentId) === "station") {
+    if (locationScope(state.contentId) === "station" && state.stationId) {
       next.searchParams.set("station", state.stationId);
     }
     if (canEdit) next.searchParams.set("edit", "1");

@@ -7,7 +7,8 @@ export function renderLedGraph({
   points,
   valueKey,
   color = "#e62919",
-  currentLabel = "現在"
+  currentLabel = "現在",
+  compact = false
 }) {
   const usable = (points || []).filter((p) => Number.isFinite(Number(p[valueKey])));
   if (!usable.length) {
@@ -19,8 +20,8 @@ export function renderLedGraph({
   const pad = Math.max(1, (max - min) * 0.15);
   const lo = min - pad;
   const hi = max + pad;
-  const w = 1680;
-  const h = 620;
+  const w = compact ? 820 : 1680;
+  const h = compact ? 280 : 620;
   const left = 90;
   const right = 40;
   const top = 40;
