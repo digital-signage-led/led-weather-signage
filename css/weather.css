@@ -1026,10 +1026,10 @@ html.is-edit .precip-tod-legend.is-dragging {
 
 .forecast-cell.is-pop-metrics {
   display: grid;
-  grid-template-columns: max-content minmax(0, 1fr);
+  grid-template-columns: auto minmax(0, 1fr);
   grid-template-rows: 1fr 1fr;
   align-items: center;
-  column-gap: calc(var(--cell-min, 40px) * 0.08);
+  column-gap: 0.28em;
   row-gap: 0;
   padding: var(--week-pad-y, 0.1em) var(--week-pad-x, 0.2em);
   color: var(--text-primary);
@@ -1037,15 +1037,17 @@ html.is-edit .precip-tod-legend.is-dragging {
   white-space: normal;
   flex-direction: unset;
   gap: 0;
+  overflow: hidden;
 }
 
 .forecast-cell.is-pop-metrics .pop-metric-label {
   grid-column: 1;
   justify-self: start;
   align-self: center;
-  width: 2.4em;
+  width: auto;
+  max-width: 100%;
   font-family: var(--font-main);
-  font-size: calc(var(--font-week-label, 12px) * 1.08);
+  font-size: var(--font-week-label, 12px);
   font-weight: 800;
   line-height: 1;
   white-space: nowrap;
@@ -1071,6 +1073,8 @@ html.is-edit .precip-tod-legend.is-dragging {
   justify-content: flex-end;
   gap: 0.04em;
   min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
   color: #123b5c;
   position: static;
   transform: none;
@@ -1089,14 +1093,14 @@ html.is-edit .precip-tod-legend.is-dragging {
 }
 
 .forecast-cell.is-pop-metrics .pop-metric-value b {
-  font-size: calc(var(--font-week-value, 18px) * 1.06);
+  font-size: var(--font-week-value, 18px);
   font-weight: 900;
   line-height: 1;
   color: #123b5c;
 }
 
 .forecast-cell.is-pop-metrics .pop-metric-value small {
-  font-size: calc(var(--font-week-unit, 10px) * 1.1);
+  font-size: var(--font-week-unit, 10px);
   font-weight: 800;
   line-height: 1;
   align-self: flex-end;

@@ -34,7 +34,7 @@ import {
   partitionTablePages,
   readViewport,
   showAuxiliary
-} from "./viewport.js?v=pref435";
+} from "./viewport.js?v=pref454";
 import { msUntilIconPhaseChange } from "./jma-icons.js?v=pref387";
 import { fetchJmaWeather } from "./jma-live.js?v=pref387";
 import { buildWeekPoints, fetchWeekAlert, renderWeekPointsHtml } from "./week-points.js?v=pref387";
@@ -724,7 +724,7 @@ async function bootSignage() {
     });
     const distance = Math.max(1, textWidth + gap);
     track.style.setProperty("--ticker-distance", `${distance}px`);
-    track.style.setProperty("--ticker-duration", `${Math.max(10, distance / 68).toFixed(2)}s`);
+    track.style.setProperty("--ticker-duration", `${Math.max(8, distance / 88).toFixed(2)}s`);
   }
 
   function setNoteTicker(text) {
