@@ -81,10 +81,10 @@ export function cardBoxPx(vp, variant = "weather") {
   const pop = variant === "pop";
   if (pop) {
     const rawW = fluidPx(s, 0.2, 76, 200);
-    const rawH = fluidPx(s, 0.145, 64, 156);
+    const rawH = fluidPx(s, 0.19, 72, 204);
     return {
       w: Math.min(rawW, Math.round(vp.width * 0.185)),
-      h: Math.min(rawH, Math.round(vp.height * 0.155))
+      h: Math.min(rawH, Math.round(vp.height * 0.205))
     };
   }
   const rawW = fluidPx(s, 0.18, 64, 200);
