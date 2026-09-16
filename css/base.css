@@ -615,6 +615,11 @@ svg.jma-icon {
   height: 1.05em;
 }
 
+.led-note-item .note-icon-temp svg {
+  width: 0.95em;
+  height: 1.1em;
+}
+
 @keyframes led-note-ticker {
   0%, 10% { transform: translate3d(0, 0, 0); }
   100% { transform: translate3d(calc(-1 * var(--ticker-distance, 50%)), 0, 0); }

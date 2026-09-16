@@ -84,9 +84,13 @@ export function formatNoteHtml(text) {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;");
   return escaped
+    .replace(/\u{1F321}\uFE0F?/gu, TEMP_ICON_HTML)
+    .replace(/🌡/g, TEMP_ICON_HTML)
     .replace(/💨/g, WIND_ICON_HTML)
     .replace(/☔/g, RAIN_ICON_HTML);
 }
+
+const TEMP_ICON_HTML = `<span class="note-icon note-icon-temp" aria-label="気温"><svg viewBox="0 0 24 28" width="0.95em" height="1.1em" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" d="M10 3.2h4c1.2 0 2.2 1 2.2 2.2v10.2a5.4 5.4 0 1 1-8.4 0V5.4c0-1.2 1-2.2 2.2-2.2z"/><path fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" d="M12 8.2v8.2"/><circle cx="12" cy="20.2" r="2.1" fill="currentColor"/><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M17.6 7.2h3M17.6 11h3"/></svg></span>`;
 
 const WIND_ICON_HTML = `<span class="note-icon note-icon-wind" aria-label="風"><svg viewBox="0 0 32 24" width="1.15em" height="0.86em" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" d="M3 7.5h16.5c2.6 0 4.5-1.7 4.5-3.6S22.1.5 19.5.5"/><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" d="M3 12.5h21"/><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" d="M3 17.5h13.5c2.4 0 4 1.5 4 3.2S18.9 24 16.5 24"/></svg></span>`;
 
