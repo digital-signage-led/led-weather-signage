@@ -1054,9 +1054,9 @@ html.is-edit .precip-tod-legend.is-dragging {
   justify-content: center;
   justify-items: center;
   align-items: center;
-  column-gap: 0.22em;
-  row-gap: 0;
-  padding: 0.06em 0.1em;
+  column-gap: 0.55em;
+  row-gap: 0.16em;
+  padding: 0.06em 0.14em;
   color: var(--text-primary);
   box-sizing: border-box;
   white-space: normal;
@@ -1085,7 +1085,7 @@ html.is-edit .precip-tod-legend.is-dragging {
   grid-row: 1;
   color: #0b6fbf;
   white-space: normal;
-  line-height: 1.02;
+  line-height: 1.14;
   text-align: center;
 }
 
