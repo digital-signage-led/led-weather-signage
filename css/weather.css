@@ -1054,14 +1054,13 @@ html.is-edit .precip-tod-legend.is-dragging {
   justify-content: center;
   justify-items: center;
   align-items: center;
-  column-gap: 0.55em;
-  row-gap: 0.16em;
-  padding: 0.06em 0.14em;
+  column-gap: 0.85em;
+  row-gap: 0.22em;
+  padding: 0.06em 0.16em;
   color: var(--text-primary);
   box-sizing: border-box;
   white-space: normal;
   flex-direction: unset;
-  gap: 0;
   overflow: hidden;
 }
 
