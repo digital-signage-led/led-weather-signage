@@ -2253,6 +2253,16 @@
     "hokkaido:weekly_weather:1920x1080": 1.3,
     "hokkaido:weekly_precip:1920x1080": 1.3,
     "tohoku:weekly_precip:1920x1080": 1.3,
-    "kanto:weekly_precip:1920x1080": 1.3
+    "kanto:weekly_precip:1920x1080": 1.3,
+    "chubu:weekly_precip:1920x1080": 1.3,
+    "kinki:weekly_precip:1920x1080": 1.3,
+    "chugoku:weekly_weather:1920x1080": 1.3,
+    "chugoku:weekly_precip:1920x1080": 1.3,
+    "shikoku:weekly_weather:1920x1080": 1.3,
+    "shikoku:weekly_precip:1920x1080": 1.3,
+    "kyushu:weekly_weather:1920x1080": 1.3,
+    "kyushu:weekly_precip:1920x1080": 1.3,
+    "okinawa:weekly_weather:1920x1080": 1.3,
+    "okinawa:weekly_precip:1920x1080": 1.3
   }
 }

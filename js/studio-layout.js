@@ -4,8 +4,8 @@
  * 北海道の今日/明日×天気/降水はその子、東北も同様。地方同士では共有しない。
  */
 
-import { canonicalContent, canonicalRegion } from "./catalog.js?v=pref458";
-import { DATA_VERSION } from "./version.js?v=pref458";
+import { canonicalContent, canonicalRegion } from "./catalog.js?v=pref466";
+import { DATA_VERSION } from "./version.js?v=pref466";
 
 const STORAGE_KEY = "led-weather-layout-v7";
 const STORAGE_KEY_LEGACY = "led-weather-layout-v4";
@@ -15,8 +15,18 @@ const CARD_SIZE_KEY_LEGACY_V2 = "led-weather-card-size-v2";
 const TITLE_SCALE_KEY = "led-weather-title-scale-v4";
 const TITLE_SCALE_KEY_LEGACY = "led-weather-title-scale-v2";
 
-/** リポジトリ同梱の完成配置。localStorage に無い解像度だけ補完する。 */
+/** リポジトリ同梱の完成配置。本番はこれを優先し、管理画面だけ localStorage を使う。 */
 let shippedDefaults = { layouts: {}, cardScales: {}, titleScales: {} };
+
+function isKioskRuntime() {
+  try {
+    if (document.body?.classList.contains("is-studio")) return false;
+    if (/studio\.html$/i.test(window.location.pathname)) return false;
+    return true;
+  } catch {
+    return true;
+  }
+}
 export const CARD_SCALE_MIN = 0.28;
 export const CARD_SCALE_MAX = 3;
 export const TITLE_SCALE_MIN = 0.6;
@@ -251,7 +261,9 @@ export function loadLayout(regionId, contentId = "today_weather", width = 0, hei
     const shared = saved?.sharedMap && (saved.sharedMap.map || Object.keys(saved.sharedMap.cards || {}).length)
       ? saved.sharedMap
       : null;
-    const slice = shared || localSlice || shippedExact || shippedNear;
+    const slice = isKioskRuntime()
+      ? (shippedExact || shippedNear || shared || localSlice)
+      : (shared || localSlice || shippedExact || shippedNear);
     if (!slice && !saved) return emptyLayout(regionId);
     const entry = layoutEntryFrom(slice || saved || {});
     const shippedCards = (shippedExact || shippedNear)?.cards || {};
@@ -261,7 +273,9 @@ export function loadLayout(regionId, contentId = "today_weather", width = 0, hei
     const overlap = shippedIds.filter((id) => localCards[id]);
     const localLooksForeign = shippedIds.length > 0 && localIds.length > 0
       && overlap.length === 0;
-    if (localIds.length && !localLooksForeign) {
+    if (isKioskRuntime() && shippedIds.length) {
+      entry.cards = { ...shippedCards };
+    } else if (localIds.length && !localLooksForeign) {
       entry.cards = { ...localCards };
     } else if (shippedIds.length) {
       entry.cards = { ...shippedCards };
@@ -610,16 +624,14 @@ export function loadCardScale(contentId = "today_weather", regionId = "national"
     const all = readCardScaleStore();
     const keys = cardScaleLookupKeys(contentId, regionId, width, height);
     let value;
-    for (const key of keys) {
-      if (all[key] != null) {
-        value = Number(all[key]);
-        break;
-      }
-    }
-    if (!Number.isFinite(value)) {
+    const stores = isKioskRuntime()
+      ? [shippedDefaults.cardScales, all]
+      : [all, shippedDefaults.cardScales];
+    for (const store of stores) {
+      if (Number.isFinite(value) || !store) continue;
       for (const key of keys) {
-        if (shippedDefaults.cardScales?.[key] != null) {
-          value = Number(shippedDefaults.cardScales[key]);
+        if (store[key] != null) {
+          value = Number(store[key]);
           break;
         }
       }
@@ -714,17 +726,21 @@ export function loadTitleScale(width = 0, height = 0, regionId = "national", con
     const groupKey = titleScaleStoreKey(width, height, regionId, contentId);
     const regionKey = `${region}:${vpKey}`;
     const mapOnly = isSharedMapContent(contentId);
-    const fallback = mapOnly ? 1.3 : 1;
+    const fallback = (mapOnly || groupKey.includes("weekly_")) && w >= 1280 ? 1.3 : 1;
+    const localFirst = [
+      all[groupKey],
+      mapOnly ? all[regionKey] : null,
+      mapOnly ? all[vpKey] : null,
+      mapOnly ? all.default : null
+    ];
+    const shippedFirst = [
+      shippedDefaults.titleScales?.[groupKey],
+      mapOnly ? shippedDefaults.titleScales?.[regionKey] : null,
+      mapOnly ? shippedDefaults.titleScales?.[vpKey] : null
+    ];
+    const order = isKioskRuntime() ? [...shippedFirst, ...localFirst] : [...localFirst, ...shippedFirst];
     return clamp(
-      Number(
-        all[groupKey]
-        ?? shippedDefaults.titleScales?.[groupKey]
-        ?? (mapOnly ? all[regionKey] : null)
-        ?? (mapOnly ? shippedDefaults.titleScales?.[regionKey] : null)
-        ?? (mapOnly ? all[vpKey] : null)
-        ?? (mapOnly ? shippedDefaults.titleScales?.[vpKey] : null)
-        ?? (mapOnly ? all.default : null)
-      ) || fallback,
+      Number(order.find((value) => value != null) ) || fallback,
       TITLE_SCALE_MIN,
       TITLE_SCALE_MAX
     );
@@ -835,6 +851,38 @@ export function snapshotLayoutDefaults(regionId, layout, contentId, width, heigh
     titleScales: {
       [titleKey]: clamp(Number(titleScale) || 1, TITLE_SCALE_MIN, TITLE_SCALE_MAX)
     }
+  };
+}
+
+/** 管理画面の localStorage 配置を、同梱 JSON 用に全部出す。 */
+export function snapshotAllLayoutDefaults() {
+  const layouts = {};
+  const all = readLayoutStore();
+  for (const [regionId, prev] of Object.entries(all || {})) {
+    const id = canonicalRegion(regionId);
+    const viewports = { ...(prev.viewports || {}) };
+    const shared = prev.sharedMap;
+    if (shared && (shared.map || Object.keys(shared.cards || {}).length)) {
+      const entry = {
+        ...layoutEntryFrom(shared),
+        rev: Date.now()
+      };
+      if (!viewports["1920x1080"]) viewports["1920x1080"] = entry;
+    }
+    if (Object.keys(viewports).length) layouts[id] = { viewports };
+  }
+  return {
+    rev: Date.now(),
+    layouts,
+    cardScales: { ...readCardScaleStore() },
+    titleScales: (() => {
+      try {
+        const parsed = JSON.parse(localStorage.getItem(TITLE_SCALE_KEY) || "{}");
+        return parsed && typeof parsed === "object" ? parsed : {};
+      } catch {
+        return {};
+      }
+    })()
   };
 }
 
