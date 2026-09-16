@@ -922,7 +922,8 @@ html.is-edit .precip-tod-legend.is-dragging {
   color: var(--text-primary);
 }
 
-.forecast-day-h.is-sunday {
+.forecast-day-h.is-sunday,
+.forecast-day-h.is-holiday {
   color: #e62919;
 }
 

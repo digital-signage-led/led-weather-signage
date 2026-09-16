@@ -7,6 +7,7 @@ import { loadIcon } from "./map-renderer.js?v=pref387";
 import { weatherTone } from "./weather-renderer.js?v=pref387";
 import { popTone } from "./forecast.js?v=pref387";
 import { isNightHours, jmaLabel } from "./jma-icons.js?v=pref387";
+import { isJapaneseHoliday } from "./jp-holidays.js?v=pref470";
 
 /** 1ページの上限行。ページ都市数がこれ未満ならその数で描く（1行だけは避ける） */
 const TABLE_ROW_MAX = 5;
@@ -21,7 +22,7 @@ export async function renderWeeklyTable(cities, contentId) {
   const head = [
     `<span class="forecast-city-h" aria-hidden="true"></span>`,
     ...days.map((day) => `
-      <span class="forecast-day-h${day.weekend ? " is-weekend" : ""}${day.today ? " is-today" : ""}${weekdayClass(day.weekday)}">${dayMonthLabel(day)}${day.weekday || ""}</span>
+      <span class="forecast-day-h${day.weekend ? " is-weekend" : ""}${day.today ? " is-today" : ""}${weekdayClass(day.weekday)}${holidayClass(day)}">${dayMonthLabel(day)}${day.weekday || ""}</span>
     `)
   ];
 
@@ -67,6 +68,15 @@ function weekdayClass(label) {
   if (label === "\u65e5") return " is-sunday";
   if (label === "\u571f") return " is-saturday";
   return "";
+}
+
+function holidayClass(day) {
+  const iso = String(day?.date || "");
+  const match = iso.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  if (!match) return "";
+  return isJapaneseHoliday(Number(match[1]), Number(match[2]), Number(match[3]))
+    ? " is-holiday"
+    : "";
 }
 
 async function renderWeatherCell(day) {
