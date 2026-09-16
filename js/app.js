@@ -2,7 +2,7 @@
  * Studio / signage bootstrap. Studio drives the iframe viewport.
  */
 
-import { APP_VERSION, DATA_VERSION, MAP_VERSION } from "./version.js?v=pref447";
+import { APP_VERSION, DATA_VERSION, MAP_VERSION } from "./version.js?v=pref458";
 import {
   canonicalContent,
   canonicalRegion,
@@ -12,13 +12,13 @@ import {
   listContents,
   listRegions,
   loadCatalog
-} from "./catalog.js?v=pref445";
+} from "./catalog.js?v=pref458";
 import { adaptWeather, aggregateRegion, assertRegionCoverage, emptyWeatherPoint } from "./weather-data.js?v=pref415";
 import { loadMapSvg, mountMap, placeCardsAroundMap, projectCity } from "./map-renderer.js?v=pref439";
 import { formatStamp, renderCityCard, renderPin, pinRadiusForViewBox, pinRadiusForMatchingScreen, pickNoteWeather, weatherTone, renderNoteIcon, renderPrecipTodLegend } from "./weather-renderer.js?v=pref414";
-import { applyCardScale, applyLockedCards, applyMapTransform, applyPrecipLegend, applyTitleScale, bindCardEditor, bindMapControls, bindMapEditor, bindOkinawaEditor, bindPrecipLegendEditor, CARD_POS_MAX, CARD_POS_MIN, CARD_SCALE_MAX, CARD_SCALE_MIN, TITLE_SCALE_MAX, TITLE_SCALE_MIN, centerCityCards, initLayoutDefaults, listCardPositions, loadCardScale, loadLayout, loadTitleScale, moveLockedCard, resetCardScale, resetLayout, resetTitleScale, saveCardScale, saveLayout, saveTitleScale, snapshotLayoutDefaults } from "./studio-layout.js?v=pref453";
+import { applyCardScale, applyLockedCards, applyMapTransform, applyPrecipLegend, applyTitleScale, bindCardEditor, bindMapControls, bindMapEditor, bindOkinawaEditor, bindPrecipLegendEditor, CARD_POS_MAX, CARD_POS_MIN, CARD_SCALE_MAX, CARD_SCALE_MIN, TITLE_SCALE_MAX, TITLE_SCALE_MIN, centerCityCards, initLayoutDefaults, listCardPositions, loadCardScale, loadLayout, loadTitleScale, moveLockedCard, resetCardScale, resetLayout, resetTitleScale, saveCardScale, saveLayout, saveTitleScale, snapshotLayoutDefaults } from "./studio-layout.js?v=pref458";
 import { expandForecast, formatNoteHtml, noteFor } from "./forecast.js?v=pref387";
-import { renderWeeklyTable } from "./table-renderer.js?v=pref412";
+import { renderWeeklyTable } from "./table-renderer.js?v=pref458";
 import {
   DEFAULT_STUDIO_VIEWPORT,
   FIXED_DESIGN,
@@ -34,7 +34,7 @@ import {
   partitionTablePages,
   readViewport,
   showAuxiliary
-} from "./viewport.js?v=pref454";
+} from "./viewport.js?v=pref458";
 import { msUntilIconPhaseChange } from "./jma-icons.js?v=pref387";
 import { fetchJmaWeather } from "./jma-live.js?v=pref387";
 import { buildWeekPoints, fetchWeekAlert, renderWeekPointsHtml } from "./week-points.js?v=pref387";
@@ -636,9 +636,9 @@ async function bootStudio() {
 
 async function bootSignage() {
   // 初回は同梱 weather.json で即表示。ハング時のみ 8 秒後に強制表示
-  window.setTimeout(() => document.documentElement.classList.remove("is-boot"), 8000);
-  await loadCatalog();
-  await initLayoutDefaults();
+  window.setTimeout(() => document.documentElement.classList.remove("is-boot"), 4000);
+  loadMapSvg();
+  await Promise.all([loadCatalog(), initLayoutDefaults()]);
   state.regionId = getRegion(state.regionId).id;
   state.contentId = getContent(state.contentId).id;
 
@@ -724,7 +724,7 @@ async function bootSignage() {
     });
     const distance = Math.max(1, textWidth + gap);
     track.style.setProperty("--ticker-distance", `${distance}px`);
-    track.style.setProperty("--ticker-duration", `${Math.max(8, distance / 88).toFixed(2)}s`);
+    track.style.setProperty("--ticker-duration", `${Math.max(6, distance / 118).toFixed(2)}s`);
   }
 
   function setNoteTicker(text) {
@@ -793,12 +793,12 @@ async function bootSignage() {
     layout.precipLegend = { ...savedLayout.precipLegend };
 
     try {
-      const [attribution, locations, projection] = await Promise.all([
+      const [attribution, locations, projection, weatherDoc] = await Promise.all([
         fetchJson("data/attribution.json"),
         fetchJson("data/locations.json"),
-        fetchJson("data/map-projection.json")
+        fetchJson("data/map-projection.json"),
+        loadWeatherDoc()
       ]);
-      const weatherDoc = await loadWeatherDoc(locations);
       const weather = adaptWeather(weatherDoc);
       weatherStamp = weather.updatedAt;
 
@@ -915,9 +915,10 @@ async function bootSignage() {
       centerCityCards(layers.cards);
       fitCityCardNames(layers.cards);
       if (document.fonts?.ready) {
-        await document.fonts.ready.catch(() => {});
-        centerCityCards(layers.cards);
-        fitCityCardNames(layers.cards);
+        document.fonts.ready.then(() => {
+          centerCityCards(layers.cards);
+          fitCityCardNames(layers.cards);
+        }).catch(() => {});
       }
       if (canEdit) {
         bindCardEditor(layers.cards, layout, region.id, content.id, (next, nextScale) => {
@@ -1193,8 +1194,19 @@ async function loadWeatherDoc() {
   return bundledWeatherDoc;
 }
 
+const jsonCache = new Map();
+
 async function fetchJson(url) {
-  const response = await fetch(`${url}?v=${DATA_VERSION}`, { cache: "no-store" });
-  if (!response.ok) throw new Error(`${url} fetch failed`);
-  return response.json();
+  if (jsonCache.has(url)) return jsonCache.get(url);
+  const pending = fetch(`${url}?v=${DATA_VERSION}`, { cache: "force-cache" })
+    .then((response) => {
+      if (!response.ok) throw new Error(`${url} fetch failed`);
+      return response.json();
+    })
+    .catch((error) => {
+      jsonCache.delete(url);
+      throw error;
+    });
+  jsonCache.set(url, pending);
+  return pending;
 }

@@ -21,7 +21,7 @@ export async function renderWeeklyTable(cities, contentId) {
   const head = [
     `<span class="forecast-city-h" aria-hidden="true"></span>`,
     ...days.map((day) => `
-      <span class="forecast-day-h${day.weekend ? " is-weekend" : ""}${day.today ? " is-today" : ""}${weekdayClass(day.weekday)}">${day.weekday}</span>
+      <span class="forecast-day-h${day.weekend ? " is-weekend" : ""}${day.today ? " is-today" : ""}${weekdayClass(day.weekday)}"><span class="forecast-day-num">${dayNumber(day)}</span><span class="forecast-day-w">${day.weekday || ""}</span></span>
     `)
   ];
 
@@ -52,6 +52,14 @@ export async function renderWeeklyTable(cities, contentId) {
       </div>
     </div>
   `;
+}
+
+function dayNumber(day) {
+  if (day?.day != null && day.day !== "") return String(Number(day.day) || day.day);
+  const iso = String(day?.date || "");
+  const match = iso.match(/-(\d{1,2})$/);
+  if (match) return String(Number(match[1]));
+  return "";
 }
 
 function weekdayClass(label) {
@@ -89,7 +97,7 @@ function renderPopCell(day) {
   const humidity = Math.round(Number(day.humidity) || 0);
   return `
     <div class="forecast-cell is-pop is-pop-metrics ${popTone(pop)}${day.today ? " is-today" : ""}">
-      <span class="pop-metric-label is-pop-chance">\u964d\u6c34</span>
+      <span class="pop-metric-label is-pop-chance">降水<br>確率</span>
       <span class="pop-metric-value is-pop-chance"><b>${pop}</b><small>%</small></span>
       <span class="pop-metric-label is-humidity">\u6e7f\u5ea6</span>
       <span class="pop-metric-value is-humidity"><b>${humidity}</b><small>%</small></span>

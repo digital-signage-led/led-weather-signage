@@ -871,8 +871,9 @@ html.is-edit .precip-tod-legend.is-dragging {
 }
 
 .forecast-day-h {
-  flex-direction: row;
-  gap: 0.08em;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.1em;
   padding: 0;
   background: var(--forecast-head);
   line-height: 1;
@@ -893,13 +894,14 @@ html.is-edit .precip-tod-legend.is-dragging {
 
 .forecast-day-num {
   font-family: var(--font-number);
-  font-size: 1.2em;
-  font-weight: 800;
+  font-size: 1.05em;
+  font-weight: 900;
   line-height: 1;
 }
 
 .forecast-day-w {
-  font-size: 0.92em;
+  font-size: 0.78em;
+  font-weight: 800;
   line-height: 1;
 }
 
@@ -1059,6 +1061,9 @@ html.is-edit .precip-tod-legend.is-dragging {
 .forecast-cell.is-pop-metrics .pop-metric-label.is-pop-chance {
   grid-row: 1;
   color: #0b6fbf;
+  white-space: normal;
+  line-height: 1.05;
+  text-align: center;
 }
 
 .forecast-cell.is-pop-metrics .pop-metric-label.is-humidity {

@@ -41,9 +41,13 @@
   </style>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/base.css?v=pref424">
-  <link rel="stylesheet" href="css/weather.css?v=pref454">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/base.css?v=pref458">
+  <link rel="stylesheet" href="css/weather.css?v=pref458">
+  <link rel="modulepreload" href="js/app.js?v=pref458">
+  <link rel="preload" href="data/weather.json?v=pref458" as="fetch" crossorigin>
+  <link rel="preload" href="data/locations.json?v=pref458" as="fetch" crossorigin>
+  <link rel="preload" href="maps/japan.svg?v=pref387" as="fetch" crossorigin>
 </head>
 <body>
   <p id="boot-status" role="status">読込中</p>
@@ -151,6 +155,6 @@
     </article>
     <aside id="debug-overlay" hidden></aside>
   </div>
-  <script type="module" src="js/app.js?v=pref455"></script>
+  <script type="module" src="js/app.js?v=pref458"></script>
 </body>
 </html>

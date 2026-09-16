@@ -177,7 +177,7 @@ export function tableLayoutTokens(vp, rows = 5, titleScale = 1) {
   const bottomChrome = footer + 14;
   const availW = Math.max(80, vp.width - pad * 2);
   const availH = Math.max(80, vp.height - topChrome - bottomChrome);
-  const dayHeadH = clamp(Math.round(availH * 0.09), 16, Math.round(s * 0.08));
+  const dayHeadH = clamp(Math.round(availH * 0.125), 28, Math.round(s * 0.11));
   const cityCol = clamp(Math.round(availW * 0.14), Math.round(s * 0.12), Math.round(availW * 0.2));
   const gridPad = gap;
   const innerW = availW - gridPad * 2;
@@ -204,7 +204,7 @@ export function tableLayoutTokens(vp, rows = 5, titleScale = 1) {
     "--cell-min": `${Math.round(cellMin)}px`,
     "--font-week-day": `${Math.round(clamp(dayHeadH * 0.52, 9, 26))}px`,
     "--font-week-city": `${Math.round(clamp(cellMin * 0.42, 12, 40))}px`,
-    "--font-week-label": `${Math.round(clamp(Math.min(cellMin * 0.22, cellW * 0.14), 10, 16))}px`,
+    "--font-week-label": `${Math.round(clamp(Math.min(cellMin * 0.18, cellW * 0.12, cellH * 0.14), 9, 14))}px`,
     "--font-week-value": `${Math.round(clamp(Math.min(cellMin * 0.42, cellW * 0.24), 13, 34))}px`,
     "--font-week-unit": `${Math.round(clamp(Math.min(cellMin * 0.18, cellW * 0.11), 9, 14))}px`,
     "--font-week-temp": `${tempFont}px`,
