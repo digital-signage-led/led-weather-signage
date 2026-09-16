@@ -1041,9 +1041,9 @@ html.is-edit .precip-tod-legend.is-dragging {
   grid-template-columns: auto minmax(0, 1fr);
   grid-template-rows: 1fr 1fr;
   align-items: center;
-  column-gap: 0.28em;
+  column-gap: 0.2em;
   row-gap: 0;
-  padding: var(--week-pad-y, 0.1em) var(--week-pad-x, 0.2em);
+  padding: 0.12em 0.18em;
   color: var(--text-primary);
   box-sizing: border-box;
   white-space: normal;
