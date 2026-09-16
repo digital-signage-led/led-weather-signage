@@ -15,7 +15,7 @@ const CARD_SIZE_KEY_LEGACY_V2 = "led-weather-card-size-v2";
 const TITLE_SCALE_KEY = "led-weather-title-scale-v4";
 const TITLE_SCALE_KEY_LEGACY = "led-weather-title-scale-v2";
 
-/** リポジトリ同梱の完成配置。公開URLは同梱を使い、管理画面だけ手元の記憶を使う。 */
+/** 管理画面で保存した配置は公開URLでも使う。同梱は記憶がないときの予備。 */
 let shippedDefaults = { layouts: {}, cardScales: {}, titleScales: {} };
 
 function isKioskRuntime() {
@@ -265,9 +265,7 @@ export function loadLayout(regionId, contentId = "today_weather", width = 0, hei
       ? saved.sharedMap
       : null;
     const shippedSlice = shippedExact || shippedNear;
-    const slice = isKioskRuntime()
-      ? (shippedSlice || shared || localSlice)
-      : (shared || localSlice || shippedSlice);
+    const slice = shared || localSlice || shippedSlice;
     if (!slice && !saved) return emptyLayout(regionId);
     const entry = layoutEntryFrom(slice || saved || {});
     const shippedCards = shippedSlice?.cards || {};
@@ -277,13 +275,13 @@ export function loadLayout(regionId, contentId = "today_weather", width = 0, hei
     const overlap = shippedIds.filter((id) => localCards[id]);
     const localLooksForeign = shippedIds.length > 0 && localIds.length > 0
       && overlap.length === 0;
-    if (isKioskRuntime() && shippedIds.length) {
-      const shippedEntry = layoutEntryFrom(shippedSlice);
-      entry.map = shippedEntry.map;
-      entry.okinawa = shippedEntry.okinawa;
-      entry.precipLegend = shippedEntry.precipLegend;
-      entry.cards = { ...shippedCards };
-    } else if (localIds.length && !localLooksForeign) {
+    if (localIds.length && !localLooksForeign) {
+      if (shared) {
+        const sharedEntry = layoutEntryFrom(shared);
+        entry.map = sharedEntry.map;
+        entry.okinawa = sharedEntry.okinawa;
+        entry.precipLegend = sharedEntry.precipLegend;
+      }
       entry.cards = { ...localCards };
     } else if (shippedIds.length) {
       entry.cards = { ...shippedCards };
@@ -632,9 +630,7 @@ export function loadCardScale(contentId = "today_weather", regionId = "national"
     const all = readCardScaleStore();
     const keys = cardScaleLookupKeys(contentId, regionId, width, height);
     let value;
-    const stores = isKioskRuntime()
-      ? [shippedDefaults.cardScales, all]
-      : [all, shippedDefaults.cardScales];
+    const stores = [all, shippedDefaults.cardScales];
     for (const store of stores) {
       if (Number.isFinite(value) || !store) continue;
       for (const key of keys) {
@@ -746,7 +742,7 @@ export function loadTitleScale(width = 0, height = 0, regionId = "national", con
       mapOnly ? shippedDefaults.titleScales?.[regionKey] : null,
       mapOnly ? shippedDefaults.titleScales?.[vpKey] : null
     ];
-    const order = isKioskRuntime() ? [...shippedFirst, ...localFirst] : [...localFirst, ...shippedFirst];
+    const order = [...localFirst, ...shippedFirst];
     return clamp(
       Number(order.find((value) => value != null) ) || fallback,
       TITLE_SCALE_MIN,
