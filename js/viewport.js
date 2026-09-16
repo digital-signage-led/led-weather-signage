@@ -174,7 +174,7 @@ export function tableLayoutTokens(vp, rows = 5, titleScale = 1) {
   const scale = clamp(Number(titleScale) || 1, 0.6, 2.8);
   const stackGap = clamp(headerSub * 0.18, 4, 10);
   const topChrome = pad + (headerTitle + headerSub + stackGap) * scale + 20;
-  const bottomChrome = 12;
+  const bottomChrome = 24;
   const availW = Math.max(80, vp.width - pad * 2);
   const availH = Math.max(80, vp.height - topChrome - bottomChrome);
   const dayHeadH = clamp(Math.round(availH * 0.09), 22, Math.round(s * 0.08));

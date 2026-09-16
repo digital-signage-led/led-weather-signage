@@ -819,7 +819,7 @@ html.is-edit .precip-tod-legend.is-dragging {
       * var(--title-scale, 1)
     + 20px
   );
-  bottom: 10px;
+  bottom: 24px;
   display: flex;
   flex-direction: column;
   min-width: 0;
