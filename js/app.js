@@ -34,7 +34,7 @@ import {
   partitionTablePages,
   readViewport,
   showAuxiliary
-} from "./viewport.js?v=pref463";
+} from "./viewport.js?v=pref464";
 import { msUntilIconPhaseChange } from "./jma-icons.js?v=pref387";
 import { fetchJmaWeather } from "./jma-live.js?v=pref387";
 import { buildWeekPoints, fetchWeekAlert, renderWeekPointsHtml } from "./week-points.js?v=pref387";
@@ -849,7 +849,8 @@ async function bootSignage() {
       }
 
       if (content.kind === "table") {
-        applyTableLayout(screen, vp, Math.max(selected.length, selected.length === 1 ? 2 : selected.length || 5));
+        const layoutRows = Math.max(tablePageSize(region.id), 4);
+        applyTableLayout(screen, vp, layoutRows);
         stage.innerHTML = await renderWeeklyTable(selected, content.id);
         syncPrecipTodLegend(content, stage, layout, region.id, false);
         if (content.id === "weekly_weather") refreshWeekAlert(selected, weekPoints);
@@ -998,7 +999,7 @@ async function bootSignage() {
       fitTitleBars(screen);
       const table = screen.querySelector(".forecast-table");
       if (table) {
-        const rows = Number(table.getAttribute("data-rows")) || 4;
+        const rows = Math.max(Number(table.getAttribute("data-rows")) || 4, tablePageSize(state.regionId));
         applyTableLayout(screen, vp, rows);
       }
       layoutNoteTicker();
