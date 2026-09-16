@@ -177,7 +177,7 @@ export function tableLayoutTokens(vp, rows = 5, titleScale = 1) {
   const bottomChrome = footer + 14;
   const availW = Math.max(80, vp.width - pad * 2);
   const availH = Math.max(80, vp.height - topChrome - bottomChrome);
-  const dayHeadH = clamp(Math.round(availH * 0.125), 28, Math.round(s * 0.11));
+  const dayHeadH = clamp(Math.round(availH * 0.09), 22, Math.round(s * 0.08));
   const cityCol = clamp(Math.round(availW * 0.14), Math.round(s * 0.12), Math.round(availW * 0.2));
   const gridPad = gap;
   const innerW = availW - gridPad * 2;

@@ -871,13 +871,15 @@ html.is-edit .precip-tod-legend.is-dragging {
 }
 
 .forecast-day-h {
-  flex-direction: column;
+  flex-direction: row;
   justify-content: center;
-  gap: 0.1em;
+  gap: 0;
   padding: 0;
   background: var(--forecast-head);
   line-height: 1;
   font-size: var(--font-week-day, var(--font-week));
+  font-family: var(--font-number);
+  letter-spacing: -0.02em;
 }
 
 .forecast-grid > .forecast-day-h:nth-child(8) {

@@ -21,7 +21,7 @@ export async function renderWeeklyTable(cities, contentId) {
   const head = [
     `<span class="forecast-city-h" aria-hidden="true"></span>`,
     ...days.map((day) => `
-      <span class="forecast-day-h${day.weekend ? " is-weekend" : ""}${day.today ? " is-today" : ""}${weekdayClass(day.weekday)}"><span class="forecast-day-num">${dayMonthLabel(day)}</span><span class="forecast-day-w">${day.weekday || ""}</span></span>
+      <span class="forecast-day-h${day.weekend ? " is-weekend" : ""}${day.today ? " is-today" : ""}${weekdayClass(day.weekday)}">${dayMonthLabel(day)}${day.weekday || ""}</span>
     `)
   ];
 
