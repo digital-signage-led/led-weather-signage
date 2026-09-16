@@ -691,13 +691,13 @@ const CARD_SLOTS = {
     tsu: { x: 84, y: 78 }
   },
   kanto: {
-    utsunomiya: { x: 84, y: 14 },
-    maebashi: { x: 16, y: 46 },
-    mito: { x: 84, y: 34 },
-    saitama: { x: 18, y: 62 },
-    tokyo: { x: 84, y: 52 },
-    yokohama: { x: 40, y: 86 },
-    chiba: { x: 84, y: 72 }
+    utsunomiya: { x: 84, y: 10 },
+    maebashi: { x: 14, y: 32 },
+    mito: { x: 84, y: 30 },
+    saitama: { x: 14, y: 68 },
+    tokyo: { x: 84, y: 50 },
+    yokohama: { x: 38, y: 86 },
+    chiba: { x: 84, y: 70 }
   },
   chubu: {
     sado: { x: 50, y: 10 },

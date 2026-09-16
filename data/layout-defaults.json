@@ -1588,83 +1588,83 @@
           },
           "precipLegend": {
             "x": 86,
-            "y": 58
+            "y": 86
           },
           "cards": {
             "utsunomiya": {
               "x": 84,
-              "y": 14,
+              "y": 10,
               "locked": true
             },
             "maebashi": {
-              "x": 16,
-              "y": 46,
+              "x": 14,
+              "y": 32,
               "locked": true
             },
             "mito": {
               "x": 84,
-              "y": 34,
+              "y": 30,
               "locked": true
             },
             "saitama": {
-              "x": 18,
-              "y": 62,
+              "x": 14,
+              "y": 68,
               "locked": true
             },
             "tokyo": {
               "x": 84,
-              "y": 52,
+              "y": 50,
               "locked": true
             },
             "yokohama": {
-              "x": 40,
+              "x": 38,
               "y": 86,
               "locked": true
             },
             "chiba": {
               "x": 84,
-              "y": 72,
+              "y": 70,
               "locked": true
             }
           },
           "cardsPop": {
             "utsunomiya": {
               "x": 84,
-              "y": 14,
+              "y": 10,
               "locked": true
             },
             "maebashi": {
-              "x": 16,
-              "y": 46,
+              "x": 14,
+              "y": 32,
               "locked": true
             },
             "mito": {
               "x": 84,
-              "y": 34,
+              "y": 30,
               "locked": true
             },
             "saitama": {
-              "x": 18,
-              "y": 62,
+              "x": 14,
+              "y": 68,
               "locked": true
             },
             "tokyo": {
               "x": 84,
-              "y": 52,
+              "y": 50,
               "locked": true
             },
             "yokohama": {
-              "x": 40,
+              "x": 38,
               "y": 86,
               "locked": true
             },
             "chiba": {
               "x": 84,
-              "y": 72,
+              "y": 70,
               "locked": true
             }
           },
-          "rev": 1789616000000
+          "rev": 1789640000000
         },
         "576x432": {
           "map": {
@@ -1680,83 +1680,83 @@
           },
           "precipLegend": {
             "x": 86,
-            "y": 58
+            "y": 86
           },
           "cards": {
             "utsunomiya": {
               "x": 84,
-              "y": 14,
+              "y": 10,
               "locked": true
             },
             "maebashi": {
-              "x": 16,
-              "y": 46,
+              "x": 14,
+              "y": 32,
               "locked": true
             },
             "mito": {
               "x": 84,
-              "y": 34,
+              "y": 30,
               "locked": true
             },
             "saitama": {
-              "x": 18,
-              "y": 62,
+              "x": 14,
+              "y": 68,
               "locked": true
             },
             "tokyo": {
               "x": 84,
-              "y": 52,
+              "y": 50,
               "locked": true
             },
             "yokohama": {
-              "x": 40,
+              "x": 38,
               "y": 86,
               "locked": true
             },
             "chiba": {
               "x": 84,
-              "y": 72,
+              "y": 70,
               "locked": true
             }
           },
           "cardsPop": {
             "utsunomiya": {
               "x": 84,
-              "y": 14,
+              "y": 10,
               "locked": true
             },
             "maebashi": {
-              "x": 16,
-              "y": 46,
+              "x": 14,
+              "y": 32,
               "locked": true
             },
             "mito": {
               "x": 84,
-              "y": 34,
+              "y": 30,
               "locked": true
             },
             "saitama": {
-              "x": 18,
-              "y": 62,
+              "x": 14,
+              "y": 68,
               "locked": true
             },
             "tokyo": {
               "x": 84,
-              "y": 52,
+              "y": 50,
               "locked": true
             },
             "yokohama": {
-              "x": 40,
+              "x": 38,
               "y": 86,
               "locked": true
             },
             "chiba": {
               "x": 84,
-              "y": 72,
+              "y": 70,
               "locked": true
             }
           },
-          "rev": 1789552000000
+          "rev": 1789640000000
         }
       }
     },

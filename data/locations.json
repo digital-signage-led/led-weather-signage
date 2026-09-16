@@ -371,8 +371,8 @@
       "priority": 3,
       "showOnNational": false,
       "useOkinawaInset": false,
-      "cardX": 16,
-      "cardY": 46
+      "cardX": 14,
+      "cardY": 32
     },
     {
       "cityId": "utsunomiya",
@@ -388,7 +388,7 @@
       "showOnNational": false,
       "useOkinawaInset": false,
       "cardX": 84,
-      "cardY": 14
+      "cardY": 10
     },
     {
       "cityId": "mito",
@@ -404,7 +404,7 @@
       "showOnNational": false,
       "useOkinawaInset": false,
       "cardX": 84,
-      "cardY": 34
+      "cardY": 30
     },
     {
       "cityId": "saitama",
@@ -419,8 +419,8 @@
       "priority": 2,
       "showOnNational": false,
       "useOkinawaInset": false,
-      "cardX": 18,
-      "cardY": 62
+      "cardX": 14,
+      "cardY": 68
     },
     {
       "cityId": "tokyo",
@@ -438,7 +438,7 @@
       "showOnNational": true,
       "useOkinawaInset": false,
       "cardX": 84,
-      "cardY": 52
+      "cardY": 50
     },
     {
       "cityId": "yokohama",
@@ -453,7 +453,7 @@
       "priority": 1,
       "showOnNational": false,
       "useOkinawaInset": false,
-      "cardX": 40,
+      "cardX": 38,
       "cardY": 86
     },
     {
@@ -470,7 +470,7 @@
       "showOnNational": false,
       "useOkinawaInset": false,
       "cardX": 84,
-      "cardY": 72
+      "cardY": 70
     },
     {
       "cityId": "sado",

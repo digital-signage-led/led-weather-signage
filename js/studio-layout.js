@@ -4,8 +4,8 @@
  * 北海道の今日/明日×天気/降水はその子、東北も同様。地方同士では共有しない。
  */
 
-import { canonicalContent, canonicalRegion } from "./catalog.js?v=pref466";
-import { DATA_VERSION } from "./version.js?v=pref482";
+import { canonicalContent, canonicalRegion } from "./catalog.js?v=pref483";
+import { DATA_VERSION } from "./version.js?v=pref483";
 
 const STORAGE_KEY = "led-weather-layout-v7";
 const STORAGE_KEY_LEGACY = "led-weather-layout-v4";
