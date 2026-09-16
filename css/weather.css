@@ -1049,12 +1049,14 @@ html.is-edit .precip-tod-legend.is-dragging {
 
 .forecast-cell.is-pop-metrics {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-columns: max-content max-content;
   grid-template-rows: 1fr 1fr;
+  justify-content: center;
+  justify-items: center;
   align-items: center;
-  column-gap: 0.2em;
+  column-gap: 0.22em;
   row-gap: 0;
-  padding: 0.12em 0.18em;
+  padding: 0.06em 0.1em;
   color: var(--text-primary);
   box-sizing: border-box;
   white-space: normal;
@@ -1065,7 +1067,7 @@ html.is-edit .precip-tod-legend.is-dragging {
 
 .forecast-cell.is-pop-metrics .pop-metric-label {
   grid-column: 1;
-  justify-self: start;
+  justify-self: end;
   align-self: center;
   width: auto;
   max-width: 100%;
@@ -1074,7 +1076,7 @@ html.is-edit .precip-tod-legend.is-dragging {
   font-weight: 800;
   line-height: 1;
   white-space: nowrap;
-  text-align: left;
+  text-align: center;
   position: static;
   transform: none;
 }
@@ -1083,7 +1085,7 @@ html.is-edit .precip-tod-legend.is-dragging {
   grid-row: 1;
   color: #0b6fbf;
   white-space: normal;
-  line-height: 1.05;
+  line-height: 1.02;
   text-align: center;
 }
 
@@ -1096,8 +1098,9 @@ html.is-edit .precip-tod-legend.is-dragging {
   grid-column: 2;
   display: inline-flex;
   align-items: baseline;
-  justify-content: flex-end;
-  gap: 0.04em;
+  justify-content: flex-start;
+  justify-self: start;
+  gap: 0.02em;
   min-width: 0;
   max-width: 100%;
   overflow: hidden;
@@ -1108,10 +1111,10 @@ html.is-edit .precip-tod-legend.is-dragging {
 
 .forecast-cell.is-pop-metrics .pop-metric-value.is-pop-chance {
   grid-row: 1;
-  align-self: stretch;
-  align-items: center;
+  align-self: center;
+  align-items: baseline;
   border-bottom: 1px dotted #9bb8cc;
-  padding-bottom: 0.06em;
+  padding-bottom: 0.04em;
 }
 
 .forecast-cell.is-pop-metrics .pop-metric-value.is-humidity {
