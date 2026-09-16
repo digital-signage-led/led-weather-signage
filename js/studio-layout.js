@@ -205,7 +205,7 @@ function seedLocalStorageFromDefaults() {
     }
     for (const [regionId, prev] of Object.entries(all)) {
       const id = canonicalRegion(regionId);
-      if (prev?.sharedMap && Object.keys(prev.sharedMap.cards || prev.sharedMap.map || {}).length) continue;
+      if (Object.keys(prev?.sharedMap?.cards || {}).length) continue;
       const shipped1920 = shippedDefaults.layouts?.[id]?.viewports?.["1920x1080"];
       const local1920 = prev?.viewports?.["1920x1080"];
       const fallback = local1920 || pickLayoutSlice(prev, 1920, 1080) || shipped1920;
@@ -261,9 +261,8 @@ export function loadLayout(regionId, contentId = "today_weather", width = 0, hei
       ? nearestViewportSlice(shippedRegion?.viewports, w, h)
       : null;
     const localSlice = saved ? pickLayoutSlice(saved, width, height) : null;
-    const shared = saved?.sharedMap && (saved.sharedMap.map || Object.keys(saved.sharedMap.cards || {}).length)
-      ? saved.sharedMap
-      : null;
+    const sharedHasCards = Object.keys(saved?.sharedMap?.cards || {}).length > 0;
+    const shared = sharedHasCards ? saved.sharedMap : null;
     const shippedSlice = shippedExact || shippedNear;
     const slice = shared || localSlice || shippedSlice;
     if (!slice && !saved) return emptyLayout(regionId);
