@@ -174,7 +174,7 @@ export function tableLayoutTokens(vp, rows = 5, titleScale = 1) {
   const scale = clamp(Number(titleScale) || 1, 0.6, 2.8);
   const stackGap = clamp(headerSub * 0.18, 4, 10);
   const topChrome = pad + (headerTitle + headerSub + stackGap) * scale + 20;
-  const bottomChrome = 24;
+  const bottomChrome = 36;
   const availW = Math.max(80, vp.width - pad * 2);
   const availH = Math.max(80, vp.height - topChrome - bottomChrome);
   const dayHeadH = clamp(Math.round(availH * 0.09), 22, Math.round(s * 0.08));
@@ -205,9 +205,9 @@ export function tableLayoutTokens(vp, rows = 5, titleScale = 1) {
     "--cell-min": `${Math.round(cellMin)}px`,
     "--font-week-day": `${Math.round(clamp(dayHeadH * 0.52, 9, 26))}px`,
     "--font-week-city": `${Math.round(clamp(Math.min(refCellH * 0.38, cityCol * 0.3), 20, 36))}px`,
-    "--font-week-label": `${Math.round(clamp(Math.min(cellH * 0.17, cellW * 0.18), 12, 22))}px`,
-    "--font-week-value": `${Math.round(clamp(Math.min(cellH * 0.34, cellW * 0.4), 18, 48))}px`,
-    "--font-week-unit": `${Math.round(clamp(Math.min(cellH * 0.15, cellW * 0.16), 11, 20))}px`,
+    "--font-week-label": `${Math.round(clamp(Math.min(cellH * 0.15, cellW * 0.16), 11, 18))}px`,
+    "--font-week-value": `${Math.round(clamp(Math.min(cellH * 0.28, cellW * 0.34), 16, 40))}px`,
+    "--font-week-unit": `${Math.round(clamp(Math.min(cellH * 0.13, cellW * 0.14), 10, 16))}px`,
     "--font-week-temp": `${tempFont}px`,
     "--week-temp-row": `${tempRow}px`,
     "--icon-week": `${Math.round(clamp(Math.min(iconW, iconH * 1.5), 36, 280))}px`,
