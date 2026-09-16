@@ -21,6 +21,9 @@ let shippedDefaults = { layouts: {}, cardScales: {}, titleScales: {} };
 function isKioskRuntime() {
   try {
     if (document.body?.classList.contains("is-studio")) return false;
+    if (document.documentElement?.classList.contains("is-edit")) return false;
+    if (document.body?.classList.contains("is-edit")) return false;
+    if (new URLSearchParams(window.location.search).get("edit") === "1") return false;
     if (/studio\.html$/i.test(window.location.pathname)) return false;
     return true;
   } catch {
