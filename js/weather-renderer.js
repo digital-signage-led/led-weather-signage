@@ -25,6 +25,7 @@ export function formatStamp(iso, compact = false) {
   if (Number.isNaN(date.getTime())) return "";
   const parts = new Intl.DateTimeFormat("ja-JP", {
     timeZone: "Asia/Tokyo",
+    month: "numeric",
     day: "numeric",
     weekday: "short",
     hour: "2-digit",
@@ -33,8 +34,8 @@ export function formatStamp(iso, compact = false) {
   }).formatToParts(date);
   const pick = (type) => parts.find((part) => part.type === type)?.value || "";
   const weekday = pick("weekday").replace("曜日", "");
-  if (compact) return `${pick("day")}日 ${pick("hour")}:${pick("minute")}更新`;
-  return `${pick("day")}日(${weekday}) ${pick("hour")}:${pick("minute")}更新`;
+  if (compact) return `${pick("month")}月${pick("day")}日 ${pick("hour")}:${pick("minute")}更新`;
+  return `${pick("month")}月${pick("day")}日(${weekday}) ${pick("hour")}:${pick("minute")}更新`;
 }
 
 export function renderLeader(position) {

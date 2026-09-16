@@ -21,7 +21,7 @@ export async function renderWeeklyTable(cities, contentId) {
   const head = [
     `<span class="forecast-city-h" aria-hidden="true"></span>`,
     ...days.map((day) => `
-      <span class="forecast-day-h${day.weekend ? " is-weekend" : ""}${day.today ? " is-today" : ""}${weekdayClass(day.weekday)}"><span class="forecast-day-num">${dayNumber(day)}</span><span class="forecast-day-w">${day.weekday || ""}</span></span>
+      <span class="forecast-day-h${day.weekend ? " is-weekend" : ""}${day.today ? " is-today" : ""}${weekdayClass(day.weekday)}"><span class="forecast-day-num">${dayMonthLabel(day)}</span><span class="forecast-day-w">${day.weekday || ""}</span></span>
     `)
   ];
 
@@ -54,11 +54,12 @@ export async function renderWeeklyTable(cities, contentId) {
   `;
 }
 
-function dayNumber(day) {
-  if (day?.day != null && day.day !== "") return String(Number(day.day) || day.day);
+function dayMonthLabel(day) {
   const iso = String(day?.date || "");
-  const match = iso.match(/-(\d{1,2})$/);
-  if (match) return String(Number(match[1]));
+  const match = iso.match(/(\d{4})-(\d{1,2})-(\d{1,2})/);
+  if (match) return `${Number(match[2])}/${Number(match[3])}`;
+  if (day?.month != null && day?.day != null) return `${Number(day.month)}/${Number(day.day)}`;
+  if (day?.day != null && day.day !== "") return String(Number(day.day) || day.day);
   return "";
 }
 
