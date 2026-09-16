@@ -80,11 +80,11 @@ export function cardBoxPx(vp, variant = "weather") {
   const s = vp.basis || vp.minSide;
   const pop = variant === "pop";
   if (pop) {
-    const rawW = fluidPx(s, 0.22, 80, 220);
-    const rawH = fluidPx(s, 0.24, 72, 240);
+    const rawW = fluidPx(s, 0.2, 76, 200);
+    const rawH = fluidPx(s, 0.145, 64, 156);
     return {
-      w: Math.min(rawW, Math.round(vp.width * 0.2)),
-      h: Math.min(rawH, Math.round(vp.height * 0.28))
+      w: Math.min(rawW, Math.round(vp.width * 0.185)),
+      h: Math.min(rawH, Math.round(vp.height * 0.155))
     };
   }
   const rawW = fluidPx(s, 0.18, 64, 200);
@@ -101,7 +101,7 @@ export function tokensFor(vp, content = { id: "today_weather", name: "今日の�
   const longTitle = `${content.name || ""}`.length >= 6;
   const titleRatio = longTitle ? 0.046 : 0.06;
   const popTight = content.card === "pop";
-  const box = cardBoxPx(vp, content.kind === "map" ? "weather" : (popTight ? "pop" : "weather"));
+  const box = cardBoxPx(vp, popTight ? "pop" : "weather");
   // 1920×1080 固定キャンバス向け：メイン／サブ／ニュースティッカーを 1.5 倍
   const chrome = 1.5;
   return {

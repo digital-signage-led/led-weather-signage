@@ -1222,6 +1222,41 @@ export function applyPrecipLegend(screenOrHost, layout) {
   el.style.top = `${pos.y}%`;
 }
 
+function rectsOverlap(a, b, pad = 6) {
+  return a.left < b.right + pad && a.right + pad > b.left && a.top < b.bottom + pad && a.bottom + pad > b.top;
+}
+
+/** 降水カード同士・凡例の重なりを表示上だけずらす（保存座標は変えない） */
+export function clearPrecipOverlaps(host) {
+  const body = host?.querySelector?.(".led-body") || host;
+  if (!body) return;
+  const cards = [...body.querySelectorAll(".city-card.is-pop")];
+  cards.sort((a, b) => (Number.parseFloat(a.style.top) || 0) - (Number.parseFloat(b.style.top) || 0));
+  for (let i = 1; i < cards.length; i += 1) {
+    const lower = cards[i];
+    for (let j = 0; j < i; j += 1) {
+      const upper = cards[j];
+      let guard = 0;
+      while (guard < 16 && rectsOverlap(lower.getBoundingClientRect(), upper.getBoundingClientRect(), 8)) {
+        const y = Math.min(CARD_POS_MAX, (Number.parseFloat(lower.style.top) || 0) + 3);
+        lower.style.top = `${y}%`;
+        guard += 1;
+      }
+    }
+  }
+  const legend = body.querySelector(".precip-tod-legend");
+  if (!legend) return;
+  let guard = 0;
+  while (guard < 16) {
+    const lr = legend.getBoundingClientRect();
+    const hit = cards.some((card) => rectsOverlap(lr, card.getBoundingClientRect(), 8));
+    if (!hit) break;
+    const y = Math.min(92, (Number.parseFloat(legend.style.top) || 58) + 4);
+    legend.style.top = `${y}%`;
+    guard += 1;
+  }
+}
+
 /** 朝�E昼・夜�E例をドラチE��で移動（編雁E��ード！E*/
 export function bindPrecipLegendEditor(layout, regionId, contentId, onChange) {
   const el = document.querySelector(".precip-tod-legend");
