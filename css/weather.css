@@ -909,11 +909,14 @@ html.is-edit .precip-tod-legend.is-dragging {
 }
 
 .forecast-city {
-  font-size: calc(var(--font-week-city, var(--font-city)) * 1.06);
+  font-family: var(--font-main);
+  font-size: var(--font-week-city, var(--font-city));
+  font-weight: 800;
+  font-feature-settings: "palt" 1;
+  letter-spacing: -0.06em;
   padding: 0 var(--week-pad-x, 0.2em);
   background: var(--forecast-city-bg);
   color: var(--text-primary);
-  font-weight: 900;
 }
 
 .forecast-day-h.is-sunday {

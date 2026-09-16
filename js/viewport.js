@@ -203,7 +203,7 @@ export function tableLayoutTokens(vp, rows = 5, titleScale = 1) {
     "--cell-height": `${Math.round(cellH)}px`,
     "--cell-min": `${Math.round(cellMin)}px`,
     "--font-week-day": `${Math.round(clamp(dayHeadH * 0.52, 9, 26))}px`,
-    "--font-week-city": `${Math.round(clamp(cellMin * 0.42, 12, 40))}px`,
+    "--font-week-city": `${Math.round(clamp(Math.min(cellH * 0.28, cityCol * 0.22), 14, 28))}px`,
     "--font-week-label": `${Math.round(clamp(Math.min(cellMin * 0.18, cellW * 0.12, cellH * 0.14), 9, 14))}px`,
     "--font-week-value": `${Math.round(clamp(Math.min(cellMin * 0.42, cellW * 0.24), 13, 34))}px`,
     "--font-week-unit": `${Math.round(clamp(Math.min(cellMin * 0.18, cellW * 0.11), 9, 14))}px`,
