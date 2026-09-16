@@ -1048,27 +1048,29 @@ html.is-edit .precip-tod-legend.is-dragging {
 }
 
 .forecast-cell.is-pop-metrics {
-  display: grid;
-  grid-template-columns: max-content max-content;
-  grid-template-rows: 1fr 1fr;
-  justify-content: center;
-  justify-items: center;
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  column-gap: 0.85em;
-  row-gap: 0.22em;
+  justify-content: center;
+  gap: 0.22em;
   padding: 0.06em 0.16em;
   color: var(--text-primary);
   box-sizing: border-box;
   white-space: normal;
-  flex-direction: unset;
   overflow: hidden;
 }
 
+.forecast-cell.is-pop-metrics .pop-metric {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.85em;
+  width: 100%;
+}
+
 .forecast-cell.is-pop-metrics .pop-metric-label {
-  grid-column: 1;
-  justify-self: end;
-  align-self: center;
-  width: auto;
+  flex: 0 0 2.6em;
+  width: 2.6em;
   max-width: 100%;
   font-family: var(--font-main);
   font-size: var(--font-week-label, 12px);
@@ -1081,7 +1083,6 @@ html.is-edit .precip-tod-legend.is-dragging {
 }
 
 .forecast-cell.is-pop-metrics .pop-metric-label.is-pop-chance {
-  grid-row: 1;
   color: #0b6fbf;
   white-space: normal;
   line-height: 1.14;
@@ -1089,35 +1090,27 @@ html.is-edit .precip-tod-legend.is-dragging {
 }
 
 .forecast-cell.is-pop-metrics .pop-metric-label.is-humidity {
-  grid-row: 2;
   color: #1a7a6a;
 }
 
 .forecast-cell.is-pop-metrics .pop-metric-value {
-  grid-column: 2;
   display: inline-flex;
   align-items: baseline;
-  justify-content: flex-start;
-  justify-self: start;
+  justify-content: center;
   gap: 0.02em;
-  min-width: 0;
+  min-width: 3.1em;
   max-width: 100%;
   overflow: hidden;
   color: #123b5c;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
   position: static;
   transform: none;
 }
 
 .forecast-cell.is-pop-metrics .pop-metric-value.is-pop-chance {
-  grid-row: 1;
-  align-self: center;
-  align-items: baseline;
   border-bottom: 1px dotted #9bb8cc;
   padding-bottom: 0.04em;
-}
-
-.forecast-cell.is-pop-metrics .pop-metric-value.is-humidity {
-  grid-row: 2;
 }
 
 .forecast-cell.is-pop-metrics .pop-metric-value b {

@@ -108,10 +108,14 @@ function renderPopCell(day) {
   const humidity = Math.round(Number(day.humidity) || 0);
   return `
     <div class="forecast-cell is-pop is-pop-metrics ${popTone(pop)}${day.today ? " is-today" : ""}">
-      <span class="pop-metric-label is-pop-chance">降水<br>確率</span>
-      <span class="pop-metric-value is-pop-chance"><b>${pop}</b><small>%</small></span>
-      <span class="pop-metric-label is-humidity">\u6e7f\u5ea6</span>
-      <span class="pop-metric-value is-humidity"><b>${humidity}</b><small>%</small></span>
+      <div class="pop-metric is-pop-chance">
+        <span class="pop-metric-label is-pop-chance">降水<br>確率</span>
+        <span class="pop-metric-value is-pop-chance"><b>${pop}</b><small>%</small></span>
+      </div>
+      <div class="pop-metric is-humidity">
+        <span class="pop-metric-label is-humidity">\u6e7f\u5ea6</span>
+        <span class="pop-metric-value is-humidity"><b>${humidity}</b><small>%</small></span>
+      </div>
     </div>
   `;
 }

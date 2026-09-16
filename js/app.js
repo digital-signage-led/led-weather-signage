@@ -18,7 +18,7 @@ import { loadMapSvg, mountMap, placeCardsAroundMap, projectCity } from "./map-re
 import { formatStamp, renderCityCard, renderPin, pinRadiusForViewBox, pinRadiusForMatchingScreen, pickNoteWeather, weatherTone, renderNoteIcon, renderPrecipTodLegend } from "./weather-renderer.js?v=pref468";
 import { applyCardScale, applyLockedCards, applyMapTransform, applyPrecipLegend, applyTitleScale, bindCardEditor, bindMapControls, bindMapEditor, bindOkinawaEditor, bindPrecipLegendEditor, CARD_POS_MAX, CARD_POS_MIN, CARD_SCALE_MAX, CARD_SCALE_MIN, TITLE_SCALE_MAX, TITLE_SCALE_MIN, centerCityCards, initLayoutDefaults, listCardPositions, loadCardScale, loadLayout, loadTitleScale, moveLockedCard, resetCardScale, resetLayout, resetTitleScale, saveCardScale, saveLayout, saveTitleScale, snapshotAllLayoutDefaults, snapshotLayoutDefaults } from "./studio-layout.js?v=pref469";
 import { expandForecast, formatNoteHtml, noteFor } from "./forecast.js?v=pref468";
-import { renderWeeklyTable } from "./table-renderer.js?v=pref471";
+import { renderWeeklyTable } from "./table-renderer.js?v=pref477";
 import {
   DEFAULT_STUDIO_VIEWPORT,
   FIXED_DESIGN,
