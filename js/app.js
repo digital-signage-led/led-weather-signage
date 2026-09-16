@@ -849,8 +849,7 @@ async function bootSignage() {
       }
 
       if (content.kind === "table") {
-        const layoutRows = Math.max(tablePageSize(region.id), 4);
-        applyTableLayout(screen, vp, layoutRows);
+        applyTableLayout(screen, vp, tablePageSize(region.id));
         stage.innerHTML = await renderWeeklyTable(selected, content.id);
         syncPrecipTodLegend(content, stage, layout, region.id, false);
         if (content.id === "weekly_weather") refreshWeekAlert(selected, weekPoints);
