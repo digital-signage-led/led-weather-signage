@@ -307,15 +307,14 @@ html.is-edit .map-cards {
 
 .map-okinawa-overlay .map-okinawa-inset > rect {
   fill: #c8ebff;
-  stroke: #ffffff;
-  stroke-width: 0.55;
+  stroke: none;
 }
 
 .led-screen[data-region="national"] .map-okinawa-dock {
   background: #c8ebff;
-  border: 3px solid #fff;
+  border: 2px solid var(--bg-header);
   border-radius: 3px;
-  box-shadow: 0 0 0 1px rgba(10, 47, 122, 0.35);
+  box-shadow: none;
 }
 
 .map-okinawa-dock {
