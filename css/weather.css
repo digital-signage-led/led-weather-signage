@@ -456,7 +456,8 @@ html.is-edit .city-card.is-dragging {
   pointer-events: auto;
   cursor: grab;
   user-select: none;
-  background: var(--bg-card, #ffffff);
+  /* color-mix 非対応の公開プレーヤーでは宣言ごと無効になり背景が消える */
+  background: rgba(255, 255, 255, 0.88);
   border: none;
   border-radius: var(--box-radius);
   padding: var(--card-pad-y, 4px) var(--card-pad-x, 6px);
