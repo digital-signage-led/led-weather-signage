@@ -456,7 +456,7 @@ html.is-edit .city-card.is-dragging {
   pointer-events: auto;
   cursor: grab;
   user-select: none;
-  background: color-mix(in srgb, var(--bg-card) 88%, transparent);
+  background: var(--bg-card, #ffffff);
   border: none;
   border-radius: var(--box-radius);
   padding: var(--card-pad-y, 4px) var(--card-pad-x, 6px);
