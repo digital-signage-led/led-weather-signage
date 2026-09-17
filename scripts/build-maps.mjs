@@ -237,8 +237,7 @@ function extractPolygons(geometry, minArea, keepPoint = inMainJapan, minHoleArea
     if (!outer.some(([lon, lat]) => keepPoint(lon, lat))) continue;
     const bbox = ringBbox(outer);
     if (bbox.area < minArea) continue;
-    const holes = polygon.slice(1).filter((ring) => ring && ring.length >= 4 && ringBbox(ring).area >= minHoleArea);
-    out.push([outer, ...holes]);
+    out.push([outer]);
   }
   return out;
 }
@@ -505,13 +504,8 @@ const regionGroups = REGION_ORDER.filter((id) => id !== "OKINAWA").map((regionId
 }).join("\n");
 
 const okinawaPaths = polygonsToPath(polygonsForPref("47", 0.00025, inMainJapan, 0.0025, 4), okinawaProj);
-const nationalLakes = lakesToPath(japanProj, 0.004, inMainland, NATIONAL_SIMPLIFY, JAPAN_EXTENT);
-
 const japanSvg = svgWrap(`0 0 ${japanVb.w} ${japanVb.h}`, `<g class="map-fills" fill="#76c85a" fill-rule="nonzero" stroke="none">
 ${regionGroups}
-  </g>
-  <g class="map-lakes" fill="#c8ebff" fill-rule="evenodd" stroke="none">
-    <path d="${nationalLakes}"/>
   </g>
   <g class="map-okinawa-inset" transform="${OKINAWA_INSET_TRANSFORM}">
     <rect x="${OKINAWA_INSET.x}" y="${OKINAWA_INSET.y}" width="${OKINAWA_INSET.w}" height="${OKINAWA_INSET.h}" rx="0.25" fill="#dff4ff" stroke="#ffffff" stroke-width="0.45"/>

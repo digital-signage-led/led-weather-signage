@@ -185,6 +185,12 @@ html.is-edit .map-cards {
   vector-effect: none;
 }
 
+.led-screen .map-svg .map-fills path[data-pref="25"],
+.led-screen:not([data-region="national"]) .map-svg .map-fills.map-focus > path[data-pref="25"],
+.led-screen:not([data-region="national"]) .map-svg .map-fills .map-as-focus[data-pref="25"] {
+  fill-rule: evenodd !important;
+}
+
 .led-screen:not([data-region="national"]) .map-svg .map-fills.map-dim > path,
 .led-screen:not([data-region="national"]) .map-svg .map-fills-cover.map-dim path,
 .led-screen:not([data-region="national"]) .map-svg .map-fills .map-as-dim {
@@ -193,10 +199,21 @@ html.is-edit .map-cards {
   stroke: none !important;
 }
 
+.map-svg .map-fills path[data-pref="25"] {
+  fill-rule: evenodd !important;
+}
+
 .map-svg .map-lakes,
-.map-svg .map-lakes path {
-  fill: var(--map-land, #76c85a);
-  fill-rule: nonzero;
+.map-svg .map-lakes path,
+.map-svg .map-biwa,
+.map-svg .map-biwa path {
+  fill: #c8ebff !important;
+  stroke: none !important;
+}
+
+.map-svg .map-land-patches,
+.map-svg .map-land-patches path {
+  display: none;
 }
 
 .led-screen[data-region="national"] .map-svg .map-fills path[data-pref] {
@@ -344,6 +361,7 @@ html.is-edit .map-cards {
 
 html.is-edit .map-cards {
   z-index: 10;
+  pointer-events: auto;
 }
 
 html.is-edit .city-card {

@@ -2,7 +2,7 @@
  * Studio / signage bootstrap. Studio drives the iframe viewport.
  */
 
-import { APP_VERSION, DATA_VERSION, MAP_VERSION } from "./version.js?v=pref494";
+import { APP_VERSION, DATA_VERSION, MAP_VERSION } from "./version.js?v=pref503";
 import {
   canonicalContent,
   canonicalRegion,
@@ -14,9 +14,9 @@ import {
   loadCatalog
 } from "./catalog.js?v=pref485";
 import { adaptWeather, aggregateRegion, assertRegionCoverage, emptyWeatherPoint } from "./weather-data.js?v=pref415";
-import { loadMapSvg, mountMap, placeCardsAroundMap, projectCity } from "./map-renderer.js?v=pref494";
+import { loadMapSvg, mountMap, placeCardsAroundMap, projectCity } from "./map-renderer.js?v=pref503";
 import { formatStamp, renderCityCard, renderPin, pinRadiusForViewBox, pinRadiusForMatchingScreen, pickNoteWeather, weatherTone, renderNoteIcon, renderPrecipTodLegend } from "./weather-renderer.js?v=pref468";
-import { applyCardScale, applyLockedCards, applyMapTransform, applyPrecipLegend, applyTitleScale, bindCardEditor, bindMapControls, bindMapEditor, bindOkinawaEditor, bindPrecipLegendEditor, CARD_POS_MAX, CARD_POS_MIN, CARD_SCALE_MAX, CARD_SCALE_MIN, TITLE_SCALE_MAX, TITLE_SCALE_MIN, centerCityCards, initLayoutDefaults, listCardPositions, loadCardScale, loadLayout, loadTitleScale, moveLockedCard, resetCardScale, resetLayout, resetTitleScale, saveCardScale, saveLayout, saveTitleScale, snapshotAllLayoutDefaults, snapshotLayoutDefaults } from "./studio-layout.js?v=pref494";
+import { applyCardScale, applyLockedCards, applyMapTransform, applyPrecipLegend, applyTitleScale, bindCardEditor, bindMapControls, bindMapEditor, bindOkinawaEditor, bindPrecipLegendEditor, CARD_POS_MAX, CARD_POS_MIN, CARD_SCALE_MAX, CARD_SCALE_MIN, TITLE_SCALE_MAX, TITLE_SCALE_MIN, centerCityCards, initLayoutDefaults, listCardPositions, loadCardScale, loadLayout, loadTitleScale, moveLockedCard, resetCardScale, resetLayout, resetTitleScale, saveCardScale, saveLayout, saveTitleScale, snapshotAllLayoutDefaults, snapshotLayoutDefaults } from "./studio-layout.js?v=pref499";
 import { expandForecast, formatNoteHtml, noteFor } from "./forecast.js?v=pref468";
 import { renderWeeklyTable, weeklyTableRows } from "./table-renderer.js?v=pref482";
 import {
@@ -186,6 +186,8 @@ function productionUrl(regionId, contentId, extra = {}) {
   if (extra.site) next.searchParams.set("site", extra.site);
   if (extra.vw) next.searchParams.set("vw", String(Math.round(Number(extra.vw) || FIXED_DESIGN.width)));
   if (extra.vh) next.searchParams.set("vh", String(Math.round(Number(extra.vh) || FIXED_DESIGN.height)));
+  next.searchParams.set("v", DATA_VERSION);
+  next.searchParams.set("mapv", MAP_VERSION);
   return next.pathname + next.search;
 }
 
@@ -237,6 +239,65 @@ async function bootStudio() {
     state.viewport = readViewport(DEFAULT_STUDIO_VIEWPORT.width, DEFAULT_STUDIO_VIEWPORT.height);
   }
   const layout = loadLayout(state.regionId, state.contentId, state.viewport.width, state.viewport.height);
+  const UNDO_KEY = "led-weather-studio-undo-v1";
+  const readUndoStack = () => {
+    try {
+      const parsed = JSON.parse(sessionStorage.getItem(UNDO_KEY) || "[]");
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  };
+  const captureStudioLayout = () => ({
+    regionId: state.regionId,
+    contentId: state.contentId,
+    w: state.viewport.width,
+    h: state.viewport.height,
+    layout: {
+      map: { ...layout.map },
+      okinawa: { ...layout.okinawa },
+      precipLegend: layout.precipLegend ? { ...layout.precipLegend } : null,
+      cards: JSON.parse(JSON.stringify(layout.cards || {}))
+    },
+    cardScale: loadCardScale(state.contentId, state.regionId, state.viewport.width, state.viewport.height),
+    titleScale: loadTitleScale(state.viewport.width, state.viewport.height, state.regionId, state.contentId)
+  });
+  const syncUndoButton = () => {
+    const button = document.getElementById("layout-undo");
+    if (button) button.disabled = readUndoStack().length === 0;
+  };
+  const pushUndo = () => {
+    const stack = readUndoStack();
+    stack.push(captureStudioLayout());
+    sessionStorage.setItem(UNDO_KEY, JSON.stringify(stack.slice(-20)));
+    syncUndoButton();
+  };
+  const applyUndo = () => {
+    const stack = readUndoStack();
+    const prev = stack.pop();
+    if (!prev) return;
+    sessionStorage.setItem(UNDO_KEY, JSON.stringify(stack));
+    state.regionId = prev.regionId;
+    state.contentId = prev.contentId;
+    regionSelect.value = prev.regionId;
+    contentSelect.value = prev.contentId;
+    Object.assign(layout, {
+      map: { ...prev.layout.map },
+      okinawa: { ...prev.layout.okinawa },
+      precipLegend: prev.layout.precipLegend ? { ...prev.layout.precipLegend } : layout.precipLegend,
+      cards: { ...prev.layout.cards }
+    });
+    saveLayout(state.regionId, layout, state.contentId, prev.w, prev.h);
+    if (Number.isFinite(prev.cardScale)) saveCardScale(state.contentId, prev.cardScale, state.regionId, prev.w, prev.h);
+    if (Number.isFinite(prev.titleScale)) saveTitleScale(prev.titleScale, prev.w, prev.h, state.regionId, state.contentId);
+    persistStudio();
+    syncMapControls?.();
+    syncCardScaleUi(prev.cardScale);
+    syncTitleScaleUi(prev.titleScale);
+    syncChrome();
+    loadFrame();
+    syncUndoButton();
+  };
   const vpSize = () => ({
     w: state.viewport.width,
     h: state.viewport.height
@@ -423,6 +484,7 @@ async function bootStudio() {
     applyManualCardScale(width / base);
   });
   document.getElementById("layout-reset").addEventListener("click", () => {
+    pushUndo();
     const { w, h } = vpSize();
     const next = resetLayout(state.regionId, state.contentId, w, h);
     layout.map = next.map;
@@ -435,7 +497,16 @@ async function bootStudio() {
     loadFrame();
   });
   document.getElementById("layout-commit")?.addEventListener("click", () => {
+    pushUndo();
     postToFrame({ type: "freeze-layout" });
+  });
+  document.getElementById("layout-undo")?.addEventListener("click", () => {
+    applyUndo();
+  });
+  studioBar.addEventListener("pointerdown", (event) => {
+    if (event.target.closest("#map-scale, #map-rotate, #map-x, #map-y, #title-scale, #card-scale, #card-width-px")) {
+      pushUndo();
+    }
   });
   syncTitleScaleUi();
   regionSelect.addEventListener("change", () => {
@@ -450,12 +521,9 @@ async function bootStudio() {
   });
   contentSelect.addEventListener("change", () => {
     const { w, h } = vpSize();
-    const prevIsMap = getContent(state.contentId).kind === "map";
     saveLayout(state.regionId, layout, state.contentId, w, h);
     state.contentId = contentSelect.value;
-    const nextIsMap = getContent(state.contentId).kind === "map";
-    // 今日/明日の天気・降水は同じ地域地図。切り替えても配置を読み直さない
-    if (!(prevIsMap && nextIsMap)) reloadLayoutForViewport();
+    reloadLayoutForViewport();
     persistStudio();
     syncCardScaleUi();
     syncTitleScaleUi();
@@ -542,6 +610,13 @@ async function bootStudio() {
     if (event.origin !== window.location.origin) return;
     if (event.data?.source !== "led-signage") return;
     if (event.data.type === "cards") {
+      if (!studioBar.dataset.cardUndoLock) {
+        studioBar.dataset.cardUndoLock = "1";
+        pushUndo();
+        window.setTimeout(() => {
+          delete studioBar.dataset.cardUndoLock;
+        }, 800);
+      }
       fillCardEditors(event.data.cards || []);
       if (event.data.cards?.length) {
         layout.cards = Object.fromEntries(
@@ -555,6 +630,9 @@ async function bootStudio() {
     if (event.data.type === "map" && event.data.map) {
       Object.assign(layout.map, event.data.map);
       if (event.data.okinawa) Object.assign(layout.okinawa, event.data.okinawa);
+      if (event.data.precipLegend) layout.precipLegend = { ...event.data.precipLegend };
+      const { w, h } = vpSize();
+      saveLayout(state.regionId, layout, state.contentId, w, h);
       syncMapControls();
     }
     if (event.data.type === "layout-frozen" && event.data.layout) {
@@ -653,6 +731,7 @@ async function bootStudio() {
   persistStudio();
   syncChrome();
   syncCardScaleUi();
+  syncUndoButton();
   contentSelect.addEventListener("change", syncChrome);
   loadFrame();
   postStudioSnapshot(snapshotAllLayoutDefaults()).catch(() => {});
@@ -938,7 +1017,14 @@ async function bootSignage() {
       layers.cards.innerHTML = cards.join("");
       cardsLayer = layers.cards;
       assertRegionCoverage(region, candidates, laidOut);
-      syncPrecipTodLegend(content, stage, layout, region.id, canEdit);
+      syncPrecipTodLegend(content, stage, layout, region.id, canEdit, () => {
+        notifyStudio({
+          type: "map",
+          map: { ...layout.map },
+          okinawa: { ...layout.okinawa },
+          precipLegend: { ...layout.precipLegend }
+        });
+      });
       centerCityCards(layers.cards);
       fitCityCardNames(layers.cards);
       if (document.fonts?.ready) {
@@ -1134,7 +1220,7 @@ function syncTitleMark(content) {
 }
 
 /** ????????????? */
-function syncPrecipTodLegend(content, stage, layout, regionId, canEdit) {
+function syncPrecipTodLegend(content, stage, layout, regionId, canEdit, onLegendChange) {
   const host = stage?.closest(".led-body") || document.querySelector(".led-body");
   if (!host) return;
   host.querySelectorAll(".precip-tod-legend").forEach((node) => node.remove());
@@ -1143,7 +1229,7 @@ function syncPrecipTodLegend(content, stage, layout, regionId, canEdit) {
   host.insertAdjacentHTML("beforeend", renderPrecipTodLegend());
   if (layout) applyPrecipLegend(host, layout);
   if (canEdit && layout && regionId) {
-    bindPrecipLegendEditor(layout, regionId, content.id);
+    bindPrecipLegendEditor(layout, regionId, content.id, onLegendChange);
   }
 }
 

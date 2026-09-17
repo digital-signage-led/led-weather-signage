@@ -4,8 +4,8 @@
  * 北海道の今日/明日×天気/降水はその子、東北も同様。地方同士では共有しない。
  */
 
-import { canonicalContent, canonicalRegion } from "./catalog.js?v=pref485";
-import { DATA_VERSION } from "./version.js?v=pref494";
+import { canonicalContent, canonicalRegion } from "./catalog.js?v=pref496";
+import { DATA_VERSION } from "./version.js?v=pref501";
 
 const STORAGE_KEY = "led-weather-layout-v7";
 const STORAGE_KEY_LEGACY = "led-weather-layout-v4";
@@ -189,7 +189,8 @@ function attachSharedMap(regionState = {}, entry = {}) {
       okinawa: next.okinawa,
       precipLegend: next.precipLegend,
       cards: { ...next.cards },
-      cardsPop: { ...next.cards }
+      cardsPop: { ...next.cards },
+      rev: Number(entry.rev) || Date.now()
     }
   };
 }
@@ -286,11 +287,21 @@ export function loadLayout(regionId, contentId = "today_weather", width = 0, hei
     const shippedNear = !shippedExact && w > 0 && h > 0
       ? nearestViewportSlice(shippedRegion?.viewports, w, h)
       : null;
-    const localSlice = saved ? pickLatestLocalLayout(saved, width, height) : null;
-    const shippedSlice = shippedExact || shippedNear;
+    const sharedSlice = saved?.sharedMap && (saved.sharedMap.map || Object.keys(saved.sharedMap.cards || {}).length)
+      ? saved.sharedMap
+      : null;
+    const local1920 = saved?.viewports?.["1920x1080"] || null;
+    const shipped1920 = shippedRegion?.viewports?.["1920x1080"] || null;
+    const localSlice = isSharedMapContent(contentId)
+      ? (sharedSlice || local1920 || (saved ? pickLatestLocalLayout(saved, width, height) : null))
+      : (saved ? pickLatestLocalLayout(saved, width, height) : null);
+    const shippedSlice = isSharedMapContent(contentId)
+      ? (shipped1920 || shippedExact || shippedNear)
+      : (shippedExact || shippedNear);
     const localRev = Number(localSlice?.rev) || 0;
     const shippedRev = Number(shippedSlice?.rev) || 0;
-    const slice = (localSlice && localRev >= shippedRev) ? localSlice : (shippedSlice || localSlice);
+    const editing = !isKioskRuntime();
+    const slice = (localSlice && (editing || localRev >= shippedRev)) ? localSlice : (shippedSlice || localSlice);
     if (!slice && !saved) return emptyLayout(regionId);
     const entry = layoutEntryFrom(slice || saved || {});
     const shippedCards = shippedSlice?.cards || {};
@@ -345,6 +356,9 @@ export function saveLayout(regionId, layout, contentId = "today_weather", width 
   const viewports = { ...(prev.viewports || {}) };
   if (vpKey) viewports[vpKey] = entry;
   viewports["1920x1080"] = entry;
+  if (isSharedMapContent(contentId)) {
+    for (const key of Object.keys(viewports)) viewports[key] = entry;
+  }
   all[regionId] = attachSharedMap({
     ...prev,
     viewports
@@ -915,27 +929,31 @@ export function centerCityCards(cardsEl) {
 
 export function resetLayout(regionId, contentId = "today_weather", width = 0, height = 0) {
   regionId = canonicalRegion(regionId);
-  const layout = emptyLayout(regionId);
-  const all = readLayoutStore();
-  const prev = all[regionId] || {};
-  const entry = {
-    map: layout.map,
-    okinawa: layout.okinawa,
-    precipLegend: layout.precipLegend,
-    cards: {},
-    cardsPop: {}
-  };
-  const viewports = { ...(prev.viewports || {}) };
   const w = Math.round(Number(width) || 0);
   const h = Math.round(Number(height) || 0);
-  if (w > 0 && h > 0) {
-    viewports[viewportSizeKey(w, h)] = entry;
-    all[regionId] = { ...prev, ...entry, viewports };
-  } else {
-    all[regionId] = { ...entry, viewports: {} };
-  }
+  const vpKey = w > 0 && h > 0 ? viewportSizeKey(w, h) : "";
+  const shipped = shippedDefaults.layouts?.[regionId];
+  const shippedSlice = (vpKey && shipped?.viewports?.[vpKey])
+    || (w > 0 && h > 0 ? nearestViewportSlice(shipped?.viewports, w, h) : null)
+    || shipped?.viewports?.["1920x1080"]
+    || emptyLayout(regionId);
+  const entry = {
+    ...layoutEntryFrom(shippedSlice),
+    rev: Date.now()
+  };
+  const all = readLayoutStore();
+  const prev = all[regionId] || {};
+  const viewports = { ...(prev.viewports || {}) };
+  if (vpKey) viewports[vpKey] = entry;
+  viewports["1920x1080"] = entry;
+  all[regionId] = attachSharedMap({ ...prev, viewports }, entry);
   localStorage.setItem(STORAGE_KEY, JSON.stringify(all));
-  return layout;
+  return {
+    map: entry.map,
+    okinawa: entry.okinawa,
+    precipLegend: entry.precipLegend,
+    cards: { ...entry.cards }
+  };
 }
 
 export function bindMapControls(form, layout, onMapChange) {
@@ -1085,8 +1103,18 @@ export function moveLockedCard(cardsEl, layout, regionId, contentId, cityId, x, 
 
 export function bindCardEditor(cardsEl, layout, regionId, contentId = "today_weather", onChange, screen) {
   const layer = cardsEl;
+  if (!layer || layer.dataset.cardEditorBound === "1") return;
+  layer.dataset.cardEditorBound = "1";
 
   const screenSize = () => {
+    try {
+      const q = new URLSearchParams(window.location.search);
+      const qw = Number(q.get("vw"));
+      const qh = Number(q.get("vh"));
+      if (qw > 0 && qh > 0) return { w: Math.round(qw), h: Math.round(qh) };
+    } catch {
+      /* ignore */
+    }
     const w = Number.parseFloat(screen?.style?.getPropertyValue("--led-width")) || screen?.clientWidth || 0;
     const h = Number.parseFloat(screen?.style?.getPropertyValue("--led-height")) || screen?.clientHeight || 0;
     return { w, h };
@@ -1280,11 +1308,16 @@ export function bindPrecipLegendEditor(layout, regionId, contentId, onChange) {
   if (!layout.precipLegend) layout.precipLegend = { ...emptyLayout().precipLegend };
   applyPrecipLegend(host, layout);
   el.classList.add("is-editable");
+  if (el.dataset.legendEditorBound === "1") return;
+  el.dataset.legendEditorBound = "1";
 
   const persist = () => {
+    const q = new URLSearchParams(window.location.search);
+    const qw = Number(q.get("vw"));
+    const qh = Number(q.get("vh"));
     const screen = el.closest(".led-screen");
-    const w = Number.parseFloat(screen?.style?.getPropertyValue("--led-width")) || screen?.clientWidth || 0;
-    const h = Number.parseFloat(screen?.style?.getPropertyValue("--led-height")) || screen?.clientHeight || 0;
+    const w = qw > 0 ? Math.round(qw) : (Number.parseFloat(screen?.style?.getPropertyValue("--led-width")) || screen?.clientWidth || 1920);
+    const h = qh > 0 ? Math.round(qh) : (Number.parseFloat(screen?.style?.getPropertyValue("--led-height")) || screen?.clientHeight || 1080);
     saveLayout(regionId, layout, contentId, w, h);
     onChange?.(layout.precipLegend);
   };

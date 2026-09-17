@@ -5,7 +5,7 @@
 
 import { canonicalRegion, isNational } from "./catalog.js?v=pref387";
 import { cardSizePct } from "./viewport.js?v=pref387";
-import { MAP_VERSION } from "./version.js?v=pref387";
+import { MAP_VERSION } from "./version.js?v=pref503";
 
 import { jmaIconFile } from "./jma-icons.js?v=pref387";
 
@@ -35,7 +35,8 @@ export async function loadMapSvg(mapFile = "japan.svg") {
   // 全国・地方とも共通の japan.svg。1回だけ取得し以降はメモリ再利用。
   if (!mapSvgTextPromise) {
     const file = "japan.svg";
-    mapSvgTextPromise = fetch(`maps/${file}?v=${MAP_VERSION}`)
+    const mapv = new URLSearchParams(window.location.search).get("mapv") || MAP_VERSION;
+    mapSvgTextPromise = fetch(`maps/${file}?v=${mapv}`)
       .then((response) => {
         if (!response.ok) throw new Error(`${file} を読み込めません`);
         return response.text();
@@ -101,11 +102,13 @@ export function mountMap(stage, svgText, regionId = "national") {
     host.innerHTML = fitted;
   }
   const mapSvg = host.querySelector("svg");
+  hideInlandLakes(mapSvg);
   applyScreenFocus(mapSvg, regionId);
   prepareCommonMapLayers(mapSvg, regionId);
   dropOutOfFrameTris(mapSvg, regionId);
   paintNeighborLand(mapSvg, regionId);
   prepareMapStrokes(mapSvg, regionId);
+  raiseBiwaLayer(mapSvg);
   fitRegionalView(mapSvg, stage.querySelector(".map-pins"), regionId);
   const fit = stage.querySelector(".map-fit");
   // 沖縄枠の切り離しは全国画面のみ（地方の沖縄は inset を拡大表示）。
@@ -188,6 +191,35 @@ function framePrefsFor(regionId) {
     for (const pref of focusPrefsFor(neighbor)) prefs.add(pref);
   }
   return prefs;
+}
+
+/** 琵琶湖以外の内陸の穴・湖は陸地色。琵琶湖だけ穴として残す。 */
+function hideInlandLakes(svg) {
+  if (!svg) return;
+  svg.querySelectorAll(".map-land-patches").forEach((el) => el.remove());
+  const lakePath = svg.querySelector(".map-biwa path, .map-lakes path");
+  const lakeParts = (lakePath?.getAttribute("d") || "").match(/[Mm][^MmZz]*[Zz]/g) || [];
+  const biwaD = lakeParts.reduce((best, part) => (part.length > best.length ? part : best), lakeParts[0] || "");
+  svg.querySelectorAll(".map-fills path[data-pref]").forEach((el) => {
+    const d = el.getAttribute("d") || "";
+    const parts = d.match(/[Mm][^MmZz]*[Zz]/g);
+    const outer = parts?.length
+      ? parts.reduce((best, part) => (part.length > best.length ? part : best), parts[0])
+      : d;
+    if (el.getAttribute("data-pref") === "25" && biwaD) {
+      el.setAttribute("d", `${outer}${biwaD}`);
+      el.setAttribute("fill-rule", "evenodd");
+      el.style.setProperty("fill-rule", "evenodd", "important");
+      return;
+    }
+    if (parts && parts.length >= 2) el.setAttribute("d", outer);
+  });
+  svg.querySelectorAll(".map-lakes").forEach((el) => el.remove());
+}
+
+function raiseBiwaLayer(svg) {
+  const biwa = svg?.querySelector(".map-biwa");
+  if (biwa) svg.appendChild(biwa);
 }
 
 /** 共通地図を地方表示向けに整える（沖縄枠の扱い・遠方県の抑制）。 */
@@ -431,6 +463,10 @@ function paintNeighborLand(svg, regionId = "") {
       fill-rule: nonzero !important;
       ${focusStroke}
     }
+    .map-fills.map-focus > path[data-pref="25"],
+    .map-fills .map-as-focus[data-pref="25"] {
+      fill-rule: evenodd !important;
+    }
     .map-fills.map-dim > path,
     .map-fills .map-as-dim {
       fill: #b4b8bf !important;
@@ -442,9 +478,10 @@ function paintNeighborLand(svg, regionId = "") {
   svg.insertBefore(style, svg.firstChild);
   const applyFocusPaint = (el) => {
     el.setAttribute("fill", focusFill);
-    el.setAttribute("fill-rule", "nonzero");
+    const holeRule = el.getAttribute("data-pref") === "25" ? "evenodd" : "nonzero";
+    el.setAttribute("fill-rule", holeRule);
     el.style.setProperty("fill", focusFill, "important");
-    el.style.setProperty("fill-rule", "nonzero", "important");
+    el.style.setProperty("fill-rule", holeRule, "important");
     if (national) {
       el.style.setProperty("stroke", "none", "important");
     } else {
