@@ -189,6 +189,28 @@ function productionUrl(regionId, contentId, extra = {}) {
   return next.pathname + next.search;
 }
 
+async function postStudioSnapshot(snapshot) {
+  const body = JSON.stringify(snapshot || {});
+  const targets = [
+    "/api/layout-defaults",
+    "http://127.0.0.1:5173/api/layout-defaults",
+    "http://127.0.0.1:5174/api/layout-defaults"
+  ];
+  for (const url of targets) {
+    try {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body
+      });
+      if (response.ok) return true;
+    } catch {
+      /* try next */
+    }
+  }
+  return false;
+}
+
 async function bootStudio() {
   try {
     await loadCatalog();
@@ -607,12 +629,8 @@ async function bootStudio() {
         URL.revokeObjectURL(url);
         return merged;
       };
-      fetch("/api/layout-defaults", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify(snapshot)
-      }).then(async (response) => {
-        if (!response.ok) throw new Error("save failed");
+      postStudioSnapshot(snapshot).then(async (ok) => {
+        if (!ok) throw new Error("save failed");
         setHint(`配置を固定しました（${w}x${h}）。この地域の今日/明日の天気・降水が同じ地図を使います。GitHub反映はコミット＆プッシュが必要です。`);
       }).catch(async () => {
         try {
@@ -637,6 +655,7 @@ async function bootStudio() {
   syncCardScaleUi();
   contentSelect.addEventListener("change", syncChrome);
   loadFrame();
+  postStudioSnapshot(snapshotAllLayoutDefaults()).catch(() => {});
   } finally {
     document.documentElement.classList.remove("is-boot");
   }

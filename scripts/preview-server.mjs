@@ -5,6 +5,11 @@ import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const port = Number(process.env.PORT || 5173);
+const CORS = {
+  "access-control-allow-origin": "*",
+  "access-control-allow-methods": "GET,POST,OPTIONS",
+  "access-control-allow-headers": "content-type"
+};
 const defaultsPath = path.join(root, "data", "layout-defaults.json");
 
 const TYPES = {
@@ -58,6 +63,19 @@ function readBody(req) {
 const server = http.createServer(async (req, res) => {
   const urlPath = decodeURIComponent((req.url || "/").split("?")[0]);
 
+  if (req.method === "OPTIONS" && urlPath === "/api/layout-defaults") {
+    res.writeHead(204, CORS);
+    res.end();
+    return;
+  }
+
+  if (req.method === "GET" && urlPath === "/api/layout-defaults") {
+    const current = readJson(defaultsPath, { layouts: {}, cardScales: {}, titleScales: {} });
+    res.writeHead(200, { "content-type": "application/json; charset=utf-8", "cache-control": "no-store", ...CORS });
+    res.end(JSON.stringify({ ok: true, rev: current.rev || 0 }));
+    return;
+  }
+
   if (req.method === "POST" && urlPath === "/api/layout-defaults") {
     try {
       const raw = await readBody(req);
@@ -65,10 +83,10 @@ const server = http.createServer(async (req, res) => {
       const current = readJson(defaultsPath, { layouts: {}, cardScales: {}, titleScales: {} });
       const merged = mergeDefaults(current, patch);
       fs.writeFileSync(defaultsPath, `${JSON.stringify(merged, null, 2)}\n`, "utf8");
-      res.writeHead(200, { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" });
+      res.writeHead(200, { "content-type": "application/json; charset=utf-8", "cache-control": "no-store", ...CORS });
       res.end(JSON.stringify({ ok: true }));
     } catch (error) {
-      res.writeHead(500, { "content-type": "application/json; charset=utf-8" });
+      res.writeHead(500, { "content-type": "application/json; charset=utf-8", ...CORS });
       res.end(JSON.stringify({ ok: false, error: String(error?.message || error) }));
     }
     return;
