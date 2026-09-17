@@ -130,18 +130,13 @@ const SITE_STORE = "led-signage-site";
 
 const params = new URLSearchParams(window.location.search);
 const studioFlag = String(params.get("studio") || "").toLowerCase();
-let studioHop = false;
-try {
-  studioHop = sessionStorage.getItem("led-force-studio") === "1";
-  if (studioHop) sessionStorage.removeItem("led-force-studio");
-} catch {
-  studioHop = false;
-}
-const isStudio = window.__LED_FORCE_STUDIO__ === true
+const inSignageFrame = window.self !== window.top;
+const isStudio = !inSignageFrame && (
+  window.__LED_FORCE_STUDIO__ === true
   || studioFlag === "1" || studioFlag === "true" || studioFlag === "yes"
   || /studio\.html$/i.test(window.location.pathname)
   || window.location.hash === "#studio"
-  || studioHop;
+);
 if (isStudio) window.__LED_FORCE_STUDIO__ = true;
 const isDebug = params.get("debug") === "1";
 const canEdit = params.get("edit") === "1";
@@ -176,16 +171,20 @@ if (isStudio) {
 
 function productionUrl(regionId, contentId, extra = {}) {
   const next = new URL(window.location.href);
-  const path = next.pathname === "/view" ? "/view" : next.pathname;
-  next.pathname = path;
+  if (/studio\.html$/i.test(next.pathname)) {
+    next.pathname = next.pathname.replace(/studio\.html$/i, "index.html");
+  } else if (next.pathname !== "/view" && !/index\.html$/i.test(next.pathname)) {
+    next.pathname = `${next.pathname.replace(/\/$/, "")}/index.html`;
+  }
   next.search = "";
+  next.hash = "";
   next.searchParams.set("region", canonicalRegion(regionId));
   next.searchParams.set("content", canonicalContent(contentId));
   if (extra.edit) next.searchParams.set("edit", "1");
   if (extra.debug) next.searchParams.set("debug", "1");
   if (extra.site) next.searchParams.set("site", extra.site);
-  if (extra.vw) next.searchParams.set("vw", String(extra.vw));
-  if (extra.vh) next.searchParams.set("vh", String(extra.vh));
+  if (extra.vw) next.searchParams.set("vw", String(Math.round(Number(extra.vw) || FIXED_DESIGN.width)));
+  if (extra.vh) next.searchParams.set("vh", String(Math.round(Number(extra.vh) || FIXED_DESIGN.height)));
   return next.pathname + next.search;
 }
 
@@ -458,8 +457,9 @@ async function bootStudio() {
     const button = event.target.closest("button");
     if (!button) return;
     if (button.dataset.live) {
-      widthInput.value = String(Math.max(160, previewStage.clientWidth));
-      heightInput.value = String(Math.max(120, previewStage.clientHeight));
+      const live = readViewport(previewStage.clientWidth, previewStage.clientHeight);
+      widthInput.value = String(live.width);
+      heightInput.value = String(live.height);
     } else {
       widthInput.value = button.dataset.w;
       heightInput.value = button.dataset.h;
