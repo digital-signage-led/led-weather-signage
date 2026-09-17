@@ -2,8 +2,8 @@
  * Studio / signage bootstrap. Studio drives the iframe viewport.
  */
 
-import { APP_VERSION, DATA_VERSION, MAP_VERSION } from "./version.js?v=pref521";
-import { isWeatherDoc, readWeatherLkg, writeWeatherLkg } from "./weather-cache.js?v=pref521";
+import { APP_VERSION, DATA_VERSION, MAP_VERSION } from "./version.js?v=pref522";
+import { isWeatherDoc, readWeatherLkg, writeWeatherLkg } from "./weather-cache.js?v=pref522";
 import {
   canonicalContent,
   canonicalRegion,
@@ -17,7 +17,7 @@ import {
 import { adaptWeather, aggregateRegion, assertRegionCoverage, emptyWeatherPoint } from "./weather-data.js?v=pref415";
 import { existingMapLayers, loadMapSvg, mountMap, placeCardsAroundMap, projectCity } from "./map-renderer.js?v=pref521";
 import { formatStamp, renderCityCard, renderPin, pinRadiusForViewBox, pinRadiusForMatchingScreen, pickNoteWeather, weatherTone, renderNoteIcon, renderPrecipTodLegend } from "./weather-renderer.js?v=pref468";
-import { applyCardScale, applyLockedCards, applyMapTransform, applyPrecipLegend, applyTitleScale, bindCardEditor, bindMapControls, bindMapEditor, bindOkinawaEditor, bindPrecipLegendEditor, CARD_POS_MAX, CARD_POS_MIN, CARD_SCALE_MAX, CARD_SCALE_MIN, TITLE_SCALE_MAX, TITLE_SCALE_MIN, centerCityCards, initLayoutDefaults, listCardPositions, loadCardScale, loadLayout, loadTitleScale, moveLockedCard, resetCardScale, resetLayout, resetTitleScale, saveCardScale, saveLayout, saveTitleScale, snapshotAllLayoutDefaults, snapshotLayoutDefaults } from "./studio-layout.js?v=pref513";
+import { applyCardScale, applyLockedCards, applyMapTransform, applyPrecipLegend, applyTitleScale, bindCardEditor, bindMapControls, bindMapEditor, bindOkinawaEditor, bindPrecipLegendEditor, CARD_POS_MAX, CARD_POS_MIN, CARD_SCALE_MAX, CARD_SCALE_MIN, TITLE_SCALE_MAX, TITLE_SCALE_MIN, centerCityCards, hasLocalLayouts, initLayoutDefaults, listCardPositions, loadCardScale, loadLayout, loadTitleScale, moveLockedCard, resetCardScale, resetLayout, resetTitleScale, saveCardScale, saveLayout, saveTitleScale, snapshotAllLayoutDefaults, snapshotLayoutDefaults } from "./studio-layout.js?v=pref522";
 import { expandForecast, formatNoteHtml, noteFor } from "./forecast.js?v=pref468";
 import { renderWeeklyTable, weeklyTableRows } from "./table-renderer.js?v=pref482";
 import {
@@ -749,7 +749,10 @@ async function bootSignage() {
   const bootStatus = document.getElementById("boot-status");
   if (bootStatus) bootStatus.hidden = true;
   loadMapSvg();
-  await Promise.all([loadCatalog(), initLayoutDefaults()]);
+  const layoutReady = initLayoutDefaults();
+  await loadCatalog();
+  if (!hasLocalLayouts()) await layoutReady;
+  else layoutReady.catch(() => {});
   state.regionId = getRegion(state.regionId).id;
   state.contentId = getContent(state.contentId).id;
 
@@ -1177,7 +1180,7 @@ async function bootSignage() {
   } finally {
     document.documentElement.classList.remove("is-boot");
   }
-  registerSignageWorker();
+  unregisterSignageWorkers();
   const loopRaw = params.get("loop");
   const loopMs = loopRaw === "1" || loopRaw === "true" ? 30000 : Number(loopRaw);
   if (loopMs > 0 && !canEdit) {
@@ -1191,7 +1194,7 @@ async function bootSignage() {
   }
   // 同梱／LKGのあと気象庁最新へ差し替え。毎時0分と、5・11・17時発表の直後に取り直す
   const refreshLive = () => pullLiveWeatherAndRender(render);
-  refreshLive();
+  window.setTimeout(refreshLive, 4000);
   scheduleJmaRefresh(refreshLive);
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "visible" && needsJmaRefresh()) {
@@ -1306,11 +1309,16 @@ async function pullLiveWeatherAndRender(renderFn) {
   livePullInFlight = (async () => {
     try {
       const locations = await fetchJson("data/locations.json");
-      const live = await withTimeout(fetchJmaWeather(locations.cities), LIVE_FETCH_TIMEOUT_MS);
+      const cities = (locations.cities || []).filter((city) => {
+        if (state.regionId === "national") return city.showOnNational !== false && city.showOnNational;
+        return city.regionId === state.regionId;
+      });
+      const live = await withTimeout(fetchJmaWeather(cities.length ? cities : locations.cities), LIVE_FETCH_TIMEOUT_MS);
       if (!isWeatherDoc(live)) return;
       const at = Date.now();
-      liveWeatherCache = { at, doc: live };
-      writeWeatherLkg(live, at);
+      const merged = mergeWeatherDocs(liveWeatherCache.doc, live);
+      liveWeatherCache = { at, doc: merged };
+      writeWeatherLkg(merged, at);
       if (typeof renderFn === "function") await renderFn();
     } catch {
       /* 同梱データまたは前回キャッシュのまま */
@@ -1334,10 +1342,26 @@ async function loadWeatherDoc() {
   return bundledWeatherDoc;
 }
 
-function registerSignageWorker() {
-  if (!("serviceWorker" in navigator) || isStudio || canEdit) return;
-  const swUrl = new URL("sw.js", window.location.href);
-  navigator.serviceWorker.register(swUrl.href, { scope: new URL("./", window.location.href).pathname }).catch(() => {});
+function mergeWeatherDocs(base, live) {
+  if (!isWeatherDoc(live)) return base;
+  if (!isWeatherDoc(base)) return live;
+  const byId = new Map((base.points || []).map((point) => [point.cityId, point]));
+  for (const point of live.points) byId.set(point.cityId, point);
+  return {
+    ...base,
+    ...live,
+    points: [...byId.values()],
+    notes: { ...(base.notes || {}), ...(live.notes || {}) }
+  };
+}
+
+function unregisterSignageWorkers() {
+  if (!("serviceWorker" in navigator)) return;
+  navigator.serviceWorker.getRegistrations()
+    .then((regs) => Promise.all(regs.map((reg) => reg.unregister())))
+    .catch(() => {});
+  if (typeof caches === "undefined") return;
+  caches.keys().then((keys) => Promise.all(keys.map((key) => caches.delete(key)))).catch(() => {});
 }
 
 const jsonCache = new Map();

@@ -409,11 +409,21 @@ export async function fetchJmaWeather(cities) {
   const area = await loadArea();
   const offices = [...new Set(cities.map((city) => findCityArea(area, city).office).filter(Boolean))];
   const forecastsByOffice = {};
-  await Promise.all(offices.map(async (office) => {
-    const response = await fetch(FORECAST_URL(office), { cache: "no-store" });
-    if (!response.ok) return;
-    forecastsByOffice[office] = await response.json();
-  }));
+  const queue = [...offices];
+  const workers = Array.from({ length: Math.min(3, queue.length) }, async () => {
+    while (queue.length) {
+      const office = queue.shift();
+      if (!office) return;
+      try {
+        const response = await fetch(FORECAST_URL(office), { cache: "no-store" });
+        if (!response.ok) continue;
+        forecastsByOffice[office] = await response.json();
+      } catch {
+        /* 次の地方へ */
+      }
+    }
+  });
+  await Promise.all(workers);
   const weather = buildJmaWeather(cities, area, forecastsByOffice);
   if (!weather.points.length) throw new Error("no points");
   return weather;

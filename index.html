@@ -44,17 +44,24 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/base.css?v=pref513">
   <link rel="stylesheet" href="css/weather.css?v=pref520">
-  <link rel="modulepreload" href="js/app.js?v=pref521">
-  <link rel="preload" href="data/weather.json?v=pref521" as="fetch" crossorigin>
-  <link rel="preload" href="data/locations.json?v=pref521" as="fetch" crossorigin>
-  <link rel="preload" href="data/layout-defaults.json?v=pref521" as="fetch" crossorigin>
+  <link rel="modulepreload" href="js/app.js?v=pref522">
+  <link rel="preload" href="data/weather.json?v=pref522" as="fetch" crossorigin>
+  <link rel="preload" href="data/locations.json?v=pref522" as="fetch" crossorigin>
   <link rel="preload" href="maps/japan.svg?v=pref507" as="fetch" crossorigin>
   <script>
-    try {
-      if (localStorage.getItem("led-weather-lkg-v1")) {
-        document.documentElement.classList.remove("is-boot");
+    (function () {
+      try { document.documentElement.classList.remove("is-boot"); } catch (e) { /* ignore */ }
+      if (navigator.serviceWorker) {
+        navigator.serviceWorker.getRegistrations().then(function (regs) {
+          regs.forEach(function (reg) { reg.unregister(); });
+        });
       }
-    } catch (e) { /* ignore */ }
+      if (window.caches) {
+        caches.keys().then(function (keys) {
+          keys.forEach(function (key) { caches.delete(key); });
+        });
+      }
+    })();
   </script>
 </head>
 <body>
@@ -164,6 +171,6 @@
     </article>
     <aside id="debug-overlay" hidden></aside>
   </div>
-  <script type="module" src="js/app.js?v=pref521"></script>
+  <script type="module" src="js/app.js?v=pref522"></script>
 </body>
 </html>

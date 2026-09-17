@@ -167,6 +167,15 @@ function nearestViewportSlice(viewports, width, height) {
   return best;
 }
 
+export function hasLocalLayouts() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(STORAGE_KEY_LEGACY);
+    return Boolean(raw && raw.length > 80);
+  } catch {
+    return false;
+  }
+}
+
 export async function initLayoutDefaults() {
   try {
     const response = await fetch(`data/layout-defaults.json?v=${DATA_VERSION}`, { cache: "force-cache" });
