@@ -55,6 +55,36 @@ function formatCardNumber(value) {
   return Number.isFinite(n) ? String(Math.round(n)) : "--";
 }
 
+export function renderCityCardSkeleton(point, position, options = {}) {
+  const name = point.cityName || "";
+  const locked = position.locked ? " is-locked" : "";
+  if (options.layout === "pop") {
+    return `
+    <article class="city-card is-pop is-vertical${locked}" data-city-id="${point.cityId}" style="left:${position.x}%;top:${position.y}%;">
+      <span class="city-card-name">${name}</span>
+      <span class="city-card-pops">
+        <span class="pop-slot is-morning"><b>--</b></span>
+        <span class="pop-slot is-noon"><b>--</b></span>
+      </span>
+    </article>`;
+  }
+  return `
+    <article class="city-card is-vertical${locked}" data-city-id="${point.cityId}" style="left:${position.x}%;top:${position.y}%;">
+      <span class="city-card-icon-stack">
+        <span class="city-card-icon-box" aria-hidden="true"></span>
+        <span class="wx-icon" aria-hidden="true"></span>
+      </span>
+      <span class="city-card-name">${name}</span>
+      <span class="city-card-row">
+        <span class="city-card-temps">
+          <b class="temp-max">--</b><small>℃</small>
+          <span class="temp-slash">/</span>
+          <b class="temp-min">--</b><small>℃</small>
+        </span>
+      </span>
+    </article>`;
+}
+
 export async function renderCityCard(point, position, options = {}) {
   const temps = `
         <span class="city-card-temps">

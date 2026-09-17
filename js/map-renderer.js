@@ -94,7 +94,9 @@ export function existingMapLayers(stage, regionId = "national") {
   };
 }
 
-export function mountMap(stage, svgText, regionId = "national") {
+export function mountMapFrame(stage, regionId = "national") {
+  const existing = existingMapLayers(stage, regionId);
+  if (existing) return existing;
   regionId = canonicalRegion(regionId);
   stage.dataset.mapRegion = regionId;
   stage.innerHTML = `
@@ -112,7 +114,14 @@ export function mountMap(stage, svgText, regionId = "national") {
       <button type="button" class="map-resize" aria-label="地図の大きさを変える"></button>
     </div>
   `;
+  return existingMapLayers(stage, regionId);
+}
+
+export function fillMountedMap(stage, svgText, regionId = "national") {
+  regionId = canonicalRegion(regionId);
   const host = stage.querySelector(".map-svg");
+  if (!host) return mountMap(stage, svgText, regionId);
+  if (host.querySelector("svg")) return existingMapLayers(stage, regionId);
   const cloned = cloneMapSvg(svgText);
   if (cloned) host.appendChild(document.importNode(cloned, true));
   else {
@@ -130,18 +139,15 @@ export function mountMap(stage, svgText, regionId = "national") {
   fitRegionalView(mapSvg, stage.querySelector(".map-pins"), regionId);
   raiseBiwaLayer(mapSvg);
   const fit = stage.querySelector(".map-fit");
-  // 沖縄枠の切り離しは全国画面のみ（地方の沖縄は inset を拡大表示）。
-  const okinawa = isNational(regionId) ? detachOkinawaInset(fit, mapSvg) : null;
-  return {
-    pins: stage.querySelector(".map-pins"),
-    leaders: stage.querySelector(".map-leaders"),
-    cards: stage.querySelector(".map-cards"),
-    geo: stage.querySelector(".map-geo"),
-    fit,
-    okinawaDock: okinawa?.dock || null,
-    okinawaPins: okinawa?.pins || null,
-    regionId
-  };
+  if (isNational(regionId) && !stage.querySelector(".map-okinawa-dock")) {
+    detachOkinawaInset(fit, mapSvg);
+  }
+  return existingMapLayers(stage, regionId);
+}
+
+export function mountMap(stage, svgText, regionId = "national") {
+  mountMapFrame(stage, regionId);
+  return fillMountedMap(stage, svgText, regionId);
 }
 
 /** 全国図の沖縄枠は列島の拡大・移動に追従させず、画面内に残す。 */

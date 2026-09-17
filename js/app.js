@@ -2,7 +2,7 @@
  * Studio / signage bootstrap. Studio drives the iframe viewport.
  */
 
-import { APP_VERSION, DATA_VERSION, MAP_VERSION } from "./version.js?v=pref523";
+import { APP_VERSION, DATA_VERSION, MAP_VERSION } from "./version.js?v=pref524";
 import { isWeatherDoc, readWeatherLkg, writeWeatherLkg } from "./weather-cache.js?v=pref522";
 import {
   canonicalContent,
@@ -15,11 +15,12 @@ import {
   loadCatalog
 } from "./catalog.js?v=pref485";
 import { adaptWeather, aggregateRegion, assertRegionCoverage, emptyWeatherPoint } from "./weather-data.js?v=pref415";
-import { existingMapLayers, loadMapSvg, mountMap, placeCardsAroundMap, projectCity } from "./map-renderer.js?v=pref521";
-import { formatStamp, renderCityCard, renderPin, pinRadiusForViewBox, pinRadiusForMatchingScreen, pickNoteWeather, weatherTone, renderNoteIcon, renderPrecipTodLegend } from "./weather-renderer.js?v=pref468";
+import { existingMapLayers, fillMountedMap, loadMapSvg, mountMap, mountMapFrame, placeCardsAroundMap, projectCity } from "./map-renderer.js?v=pref524";
+import { formatStamp, renderCityCard, renderCityCardSkeleton, renderPin, pinRadiusForViewBox, pinRadiusForMatchingScreen, pickNoteWeather, weatherTone, renderNoteIcon, renderPrecipTodLegend } from "./weather-renderer.js?v=pref524";
+import { CONTENT_MASTER, REGION_MASTER, citiesForMaster } from "./area-master.js?v=pref524";
 import { applyCardScale, applyLockedCards, applyMapTransform, applyPrecipLegend, applyTitleScale, bindCardEditor, bindMapControls, bindMapEditor, bindOkinawaEditor, bindPrecipLegendEditor, CARD_POS_MAX, CARD_POS_MIN, CARD_SCALE_MAX, CARD_SCALE_MIN, TITLE_SCALE_MAX, TITLE_SCALE_MIN, centerCityCards, hasLocalLayouts, initLayoutDefaults, listCardPositions, loadCardScale, loadLayout, loadTitleScale, moveLockedCard, resetCardScale, resetLayout, resetTitleScale, saveCardScale, saveLayout, saveTitleScale, snapshotAllLayoutDefaults, snapshotLayoutDefaults } from "./studio-layout.js?v=pref522";
 import { expandForecast, formatNoteHtml, noteFor } from "./forecast.js?v=pref468";
-import { renderWeeklyTable, weeklyTableRows } from "./table-renderer.js?v=pref482";
+import { renderWeeklyTable, renderWeeklyTableSkeleton, weeklyTableRows } from "./table-renderer.js?v=pref524";
 import {
   DEFAULT_STUDIO_VIEWPORT,
   FIXED_DESIGN,
@@ -748,13 +749,6 @@ async function bootSignage() {
   document.documentElement.classList.remove("is-boot");
   const bootStatus = document.getElementById("boot-status");
   if (bootStatus) bootStatus.hidden = true;
-  loadMapSvg();
-  const layoutReady = initLayoutDefaults();
-  await loadCatalog();
-  if (!hasLocalLayouts()) await layoutReady;
-  else layoutReady.catch(() => {});
-  state.regionId = getRegion(state.regionId).id;
-  state.contentId = getContent(state.contentId).id;
 
   const screen = document.getElementById("led-screen");
   const stage = document.getElementById("map-stage");
@@ -774,6 +768,48 @@ async function bootSignage() {
   const initialVp = measure();
   state.viewport = initialVp;
   const layout = loadLayout(state.regionId, state.contentId, initialVp.width, initialVp.height);
+
+  function paintKnownSync() {
+    const regionMeta = REGION_MASTER[canonicalRegion(state.regionId)] || REGION_MASTER.national;
+    const contentMeta = CONTENT_MASTER[canonicalContent(state.contentId)] || CONTENT_MASTER.today_weather;
+    applyViewport(screen, initialVp, regionMeta.id, contentMeta, { fixedScale: useFixedScale });
+    applyMapTransform(screen, layout);
+    applyTitleScale(screen, loadTitleScale(initialVp.width, initialVp.height, regionMeta.id, contentMeta.id));
+    titleEl.textContent = `${regionMeta.name}｜${contentMeta.name}`;
+    document.title = titleEl.textContent;
+    syncTitleMark(contentMeta);
+    const cities = citiesForMaster(regionMeta.id).slice().sort((a, b) => (
+      regionMeta.id === "national"
+        ? ((Number(b.latitude) || 0) - (Number(a.latitude) || 0))
+        : ((a.priority - b.priority) || String(a.cityId).localeCompare(String(b.cityId)))
+    ));
+    if (contentMeta.kind === "table") {
+      const page = cities.slice(0, 4).map((city) => ({ cityId: city.cityId, cityName: city.cityName }));
+      applyTableLayout(screen, initialVp, weeklyTableRows(page));
+      stage.innerHTML = renderWeeklyTableSkeleton(page, contentMeta.id);
+      return;
+    }
+    const layers = mountMapFrame(stage, regionMeta.id);
+    const cardScale = loadCardScale("today_weather", regionMeta.id, initialVp.width, initialVp.height);
+    applyCardScale(screen, cardScale);
+    const cards = layout.cards || {};
+    layers.cards.innerHTML = cities.map((city) => {
+      const pos = cards[city.cityId] || { x: city.cardX, y: city.cardY, locked: true };
+      return renderCityCardSkeleton(city, pos, { layout: contentMeta.card === "pop" ? "pop" : "pill" });
+    }).join("");
+    if (contentMeta.id === "today_precip" || contentMeta.id === "tomorrow_precip") {
+      syncPrecipTodLegend(contentMeta, stage, layout, regionMeta.id, false);
+    }
+  }
+
+  paintKnownSync();
+  loadMapSvg().then((svg) => {
+    fillMountedMap(stage, svg, state.regionId);
+    applyMapTransform(screen, layout);
+  }).catch(() => {});
+
+  const layoutReady = initLayoutDefaults();
+
   let iconPhaseTimer = 0;
   let tablePageTimer = 0;
   let tablePageIndex = Math.max(0, Number.parseInt(params.get("page") || "0", 10) || 0);
@@ -1389,6 +1425,11 @@ async function bootSignage() {
   }
 
   try {
+    await loadCatalog();
+    state.regionId = getRegion(state.regionId).id;
+    state.contentId = getContent(state.contentId).id;
+    if (!hasLocalLayouts()) await layoutReady;
+    else layoutReady.catch(() => {});
     if (playerOn) {
       const pack = await loadPlayerPack();
       await preparePlayer(pack);

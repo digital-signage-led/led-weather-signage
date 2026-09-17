@@ -19,6 +19,31 @@ export function weeklyTableRows(cities) {
   return Math.min(TABLE_ROW_MAX, n);
 }
 
+export function renderWeeklyTableSkeleton(cities, contentId) {
+  const list = Array.isArray(cities) ? cities.slice(0, TABLE_ROW_MAX) : [];
+  const slots = weeklyTableRows(list);
+  const head = [`<span class="forecast-city-h" aria-hidden="true"></span>`];
+  for (let i = 0; i < 7; i += 1) head.push(`<span class="forecast-day-h"></span>`);
+  const body = [];
+  for (let row = 0; row < slots; row += 1) {
+    const city = list[row];
+    body.push(city
+      ? `<span class="forecast-city">${city.cityName}</span>`
+      : `<span class="forecast-city is-empty" aria-hidden="true"></span>`);
+    for (let i = 0; i < 7; i += 1) {
+      body.push(`<div class="forecast-cell">${city ? "--" : ""}</div>`);
+    }
+  }
+  return `
+    <div class="forecast-table" data-content="${contentId}" data-rows="${slots}" style="--forecast-rows:${slots}">
+      <div class="forecast-grid">
+        ${head.join("")}
+        ${body.join("")}
+      </div>
+    </div>
+  `;
+}
+
 export async function renderWeeklyTable(cities, contentId) {
   const list = Array.isArray(cities) ? cities.slice(0, TABLE_ROW_MAX) : [];
   const slots = weeklyTableRows(list);
