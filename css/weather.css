@@ -50,6 +50,15 @@ html.is-edit .map-cards {
   max-width: 100%;
 }
 
+/*
+  公開だけ下げる。管理画面の iframe は 1920×1080 をそのまま描く。
+  WEB は窓にスケールするため、同じ座標でも全国図が上に寄って見える。
+  確定座標（layout-defaults）は触らない。
+*/
+html:not(.is-edit) .led-screen[data-region="national"] .map-fit {
+  transform: translateY(8%);
+}
+
 .led-screen[data-region="national"] .map-geo,
 .led-screen[data-region="national"] .map-leaders {
   top: calc(50% - 50% * var(--map-scale, 1) * var(--map-fit, 1) + var(--map-y, 0%));
