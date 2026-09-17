@@ -6,6 +6,7 @@
 
 import { canonicalContent, canonicalRegion } from "./catalog.js?v=pref496";
 import { DATA_VERSION } from "./version.js?v=pref501";
+import { SCALE_MASTER } from "./area-master.js?v=pref525";
 
 const STORAGE_KEY = "led-weather-layout-v7";
 const STORAGE_KEY_LEGACY = "led-weather-layout-v4";
@@ -16,7 +17,11 @@ const TITLE_SCALE_KEY = "led-weather-title-scale-v4";
 const TITLE_SCALE_KEY_LEGACY = "led-weather-title-scale-v2";
 
 /** 管理画面で保存した配置は公開URLでも使う。同梱は記憶がないときの予備。 */
-let shippedDefaults = { layouts: {}, cardScales: {}, titleScales: {} };
+let shippedDefaults = {
+  layouts: {},
+  cardScales: { ...(SCALE_MASTER?.cardScales || {}) },
+  titleScales: { ...(SCALE_MASTER?.titleScales || {}) }
+};
 
 function isKioskRuntime() {
   try {

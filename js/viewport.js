@@ -353,7 +353,9 @@ export function fitTitleBars(screen) {
   const shrinkToFit = (el, bar, ratio) => {
     if (!el || !bar) return;
     el.style.fontSize = "";
+    const expected = parseFloat(getComputedStyle(screen).getPropertyValue("--header-title-height")) || 0;
     const height = bar.clientHeight || 32;
+    if (expected > 20 && height < expected * 0.45) return;
     let size = Math.max(10, height * ratio);
     el.style.fontSize = `${size}px`;
     let steps = 0;
@@ -387,6 +389,7 @@ export function fitCityCardNames(root = document) {
       const s = getComputedStyle(card);
       return (parseFloat(s.paddingLeft) || 0) + (parseFloat(s.paddingRight) || 0);
     })();
+    if (card.clientWidth < 40) return;
     const maxW = Math.max(16, card.clientWidth - pad);
     const shrink = (el) => {
       if (!el) return;

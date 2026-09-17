@@ -1,6 +1,7 @@
 import fs from "node:fs";
 
 const loc = JSON.parse(fs.readFileSync(new URL("../data/locations.json", import.meta.url), "utf8"));
+const defaults = JSON.parse(fs.readFileSync(new URL("../data/layout-defaults.json", import.meta.url), "utf8"));
 const cities = loc.cities.map((city) => ({
   cityId: city.cityId,
   cityName: city.cityName,
@@ -39,6 +40,11 @@ export const CONTENT_MASTER = ${JSON.stringify({
 }, null, 2)};
 
 export const CITY_MASTER = ${JSON.stringify(cities, null, 2)};
+
+export const SCALE_MASTER = ${JSON.stringify({
+  cardScales: defaults.cardScales || {},
+  titleScales: defaults.titleScales || {}
+})};
 
 export function citiesForMaster(regionId) {
   if (regionId === "national") return CITY_MASTER.filter((city) => city.showOnNational);
