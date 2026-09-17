@@ -193,12 +193,10 @@ html.is-edit .map-cards {
   stroke: none !important;
 }
 
-.map-svg .map-lakes {
-  fill: var(--bg-sea);
-}
-
+.map-svg .map-lakes,
 .map-svg .map-lakes path {
-  fill-rule: evenodd;
+  fill: var(--map-land, #76c85a);
+  fill-rule: nonzero;
 }
 
 .led-screen[data-region="national"] .map-svg .map-fills path[data-pref] {
