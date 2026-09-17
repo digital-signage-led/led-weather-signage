@@ -2,7 +2,7 @@
  * Studio / signage bootstrap. Studio drives the iframe viewport.
  */
 
-import { APP_VERSION, DATA_VERSION, MAP_VERSION } from "./version.js?v=pref503";
+import { APP_VERSION, DATA_VERSION, MAP_VERSION } from "./version.js?v=pref510";
 import {
   canonicalContent,
   canonicalRegion,
@@ -14,7 +14,7 @@ import {
   loadCatalog
 } from "./catalog.js?v=pref485";
 import { adaptWeather, aggregateRegion, assertRegionCoverage, emptyWeatherPoint } from "./weather-data.js?v=pref415";
-import { loadMapSvg, mountMap, placeCardsAroundMap, projectCity } from "./map-renderer.js?v=pref503";
+import { loadMapSvg, mountMap, placeCardsAroundMap, projectCity } from "./map-renderer.js?v=pref510";
 import { formatStamp, renderCityCard, renderPin, pinRadiusForViewBox, pinRadiusForMatchingScreen, pickNoteWeather, weatherTone, renderNoteIcon, renderPrecipTodLegend } from "./weather-renderer.js?v=pref468";
 import { applyCardScale, applyLockedCards, applyMapTransform, applyPrecipLegend, applyTitleScale, bindCardEditor, bindMapControls, bindMapEditor, bindOkinawaEditor, bindPrecipLegendEditor, CARD_POS_MAX, CARD_POS_MIN, CARD_SCALE_MAX, CARD_SCALE_MIN, TITLE_SCALE_MAX, TITLE_SCALE_MIN, centerCityCards, initLayoutDefaults, listCardPositions, loadCardScale, loadLayout, loadTitleScale, moveLockedCard, resetCardScale, resetLayout, resetTitleScale, saveCardScale, saveLayout, saveTitleScale, snapshotAllLayoutDefaults, snapshotLayoutDefaults } from "./studio-layout.js?v=pref499";
 import { expandForecast, formatNoteHtml, noteFor } from "./forecast.js?v=pref468";
@@ -34,14 +34,16 @@ import {
   partitionTablePages,
   readViewport,
   showAuxiliary
-} from "./viewport.js?v=pref488";
+} from "./viewport.js?v=pref506";
 import { msUntilIconPhaseChange } from "./jma-icons.js?v=pref387";
 import { fetchJmaWeather } from "./jma-live.js?v=pref387";
 import { buildWeekPoints, fetchWeekAlert, renderWeekPointsHtml } from "./week-points.js?v=pref387";
 
-/** 府県天気予報の発表時刻（JST）。発表反映待ちで +5 分後に取りに行く。 */
+/** 気象庁の定時発表（JST）。反映待ちで +5 分後にも取り直す。 */
 const JMA_PUBLISH_HOURS_JST = [5, 11, 17];
 const JMA_PUBLISH_LAG_MS = 5 * 60 * 1000;
+/** 自前の毎時0分更新（12時を含む）。 */
+const LIVE_REFRESH_MS = 60 * 60 * 1000;
 const LIVE_FETCH_TIMEOUT_MS = 12000;
 let liveWeatherCache = { at: 0, doc: null };
 let bundledWeatherDoc = null;
@@ -61,7 +63,6 @@ function withTimeout(promise, ms) {
   });
 }
 
-/** Asia/Tokyo の壁時計部品を返す */
 function jstParts(date = new Date()) {
   const parts = Object.fromEntries(
     new Intl.DateTimeFormat("en-US", {
@@ -85,42 +86,43 @@ function jstParts(date = new Date()) {
   };
 }
 
-/** JST の年月日時分秒 → UTC Date（発表スロット計算用） */
 function dateFromJst(year, month, day, hour = 0, minute = 0, second = 0) {
-  const utc = Date.UTC(year, month - 1, day, hour - 9, minute, second);
-  return new Date(utc);
+  return new Date(Date.UTC(year, month - 1, day, hour - 9, minute, second));
 }
 
-function nextJmaRefreshAt(now = new Date()) {
-  const jst = jstParts(now);
-  const candidates = [];
-  for (const hour of JMA_PUBLISH_HOURS_JST) {
-    candidates.push(dateFromJst(jst.year, jst.month, jst.day, hour, 0, 0).getTime() + JMA_PUBLISH_LAG_MS);
+/** 毎時0分（JST）＋気象庁発表の5分後 */
+function refreshSlotsOnJstDay(year, month, day) {
+  const slots = [];
+  for (let hour = 0; hour < 24; hour += 1) {
+    slots.push(dateFromJst(year, month, day, hour, 0, 0).getTime());
   }
-  const tomorrow = dateFromJst(jst.year, jst.month, jst.day, 0, 0, 0);
-  tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
-  const t = jstParts(tomorrow);
-  candidates.push(dateFromJst(t.year, t.month, t.day, JMA_PUBLISH_HOURS_JST[0], 0, 0).getTime() + JMA_PUBLISH_LAG_MS);
+  for (const hour of JMA_PUBLISH_HOURS_JST) {
+    slots.push(dateFromJst(year, month, day, hour, 0, 0).getTime() + JMA_PUBLISH_LAG_MS);
+  }
+  return [...new Set(slots)].sort((a, b) => a - b);
+}
+
+function nextRefreshAt(now = new Date()) {
   const nowMs = now.getTime();
-  const upcoming = candidates.filter((ms) => ms > nowMs).sort((a, b) => a - b);
-  return upcoming[0] ?? (nowMs + 60 * 60 * 1000);
+  const jst = jstParts(now);
+  const today = refreshSlotsOnJstDay(jst.year, jst.month, jst.day).find((ms) => ms > nowMs);
+  if (today) return today;
+  const nextDay = dateFromJst(jst.year, jst.month, jst.day, 0, 0, 0);
+  nextDay.setUTCDate(nextDay.getUTCDate() + 1);
+  const t = jstParts(nextDay);
+  return refreshSlotsOnJstDay(t.year, t.month, t.day)[0];
 }
 
-function msUntilNextJmaRefresh(now = new Date()) {
-  return Math.max(1000, nextJmaRefreshAt(now) - now.getTime());
+function msUntilNextRefresh(now = new Date()) {
+  return Math.max(1000, nextRefreshAt(now) - now.getTime());
 }
 
-/** 直近の発表スロット（+lag）より前の取得なら取り直し */
+/** 未取得、1時間以上経過、毎時0分、または気象庁発表枠を過ぎていれば取り直し */
 function needsJmaRefresh(now = new Date()) {
   if (!liveWeatherCache.doc) return true;
-  const jst = jstParts(now);
-  const slots = JMA_PUBLISH_HOURS_JST.map(
-    (hour) => dateFromJst(jst.year, jst.month, jst.day, hour, 0, 0).getTime() + JMA_PUBLISH_LAG_MS
-  );
   const nowMs = now.getTime();
-  const due = slots.filter((ms) => ms <= nowMs).pop();
-  if (due == null) return false;
-  return liveWeatherCache.at < due;
+  if (nowMs - liveWeatherCache.at >= LIVE_REFRESH_MS) return true;
+  return nextRefreshAt(new Date(liveWeatherCache.at)) <= nowMs;
 }
 
 export { APP_VERSION };
@@ -906,7 +908,10 @@ async function bootSignage() {
         loadWeatherDoc()
       ]);
       const weather = adaptWeather(weatherDoc);
-      weatherStamp = weather.updatedAt;
+      const stampIso = liveWeatherCache.at
+        ? new Date(liveWeatherCache.at).toISOString()
+        : weather.updatedAt;
+      weatherStamp = stampIso;
 
       const candidates = aggregateRegion(locations.cities, weather, region);
       const tablePages = content.kind === "table"
@@ -938,7 +943,7 @@ async function bootSignage() {
 
       titleEl.textContent = contentTitle(region, content);
       document.title = contentTitle(region, content);
-      stampEl.textContent = formatStamp(weather.updatedAt, !showAuxiliary(vp, "stampWeek"));
+      stampEl.textContent = formatStamp(stampIso, !showAuxiliary(vp, "stampWeek"));
       setNoteTicker(noteFor(content.id, region.id, weather, selected));
       attributionEl.textContent = attribution.text;
       attributionEl.hidden = content.kind !== "map" || !showAuxiliary(vp, "attribution");
@@ -1168,7 +1173,7 @@ async function bootSignage() {
   } finally {
     document.documentElement.classList.remove("is-boot");
   }
-  // 画面は同梱データで出したあと、気象庁最新へ差し替え → 発表時刻に合わせて再取得
+  // 同梱データのあと気象庁最新へ差し替え。毎時0分と、5・11・17時発表の直後に取り直す
   const refreshLive = () => pullLiveWeatherAndRender(render);
   refreshLive();
   scheduleJmaRefresh(refreshLive);
@@ -1271,14 +1276,13 @@ function recordSite() {
 
 function scheduleJmaRefresh(onRefresh) {
   window.clearTimeout(jmaRefreshTimer);
-  const wait = msUntilNextJmaRefresh();
   jmaRefreshTimer = window.setTimeout(async () => {
     try {
       await onRefresh();
     } finally {
       scheduleJmaRefresh(onRefresh);
     }
-  }, wait);
+  }, msUntilNextRefresh());
 }
 
 async function pullLiveWeatherAndRender(renderFn) {

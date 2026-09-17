@@ -501,6 +501,7 @@ svg.jma-icon {
   align-items: center;
   justify-content: center;
   background: var(--note-accent);
+  border-radius: 0 var(--box-radius) var(--box-radius) 0;
 }
 
 .led-note-icon-box {

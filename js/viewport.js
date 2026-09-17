@@ -113,7 +113,7 @@ export function tokensFor(vp, content = { id: "today_weather", name: "今日の�
     "--font-main-title": `${fluidPx(s, titleRatio * chrome, 12, Math.round(48 * chrome))}px`,
     "--font-stamp": `${fluidPx(s, 0.025 * chrome, 9, Math.round(22 * chrome))}px`,
     "--font-note": `${fluidPx(s, 0.049 * chrome, 11, Math.round(40 * chrome))}px`,
-    "--font-city": `${Math.min(fluidPx(s, popTight ? 0.056 : 0.062, 12, 52), Math.round(box.w * 0.22))}px`,
+    "--font-city": `${Math.min(fluidPx(s, popTight ? 0.072 : 0.08, 14, 68), Math.round(box.w * 0.3))}px`,
     "--font-temp": `${Math.min(fluidPx(s, popTight ? 0.056 : 0.074, 14, 64), Math.round(box.w * 0.2))}px`,
     "--font-pop": `${fluidPx(s, 0.04, 11, 32)}px`,
     "--font-pop-lg": `${fluidPx(s, popTight ? 0.068 : 0.058, 14, 56)}px`,
@@ -187,7 +187,7 @@ export function tableLayoutTokens(vp, rows = 5) {
   const cellH = (innerH - dayHeadH - gap * rowCount) / rowCount;
   const cellMin = Math.max(8, Math.min(cellW, cellH));
   const radius = clamp(Math.round(cellMin * 0.12), 4, 14);
-  const cityMax = rowCount <= 3 ? 58 : rowCount === 4 ? 52 : 48;
+  const cityMax = rowCount <= 3 ? 68 : rowCount === 4 ? 62 : 58;
   const labelMax = rowCount <= 3 ? 24 : rowCount === 4 ? 22 : 20;
   const valueMax = rowCount <= 3 ? 50 : rowCount === 4 ? 46 : 42;
   const unitMax = rowCount <= 3 ? 20 : rowCount === 4 ? 19 : 18;
@@ -210,7 +210,7 @@ export function tableLayoutTokens(vp, rows = 5) {
     "--cell-height": `${Math.round(cellH)}px`,
     "--cell-min": `${Math.round(cellMin)}px`,
     "--font-week-day": `${Math.round(clamp(dayHeadH * 0.72, 16, 48))}px`,
-    "--font-week-city": `${Math.round(clamp(Math.min(cellH * 0.5, cityCol * 0.4), 22, cityMax))}px`,
+    "--font-week-city": `${Math.round(clamp(Math.min(cellH * 0.62, cityCol * 0.48), 24, cityMax))}px`,
     "--font-week-label": `${Math.round(clamp(Math.min(cellH * 0.17, cellW * 0.125), 12, labelMax))}px`,
     "--font-week-value": `${Math.round(clamp(Math.min(cellH * 0.32, cellW * 0.3), 18, valueMax))}px`,
     "--font-week-unit": `${Math.round(clamp(Math.min(cellH * 0.145, cellW * 0.125), 11, unitMax))}px`,
@@ -393,7 +393,7 @@ export function fitCityCardNames(root = document) {
       el.style.fontSize = "";
       el.style.letterSpacing = "";
       const chars = Math.max(1, (el.textContent || "").trim().length);
-      let size = Math.min(parseFloat(getComputedStyle(el).fontSize) || 16, maxW / (chars * 0.98));
+      let size = Math.min(parseFloat(getComputedStyle(el).fontSize) || 16, maxW / (chars * 0.85));
       el.style.fontSize = `${size}px`;
       let steps = 0;
       while (steps < 48 && size > 8 && el.scrollWidth > el.clientWidth + 0.5) {

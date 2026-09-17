@@ -1,4 +1,4 @@
-﻿.map-stage {
+.map-stage {
   position: absolute;
   inset: 0 0 var(--footer-height) 0;
   width: auto;
@@ -505,7 +505,7 @@ html.is-edit .city-card.is-dragging {
   display: block;
   width: 100%;
   box-sizing: border-box;
-  font-size: min(var(--font-city), calc((var(--card-box-w) - 10px) / 4.3));
+  font-size: min(var(--font-city), calc((var(--card-box-w) - 8px) / 3.2));
   font-weight: 900;
   color: var(--text-primary);
   flex: 0 0 auto;

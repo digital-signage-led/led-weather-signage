@@ -5,7 +5,7 @@
 
 import { canonicalRegion, isNational } from "./catalog.js?v=pref387";
 import { cardSizePct } from "./viewport.js?v=pref387";
-import { MAP_VERSION } from "./version.js?v=pref503";
+import { MAP_VERSION } from "./version.js?v=pref507";
 
 import { jmaIconFile } from "./jma-icons.js?v=pref387";
 
@@ -110,6 +110,7 @@ export function mountMap(stage, svgText, regionId = "national") {
   prepareMapStrokes(mapSvg, regionId);
   raiseBiwaLayer(mapSvg);
   fitRegionalView(mapSvg, stage.querySelector(".map-pins"), regionId);
+  raiseBiwaLayer(mapSvg);
   const fit = stage.querySelector(".map-fit");
   // 沖縄枠の切り離しは全国画面のみ（地方の沖縄は inset を拡大表示）。
   const okinawa = isNational(regionId) ? detachOkinawaInset(fit, mapSvg) : null;
@@ -218,8 +219,20 @@ function hideInlandLakes(svg) {
 }
 
 function raiseBiwaLayer(svg) {
-  const biwa = svg?.querySelector(".map-biwa");
-  if (biwa) svg.appendChild(biwa);
+  if (!svg) return;
+  const src = svg.querySelector(".map-biwa path, .map-lakes path");
+  const d = src?.getAttribute("d") || "";
+  svg.querySelectorAll(".map-biwa, .map-lakes").forEach((el) => el.remove());
+  if (!d) return;
+  const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+  g.setAttribute("class", "map-biwa");
+  const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+  path.setAttribute("d", d);
+  path.setAttribute("fill", "#c8ebff");
+  path.setAttribute("stroke", "none");
+  path.style.setProperty("fill", "#c8ebff", "important");
+  g.appendChild(path);
+  svg.appendChild(g);
 }
 
 /** 共通地図を地方表示向けに整える（沖縄枠の扱い・遠方県の抑制）。 */
