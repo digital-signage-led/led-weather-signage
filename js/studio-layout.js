@@ -5,7 +5,7 @@
  */
 
 import { canonicalContent, canonicalRegion } from "./catalog.js?v=pref485";
-import { DATA_VERSION } from "./version.js?v=pref485";
+import { DATA_VERSION } from "./version.js?v=pref490";
 
 const STORAGE_KEY = "led-weather-layout-v7";
 const STORAGE_KEY_LEGACY = "led-weather-layout-v4";
@@ -106,6 +106,32 @@ function layoutEntryFrom(source = {}) {
   };
 }
 
+function pickLatestLocalLayout(saved, width = 0, height = 0) {
+  if (!saved) return null;
+  const candidates = [];
+  if (saved.sharedMap) candidates.push(saved.sharedMap);
+  for (const slice of Object.values(saved.viewports || {})) {
+    if (slice) candidates.push(slice);
+  }
+  const exact = width > 0 && height > 0
+    ? saved.viewports?.[viewportSizeKey(width, height)]
+    : null;
+  if (exact) candidates.push(exact);
+  if (saved.cards || saved.map) candidates.push(saved);
+  let best = null;
+  let bestScore = -1;
+  for (const slice of candidates) {
+    const cards = Object.keys(slice?.cards || {}).length;
+    if (!cards) continue;
+    const score = (Number(slice.rev) || 0) + cards;
+    if (score >= bestScore) {
+      best = slice;
+      bestScore = score;
+    }
+  }
+  return best || pickLayoutSlice(saved, width, height);
+}
+
 function pickLayoutSlice(saved, width = 0, height = 0) {
   if (!saved) return null;
   const w = Math.round(Number(width) || 0);
@@ -143,7 +169,7 @@ function nearestViewportSlice(viewports, width, height) {
 
 export async function initLayoutDefaults() {
   try {
-    const response = await fetch(`data/layout-defaults.json?v=${DATA_VERSION}`, { cache: "force-cache" });
+    const response = await fetch(`data/layout-defaults.json?v=${DATA_VERSION}`, { cache: "no-store" });
     if (response.ok) {
       const doc = await response.json();
       if (doc && typeof doc === "object") shippedDefaults = doc;
@@ -260,29 +286,17 @@ export function loadLayout(regionId, contentId = "today_weather", width = 0, hei
     const shippedNear = !shippedExact && w > 0 && h > 0
       ? nearestViewportSlice(shippedRegion?.viewports, w, h)
       : null;
-    const localSlice = saved ? pickLayoutSlice(saved, width, height) : null;
-    const sharedHasCards = Object.keys(saved?.sharedMap?.cards || {}).length > 0;
-    const shared = sharedHasCards ? saved.sharedMap : null;
+    const localSlice = saved ? pickLatestLocalLayout(saved, width, height) : null;
     const shippedSlice = shippedExact || shippedNear;
-    const slice = shared || localSlice || shippedSlice;
+    const slice = localSlice || shippedSlice;
     if (!slice && !saved) return emptyLayout(regionId);
     const entry = layoutEntryFrom(slice || saved || {});
     const shippedCards = shippedSlice?.cards || {};
-    const localCards = (shared?.cards || localSlice?.cards || entry.cards) || {};
-    const shippedIds = Object.keys(shippedCards);
+    const localCards = entry.cards || {};
     const localIds = Object.keys(localCards);
-    const overlap = shippedIds.filter((id) => localCards[id]);
-    const localLooksForeign = shippedIds.length > 0 && localIds.length > 0
-      && overlap.length === 0;
-    if (localIds.length && !localLooksForeign) {
-      if (shared) {
-        const sharedEntry = layoutEntryFrom(shared);
-        entry.map = sharedEntry.map;
-        entry.okinawa = sharedEntry.okinawa;
-        entry.precipLegend = sharedEntry.precipLegend;
-      }
+    if (localIds.length) {
       entry.cards = { ...localCards };
-    } else if (shippedIds.length) {
+    } else if (Object.keys(shippedCards).length) {
       entry.cards = { ...shippedCards };
     }
     entry.map.scale = clamp(Number(entry.map.scale) || 1, 0.4, 3.6);
@@ -329,6 +343,7 @@ export function saveLayout(regionId, layout, contentId = "today_weather", width 
   };
   const viewports = { ...(prev.viewports || {}) };
   if (vpKey) viewports[vpKey] = entry;
+  viewports["1920x1080"] = entry;
   all[regionId] = attachSharedMap({
     ...prev,
     viewports
