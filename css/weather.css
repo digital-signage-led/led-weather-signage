@@ -50,11 +50,6 @@ html.is-edit .map-cards {
   max-width: 100%;
 }
 
-/* 管理画面（edit）は動かさない。公開だけ系統的に上へ寄る分を下げる */
-html:not(.is-edit) .led-screen[data-region="national"] .map-fit {
-  transform: translateY(5%);
-}
-
 .led-screen[data-region="national"] .map-geo,
 .led-screen[data-region="national"] .map-leaders {
   top: calc(50% - 50% * var(--map-scale, 1) * var(--map-fit, 1) + var(--map-y, 0%));
@@ -311,11 +306,16 @@ html:not(.is-edit) .led-screen[data-region="national"] .map-fit {
 }
 
 .map-okinawa-overlay .map-okinawa-inset > rect {
-  display: none;
+  fill: #c8ebff;
+  stroke: #ffffff;
+  stroke-width: 0.55;
 }
 
 .led-screen[data-region="national"] .map-okinawa-dock {
-  background: transparent;
+  background: #c8ebff;
+  border: 3px solid #fff;
+  border-radius: 3px;
+  box-shadow: 0 0 0 1px rgba(10, 47, 122, 0.35);
 }
 
 .map-okinawa-dock {

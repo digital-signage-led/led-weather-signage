@@ -240,7 +240,6 @@ function prepareCommonMapLayers(svg, regionId) {
   if (!svg) return;
   regionId = canonicalRegion(regionId);
   if (isNational(regionId)) {
-    svg.querySelectorAll(".map-okinawa-inset > rect").forEach((el) => el.setAttribute("display", "none"));
     return;
   }
   if (regionId === "okinawa") {
