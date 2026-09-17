@@ -2,7 +2,7 @@
  * Studio / signage bootstrap. Studio drives the iframe viewport.
  */
 
-import { APP_VERSION, DATA_VERSION, MAP_VERSION } from "./version.js?v=pref522";
+import { APP_VERSION, DATA_VERSION, MAP_VERSION } from "./version.js?v=pref523";
 import { isWeatherDoc, readWeatherLkg, writeWeatherLkg } from "./weather-cache.js?v=pref522";
 import {
   canonicalContent,
@@ -786,6 +786,17 @@ async function bootSignage() {
   const weekPointsEl = document.getElementById("week-points");
   const TABLE_PAGE_MS = 10 * 1000;
   const tableRotateOff = params.get("rotate") === "0";
+  const PLAYER_CONTENTS = ["today_weather", "today_precip", "tomorrow_weather", "tomorrow_precip", "weekly_weather", "weekly_precip"];
+  const playerOn = !canEdit && params.get("loop") !== "0";
+  const playerMs = Number(params.get("loop")) > 1000 ? Number(params.get("loop")) : 30000;
+  const player = {
+    cards: new Map(),
+    tables: new Map(),
+    meta: new Map(),
+    layers: null,
+    ready: false
+  };
+  let playerTimer = 0;
 
   function hideWeekPoints() {
     weekPointsToken += 1;
@@ -1175,25 +1186,235 @@ async function bootSignage() {
   }
 
   persistView();
+  async function loadPlayerPack() {
+    const [attribution, locations, projection, weatherDoc] = await Promise.all([
+      fetchJson("data/attribution.json"),
+      fetchJson("data/locations.json"),
+      fetchJson("data/map-projection.json"),
+      loadWeatherDoc()
+    ]);
+    const weather = adaptWeather(weatherDoc);
+    const stampIso = liveWeatherCache.at
+      ? new Date(liveWeatherCache.at).toISOString()
+      : weather.updatedAt;
+    weatherStamp = stampIso;
+    return { attribution, locations, projection, weather, stampIso };
+  }
+
+  function selectedFor(content, pack, pageIndex = 0) {
+    const region = getRegion(state.regionId);
+    const candidates = aggregateRegion(pack.locations.cities, pack.weather, region);
+    const tablePages = content.kind === "table"
+      ? partitionTablePages(candidates, tablePageSize(region.id))
+      : [candidates.slice(0, cityLimit(measure(), region.id, content, candidates.length))];
+    const page = tablePages[Math.min(pageIndex, Math.max(0, tablePages.length - 1))] || [];
+    return page.map((city) => attachForecast(
+      city,
+      pack.weather.pointsByCity.get(city.cityId) || emptyWeatherPoint(city.cityId),
+      content,
+      pack.weather.updatedAt
+    ));
+  }
+
+  async function chromeFor(content, pack, selected) {
+    const region = getRegion(state.regionId);
+    const noteWeather = content.kind === "table"
+      ? pickNoteWeather(selected.flatMap((city) => city.weekly || [city]))
+      : pickNoteWeather(selected);
+    return {
+      title: contentTitle(region, content),
+      stamp: formatStamp(pack.stampIso, !showAuxiliary(measure(), "stampWeek")),
+      note: noteFor(content.id, region.id, pack.weather, selected),
+      noteClass: `wx-icon ${weatherTone(noteWeather)}`,
+      noteIcon: await renderNoteIcon(noteWeather),
+      kind: content.kind
+    };
+  }
+
+  async function fillMapLayer(content, pack) {
+    const region = getRegion(state.regionId);
+    const vp = measure();
+    const selected = selectedFor(content, pack);
+    const pins = selected.map((city) => ({ ...city, ...projectCity(city, pack.projection, region.id) }));
+    const cardScale = loadCardScale("today_weather", region.id, vp.width, vp.height);
+    applyCardScale(screen, cardScale);
+    const baseSize = cardSizePct(vp, region.id, "weather");
+    const laidOut = applyLockedCards(
+      placeCardsAroundMap(pins, { w: baseSize.w * cardScale, h: baseSize.h * cardScale }, region.id, "weather"),
+      layout
+    );
+    const html = (await Promise.all(laidOut.map((item) => renderCityCard(item, item, {
+      layout: content.card === "pop" ? "pop" : "pill",
+      showPop: false
+    })))).join("");
+    return { html, laidOut, selected };
+  }
+
+  function showPlayerContent(contentId) {
+    state.contentId = getContent(contentId).id;
+    const content = getContent(state.contentId);
+    const vp = measure();
+    applyViewport(screen, vp, state.regionId, content, { fixedScale: useFixedScale });
+    applyTitleScale(screen, loadTitleScale(vp.width, vp.height, state.regionId, content.id));
+    const isTable = content.kind === "table";
+    if (player.layers?.fit) player.layers.fit.hidden = isTable;
+    for (const [id, el] of player.cards) el.hidden = isTable || id !== content.id;
+    for (const [id, el] of player.tables) el.hidden = !isTable || id !== content.id;
+    const legend = screen.querySelector(".precip-tod-legend");
+    if (legend) legend.hidden = content.id !== "today_precip" && content.id !== "tomorrow_precip";
+    attributionEl.hidden = isTable || !showAuxiliary(vp, "attribution");
+    const meta = player.meta.get(content.id);
+    if (meta) {
+      titleEl.textContent = meta.title;
+      document.title = meta.title;
+      stampEl.textContent = meta.stamp;
+      setNoteTicker(meta.note);
+      noteIconEl.className = meta.noteClass;
+      noteIconEl.innerHTML = meta.noteIcon;
+    }
+    syncTitleMark(content);
+    fitTitleBars(screen);
+    if (player.layers) applyMapTransform(screen, layout);
+    if (content.id === "weekly_weather") {
+      const wrap = player.tables.get(content.id);
+      const first = wrap?.querySelector(".player-table-page:not([hidden])") || wrap?.querySelector(".player-table-page");
+      /* week points stay as previously painted */
+    } else {
+      hideWeekPoints();
+    }
+    window.clearTimeout(tablePageTimer);
+    if (isTable && !tableRotateOff) {
+      const pages = [...(player.tables.get(content.id)?.querySelectorAll(".player-table-page") || [])];
+      if (pages.length > 1) {
+        tablePageTimer = window.setTimeout(() => {
+          const cur = pages.findIndex((page) => !page.hidden);
+          const next = (cur + 1 + pages.length) % pages.length;
+          pages.forEach((page, idx) => { page.hidden = idx !== next; });
+          showPlayerContent(content.id);
+        }, TABLE_PAGE_MS);
+      }
+    }
+    layoutNoteTicker();
+  }
+
+  async function preparePlayer(pack) {
+    const region = getRegion(state.regionId);
+    const vp = measure();
+    applyViewport(screen, vp, region.id, getContent(state.contentId), { fixedScale: useFixedScale });
+    const savedLayout = loadLayout(region.id, "today_weather", vp.width, vp.height);
+    layout.map = { ...savedLayout.map };
+    layout.okinawa = { ...savedLayout.okinawa };
+    layout.cards = { ...savedLayout.cards };
+    layout.precipLegend = { ...savedLayout.precipLegend };
+    const svgText = await loadMapSvg(region.mapFile);
+    player.layers = existingMapLayers(stage, region.id) || mountMap(stage, svgText, region.id);
+    if (player.layers.cards) {
+      player.layers.cards.dataset.defaultCards = "1";
+      player.layers.cards.hidden = true;
+    }
+    applyMapTransform(screen, layout);
+    attributionEl.textContent = pack.attribution.text;
+    const weatherContent = getContent("today_weather");
+    const mapBuilt = await fillMapLayer(weatherContent, pack);
+    const pinOpts = { national: region.id === "national" };
+    const visiblePins = mapBuilt.laidOut.filter((item) => !item.hidePin);
+    const insetPins = player.layers.okinawaPins
+      ? visiblePins.filter((item) => item.useOkinawaInset)
+      : [];
+    const mainPins = player.layers.okinawaPins
+      ? visiblePins.filter((item) => !item.useOkinawaInset)
+      : visiblePins;
+    const paintMapPins = () => {
+      const mainR = pinRadiusForViewBox(player.layers.pins, pinOpts);
+      player.layers.pins.innerHTML = mainPins.map((item) => renderPin(item, mainR)).join("");
+      if (player.layers.okinawaPins) {
+        const okiSvg = player.layers.okinawaPins.ownerSVGElement || player.layers.okinawaPins;
+        const okiR = pinRadiusForMatchingScreen(okiSvg, player.layers.pins, mainR);
+        player.layers.okinawaPins.innerHTML = insetPins.map((item) => renderPin(item, okiR)).join("");
+      }
+    };
+    paintMapPins();
+    repaintPins = paintMapPins;
+    for (const id of PLAYER_CONTENTS) {
+      const content = getContent(id);
+      if (content.kind === "table") {
+        let wrap = player.tables.get(id);
+        if (!wrap) {
+          wrap = document.createElement("div");
+          wrap.className = "player-table-panel";
+          wrap.dataset.playerContent = id;
+          wrap.hidden = true;
+          stage.appendChild(wrap);
+          player.tables.set(id, wrap);
+        }
+        wrap.replaceChildren();
+        const candidates = aggregateRegion(pack.locations.cities, pack.weather, region);
+        const pages = partitionTablePages(candidates, tablePageSize(region.id));
+        for (let i = 0; i < pages.length; i += 1) {
+          const selected = pages[i].map((city) => attachForecast(
+            city,
+            pack.weather.pointsByCity.get(city.cityId) || emptyWeatherPoint(city.cityId),
+            content,
+            pack.weather.updatedAt
+          ));
+          const page = document.createElement("div");
+          page.className = "player-table-page";
+          page.hidden = i !== 0;
+          if (i === 0) applyTableLayout(screen, vp, weeklyTableRows(selected));
+          page.innerHTML = await renderWeeklyTable(selected, id);
+          wrap.appendChild(page);
+        }
+        const firstSelected = selectedFor(content, pack, 0);
+        player.meta.set(id, await chromeFor(content, pack, firstSelected));
+        continue;
+      }
+      const built = id === "today_weather" ? mapBuilt : await fillMapLayer(content, pack);
+      let layer = player.cards.get(id);
+      if (!layer) {
+        layer = document.createElement("div");
+        layer.className = "map-cards";
+        layer.dataset.playerContent = id;
+        layer.hidden = true;
+        player.layers.fit.appendChild(layer);
+        player.cards.set(id, layer);
+      }
+      layer.innerHTML = built.html;
+      centerCityCards(layer);
+      fitCityCardNames(layer);
+      player.meta.set(id, await chromeFor(content, pack, built.selected));
+    }
+    syncPrecipTodLegend(getContent("today_precip"), stage, layout, region.id, false);
+    player.ready = true;
+    showPlayerContent(state.contentId);
+  }
+
   try {
-    await render();
+    if (playerOn) {
+      const pack = await loadPlayerPack();
+      await preparePlayer(pack);
+    } else {
+      await render();
+    }
   } finally {
     document.documentElement.classList.remove("is-boot");
   }
   unregisterSignageWorkers();
-  const loopRaw = params.get("loop");
-  const loopMs = loopRaw === "1" || loopRaw === "true" ? 30000 : Number(loopRaw);
-  if (loopMs > 0 && !canEdit) {
-    const loopContents = ["today_weather", "today_precip", "tomorrow_weather", "tomorrow_precip", "weekly_weather", "weekly_precip"];
-    window.setInterval(() => {
-      const idx = Math.max(0, loopContents.indexOf(state.contentId));
-      state.contentId = loopContents[(idx + 1) % loopContents.length];
-      persistView();
-      render();
-    }, Math.max(8000, loopMs));
+  if (playerOn) {
+    window.clearInterval(playerTimer);
+    playerTimer = window.setInterval(() => {
+      if (!player.ready) return;
+      const idx = Math.max(0, PLAYER_CONTENTS.indexOf(state.contentId));
+      showPlayerContent(PLAYER_CONTENTS[(idx + 1) % PLAYER_CONTENTS.length]);
+    }, playerMs);
   }
-  // 同梱／LKGのあと気象庁最新へ差し替え。毎時0分と、5・11・17時発表の直後に取り直す
-  const refreshLive = () => pullLiveWeatherAndRender(render);
+  const refreshLive = () => pullLiveWeatherAndRender(async () => {
+    if (playerOn && player.ready) {
+      const pack = await loadPlayerPack();
+      await preparePlayer(pack);
+      return;
+    }
+    await render();
+  });
   window.setTimeout(refreshLive, 4000);
   scheduleJmaRefresh(refreshLive);
   document.addEventListener("visibilitychange", () => {

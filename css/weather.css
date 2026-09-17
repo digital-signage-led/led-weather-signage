@@ -841,6 +841,18 @@ html.is-edit .precip-tod-legend.is-dragging {
   background: transparent;
 }
 
+.map-cards[data-player-content][hidden],
+.player-table-panel[hidden],
+.player-table-page[hidden] {
+  display: none !important;
+}
+
+.player-table-panel {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+}
+
 .forecast-table {
   --forecast-line: #8eb8d6;
   --forecast-head: #fff3b2;
