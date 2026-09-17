@@ -5,7 +5,7 @@
  */
 
 import { canonicalContent, canonicalRegion } from "./catalog.js?v=pref485";
-import { DATA_VERSION } from "./version.js?v=pref490";
+import { DATA_VERSION } from "./version.js?v=pref494";
 
 const STORAGE_KEY = "led-weather-layout-v7";
 const STORAGE_KEY_LEGACY = "led-weather-layout-v4";
@@ -288,13 +288,14 @@ export function loadLayout(regionId, contentId = "today_weather", width = 0, hei
       : null;
     const localSlice = saved ? pickLatestLocalLayout(saved, width, height) : null;
     const shippedSlice = shippedExact || shippedNear;
-    const slice = localSlice || shippedSlice;
+    const localRev = Number(localSlice?.rev) || 0;
+    const shippedRev = Number(shippedSlice?.rev) || 0;
+    const slice = (localSlice && localRev >= shippedRev) ? localSlice : (shippedSlice || localSlice);
     if (!slice && !saved) return emptyLayout(regionId);
     const entry = layoutEntryFrom(slice || saved || {});
     const shippedCards = shippedSlice?.cards || {};
-    const localCards = entry.cards || {};
-    const localIds = Object.keys(localCards);
-    if (localIds.length) {
+    const localCards = Object.keys(entry.cards || {}).length ? entry.cards : {};
+    if (Object.keys(localCards).length) {
       entry.cards = { ...localCards };
     } else if (Object.keys(shippedCards).length) {
       entry.cards = { ...shippedCards };
