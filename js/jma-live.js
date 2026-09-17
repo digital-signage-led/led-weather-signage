@@ -375,14 +375,33 @@ export function buildJmaWeather(cities, area, forecastsByOffice) {
 
 let areaCache = { at: 0, doc: null };
 const AREA_TTL_MS = 24 * 60 * 60 * 1000;
+const AREA_LKG_KEY = "led-jma-area-v1";
+
+try {
+  const raw = localStorage.getItem(AREA_LKG_KEY);
+  if (raw) {
+    const parsed = JSON.parse(raw);
+    if (parsed?.doc && Number(parsed.at) > 0) areaCache = { at: Number(parsed.at), doc: parsed.doc };
+  }
+} catch {
+  /* ignore */
+}
 
 async function loadArea() {
   const now = Date.now();
   if (areaCache.doc && now - areaCache.at < AREA_TTL_MS) return areaCache.doc;
   const areaRes = await fetch(AREA_URL, { cache: "force-cache" });
-  if (!areaRes.ok) throw new Error("area.json");
+  if (!areaRes.ok) {
+    if (areaCache.doc) return areaCache.doc;
+    throw new Error("area.json");
+  }
   const area = await areaRes.json();
   areaCache = { at: now, doc: area };
+  try {
+    localStorage.setItem(AREA_LKG_KEY, JSON.stringify(areaCache));
+  } catch {
+    /* ignore */
+  }
   return area;
 }
 

@@ -66,7 +66,7 @@ function cloneMapSvg(svgText) {
 export async function loadIcon(weather, night = false) {
   const file = jmaIconFile(weather, night);
   if (!iconCache.has(file)) {
-    const response = await fetch(file);
+    const response = await fetch(file, { cache: "force-cache" });
     if (!response.ok) throw new Error(`アイコンを読み込めません: ${file}`);
     iconCache.set(file, await response.text());
   }
@@ -77,8 +77,26 @@ export async function loadIcon(weather, night = false) {
 /** 地図は画面いっぱいに置き、カードは各地点のそばへ重ねる。 */
 export const MAP_CORE = { left: 0, top: 0, right: 100, bottom: 100 };
 
+export function existingMapLayers(stage, regionId = "national") {
+  regionId = canonicalRegion(regionId);
+  if (!stage || stage.dataset.mapRegion !== regionId) return null;
+  const fit = stage.querySelector(".map-fit");
+  if (!fit) return null;
+  return {
+    pins: stage.querySelector(".map-pins"),
+    leaders: stage.querySelector(".map-leaders"),
+    cards: stage.querySelector(".map-cards"),
+    geo: stage.querySelector(".map-geo"),
+    fit,
+    okinawaDock: stage.querySelector(".map-okinawa-dock"),
+    okinawaPins: stage.querySelector(".map-okinawa-pins"),
+    regionId
+  };
+}
+
 export function mountMap(stage, svgText, regionId = "national") {
   regionId = canonicalRegion(regionId);
+  stage.dataset.mapRegion = regionId;
   stage.innerHTML = `
     <div class="map-fit">
       <div class="map-geo">

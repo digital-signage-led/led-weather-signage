@@ -84,7 +84,7 @@ select {
 }
 
 html.is-boot .led-screen {
-  visibility: hidden;
+  visibility: visible;
 }
 
 html.is-kiosk,

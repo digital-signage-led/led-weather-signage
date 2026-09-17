@@ -8,7 +8,7 @@
   <title>天気予報サイネージ</title>
   <style>
     html.is-boot { background: #c8ebff; }
-    html.is-boot .led-screen { visibility: hidden; }
+    html.is-boot .led-screen { visibility: visible; }
     #boot-status {
       display: none;
       position: fixed;
@@ -22,7 +22,7 @@
       font: 700 28px/1.4 "Noto Sans JP", "Hiragino Sans", "Yu Gothic UI", sans-serif;
       letter-spacing: 0.06em;
     }
-    html.is-boot #boot-status { display: flex; }
+    html.is-boot #boot-status { display: none; }
     /* 外部CSS未読込時の最低限フォールバック（本定義は weather.css） */
     .forecast-grid {
       display: grid;
@@ -44,10 +44,18 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/base.css?v=pref513">
   <link rel="stylesheet" href="css/weather.css?v=pref520">
-  <link rel="modulepreload" href="js/app.js?v=pref516">
-  <link rel="preload" href="data/weather.json?v=pref482" as="fetch" crossorigin>
-  <link rel="preload" href="data/locations.json?v=pref483" as="fetch" crossorigin>
-  <link rel="preload" href="maps/japan.svg?v=pref513" as="fetch" crossorigin>
+  <link rel="modulepreload" href="js/app.js?v=pref521">
+  <link rel="preload" href="data/weather.json?v=pref521" as="fetch" crossorigin>
+  <link rel="preload" href="data/locations.json?v=pref521" as="fetch" crossorigin>
+  <link rel="preload" href="data/layout-defaults.json?v=pref521" as="fetch" crossorigin>
+  <link rel="preload" href="maps/japan.svg?v=pref507" as="fetch" crossorigin>
+  <script>
+    try {
+      if (localStorage.getItem("led-weather-lkg-v1")) {
+        document.documentElement.classList.remove("is-boot");
+      }
+    } catch (e) { /* ignore */ }
+  </script>
 </head>
 <body>
   <p id="boot-status" role="status">読込中</p>
@@ -156,6 +164,6 @@
     </article>
     <aside id="debug-overlay" hidden></aside>
   </div>
-  <script type="module" src="js/app.js?v=pref516"></script>
+  <script type="module" src="js/app.js?v=pref521"></script>
 </body>
 </html>
