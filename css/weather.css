@@ -705,6 +705,10 @@ html.is-edit .city-card.is-dragging {
   flex-direction: column;
   align-items: center;
   gap: var(--precip-legend-gap, 6px);
+  padding: 0.35em 0.45em 0.4em;
+  background: #ffffff;
+  border-radius: var(--box-radius, 8px);
+  box-shadow: 0 1px 2px rgba(8, 28, 64, 0.12);
   pointer-events: none;
   line-height: 1;
 }
