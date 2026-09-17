@@ -212,7 +212,9 @@ function seedLocalStorageFromDefaults() {
             || Math.abs(Number(local.map.y) || 0) > 0.01
             || Math.abs((Number(local.map.scale) || 1) - 1) > 0.01
             || Math.abs(Number(local.map.rotate) || 0) > 0.01);
-        if (local || localHasCards || localHasMap) continue;
+        const shippedRev = Number(entry.rev) || Number(shippedDefaults.rev) || 0;
+        const localRev = Number(local?.rev) || 0;
+        if ((localHasCards || localHasMap) && localRev >= shippedRev) continue;
         viewports[vpKey] = entry;
         regionChanged = true;
       }

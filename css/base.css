@@ -495,13 +495,14 @@ svg.jma-icon {
 
 .led-note-mark {
   position: relative;
+  z-index: 0;
   flex: 0 0 var(--footer-height);
   width: var(--footer-height);
   display: flex;
   align-items: center;
   justify-content: center;
   background: var(--note-accent);
-  border-radius: 0 var(--box-radius) var(--box-radius) 0;
+  border-radius: 0;
 }
 
 .led-note-icon-box {
@@ -568,17 +569,22 @@ svg.jma-icon {
 }
 
 .led-note {
+  position: relative;
+  z-index: 1;
   flex: 1 1 0;
   min-width: 0;
   display: flex;
   align-items: center;
   height: 100%;
+  margin-left: calc(-1 * var(--box-radius));
   padding: 0 12px 0 0.25em;
   font-size: var(--font-note);
   font-weight: 800;
   line-height: var(--footer-height);
   overflow: hidden;
   text-align: left;
+  background: var(--bg-footer);
+  border-radius: var(--box-radius) 0 0 var(--box-radius);
 }
 
 .led-note-track {

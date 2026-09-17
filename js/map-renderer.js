@@ -5,7 +5,7 @@
 
 import { canonicalRegion, isNational } from "./catalog.js?v=pref387";
 import { cardSizePct } from "./viewport.js?v=pref387";
-import { MAP_VERSION } from "./version.js?v=pref507";
+import { MAP_VERSION } from "./version.js?v=pref513";
 
 import { jmaIconFile } from "./jma-icons.js?v=pref387";
 
@@ -237,8 +237,12 @@ function raiseBiwaLayer(svg) {
 
 /** 共通地図を地方表示向けに整える（沖縄枠の扱い・遠方県の抑制）。 */
 function prepareCommonMapLayers(svg, regionId) {
-  if (!svg || isNational(regionId)) return;
+  if (!svg) return;
   regionId = canonicalRegion(regionId);
+  if (isNational(regionId)) {
+    svg.querySelectorAll(".map-okinawa-inset > rect").forEach((el) => el.setAttribute("display", "none"));
+    return;
+  }
   if (regionId === "okinawa") {
     svg.querySelectorAll(":scope > .map-fills, :scope > .map-borders, :scope > .map-fills-cover, :scope > .map-lakes")
       .forEach((el) => el.setAttribute("display", "none"));

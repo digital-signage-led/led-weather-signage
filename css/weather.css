@@ -1,4 +1,4 @@
-.map-stage {
+﻿.map-stage {
   position: absolute;
   inset: 0 0 var(--footer-height) 0;
   width: auto;
@@ -306,10 +306,11 @@ html.is-edit .map-cards {
 }
 
 .map-okinawa-overlay .map-okinawa-inset > rect {
-  fill: var(--bg-sea);
-  stroke: var(--bg-footer);
-  stroke-width: 1.15px;
-  vector-effect: non-scaling-stroke;
+  display: none;
+}
+
+.led-screen[data-region="national"] .map-okinawa-dock {
+  background: transparent;
 }
 
 .map-okinawa-dock {
