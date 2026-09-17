@@ -130,13 +130,13 @@ const SITE_STORE = "led-signage-site";
 
 const params = new URLSearchParams(window.location.search);
 const studioFlag = String(params.get("studio") || "").toLowerCase();
-const inSignageFrame = window.self !== window.top;
-const isStudio = !inSignageFrame && (
-  window.__LED_FORCE_STUDIO__ === true
-  || studioFlag === "1" || studioFlag === "true" || studioFlag === "yes"
-  || /studio\.html$/i.test(window.location.pathname)
-  || window.location.hash === "#studio"
-);
+const isStudioPage = /studio\.html$/i.test(window.location.pathname)
+  || window.location.hash === "#studio";
+const isStudio = isStudioPage
+  || (window.self === window.top && (
+    window.__LED_FORCE_STUDIO__ === true
+    || studioFlag === "1" || studioFlag === "true" || studioFlag === "yes"
+  ));
 if (isStudio) window.__LED_FORCE_STUDIO__ = true;
 const isDebug = params.get("debug") === "1";
 const canEdit = params.get("edit") === "1";
@@ -159,8 +159,9 @@ document.getElementById("studio-root").hidden = !isStudio;
 document.getElementById("app").hidden = isStudio;
 
 if (isStudio) {
-  // スタジオ親ページは読込オーバーレイ不要（iframe 側が独自に is-boot する）
   document.documentElement.classList.remove("is-boot");
+  const bootStatus = document.getElementById("boot-status");
+  if (bootStatus) bootStatus.hidden = true;
   bootStudio().catch((error) => {
     console.error(error);
     document.documentElement.classList.remove("is-boot");
