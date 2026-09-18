@@ -152,26 +152,19 @@ function shortTempsForYmd(tempSeries, tempArea, ymd) {
   if (!tempSeries || !tempArea?.temps) return { min: null, max: null };
   const defines = tempSeries.timeDefines || [];
   const temps = tempArea.temps;
-  const idxs = [];
+  let min = null;
+  let max = null;
   for (let i = 0; i < defines.length; i += 1) {
     const stamp = new Date(defines[i]);
-    if (!Number.isNaN(stamp.getTime()) && formatYmd(stamp) === ymd) idxs.push(i);
+    if (Number.isNaN(stamp.getTime())) continue;
+    const parts = jstDateParts(stamp);
+    if (`${parts.year}-${parts.month}-${parts.day}` !== ymd) continue;
+    const value = num(temps[i]);
+    if (value == null) continue;
+    if (parts.hour === 0) min = value;
+    else if (parts.hour === 9) max = value;
   }
-  if (idxs.length >= 2) {
-    return { min: num(temps[idxs[0]]), max: num(temps[idxs[1]]) };
-  }
-  if (idxs.length === 1) {
-    const v = num(temps[idxs[0]]);
-    return { min: v, max: v };
-  }
-  // 定義が無い／日付不一致のときは従来どおり [最低, 最高]
-  if (defines.length >= 2 && temps.length >= 2) {
-    const d0 = formatYmd(new Date(defines[0]));
-    const d1 = formatYmd(new Date(defines[1]));
-    if (d0 === ymd || d1 === ymd) {
-      return { min: num(temps[0]), max: num(temps[1]) };
-    }
-  }
+  if (min != null || max != null) return { min, max };
   return { min: null, max: null };
 }
 

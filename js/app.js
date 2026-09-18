@@ -2,7 +2,7 @@
  * Studio / signage bootstrap. Studio drives the iframe viewport.
  */
 
-import { APP_VERSION, DATA_VERSION, MAP_VERSION } from "./version.js?v=pref528";
+import { APP_VERSION, DATA_VERSION, MAP_VERSION } from "./version.js?v=pref529";
 import { isWeatherDoc, readWeatherLkg, writeWeatherLkg } from "./weather-cache.js?v=pref522";
 import {
   canonicalContent,
@@ -38,7 +38,7 @@ import {
   showAuxiliary
 } from "./viewport.js?v=pref506";
 import { msUntilIconPhaseChange } from "./jma-icons.js?v=pref387";
-import { fetchJmaWeather } from "./jma-live.js?v=pref527";
+import { fetchJmaWeather } from "./jma-live.js?v=pref529";
 import { buildWeekPoints, fetchWeekAlert, renderWeekPointsHtml } from "./week-points.js?v=pref387";
 
 /** 気象庁の定時発表（JST）。反映待ちで +5 分後にも取り直す。 */
