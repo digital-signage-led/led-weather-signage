@@ -56,13 +56,19 @@ function formatCardNumber(value) {
   return Number.isFinite(n) ? String(Math.round(n)) : "--";
 }
 
+function cityNameSpan(name) {
+  const text = String(name || "");
+  const chars = Math.max(3.2, [...text].length + 0.2);
+  return `<span class="city-card-name" style="--name-chars:${chars}">${text}</span>`;
+}
+
 export function renderCityCardSkeleton(point, position, options = {}) {
   const name = point.cityName || "";
   const locked = position.locked ? " is-locked" : "";
   if (options.layout === "pop") {
     return `
     <article class="city-card is-pop is-vertical${locked}" data-city-id="${point.cityId}" style="left:${position.x}%;top:${position.y}%;">
-      <span class="city-card-name">${name}</span>
+      ${cityNameSpan(name)}
       <span class="city-card-pops">
         <span class="pop-slot is-morning"><b>--</b></span>
         <span class="pop-slot is-noon"><b>--</b></span>
@@ -75,7 +81,7 @@ export function renderCityCardSkeleton(point, position, options = {}) {
         <span class="city-card-icon-box" aria-hidden="true"></span>
         <span class="wx-icon" aria-hidden="true"></span>
       </span>
-      <span class="city-card-name">${name}</span>
+      ${cityNameSpan(name)}
       <span class="city-card-row">
         <span class="city-card-temps">
           <b class="temp-max">--</b><small>℃</small>
@@ -94,11 +100,11 @@ export async function renderCityCard(point, position, options = {}) {
           <b class="temp-min">${formatCardNumber(point.tempMin)}</b><small>℃</small>
         </span>`;
   if (options.layout === "pop") {
-    const morning = Number.isFinite(point.morning) ? point.morning : point.pop;
-    const noon = Number.isFinite(point.noon) ? point.noon : point.pop;
+    const morning = Number.isFinite(point.morning) ? point.morning : null;
+    const noon = Number.isFinite(point.noon) ? point.noon : null;
     return `
     <article class="city-card is-pop is-vertical${position.locked ? " is-locked" : ""}" data-city-id="${point.cityId}" style="left:${position.x}%;top:${position.y}%;">
-      <span class="city-card-name">${point.cityName}</span>
+      ${cityNameSpan(point.cityName)}
       <span class="city-card-pops">
         <span class="pop-slot is-morning ${popTone(morning)}"><b>${formatCardNumber(morning)}</b></span>
         <span class="pop-slot is-noon ${popTone(noon)}"><b>${formatCardNumber(noon)}</b></span>
@@ -118,7 +124,7 @@ export async function renderCityCard(point, position, options = {}) {
         <span class="city-card-icon-box" aria-hidden="true"></span>
         <span class="wx-icon ${tone}" aria-label="${night ? "夜" : "昼"} ${label}">${icon}</span>
       </span>
-      <span class="city-card-name">${point.cityName}</span>
+      ${cityNameSpan(point.cityName)}
       <span class="city-card-row">${temps}${pop}</span>
     </article>
   `;

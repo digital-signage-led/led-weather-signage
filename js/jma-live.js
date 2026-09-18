@@ -61,17 +61,36 @@ function num(value) {
 }
 
 function formatYmd(date) {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, "0");
-  const d = String(date.getDate()).padStart(2, "0");
-  return `${y}-${m}-${d}`;
+  const parts = jstDateParts(date);
+  return `${parts.year}-${parts.month}-${parts.day}`;
+}
+
+function jstDateParts(date) {
+  const stamp = date instanceof Date ? date : new Date(date);
+  const parts = Object.fromEntries(
+    new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Asia/Tokyo",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      hourCycle: "h23"
+    }).formatToParts(stamp).filter((part) => part.type !== "literal").map((part) => [part.type, part.value])
+  );
+  return {
+    year: parts.year,
+    month: parts.month,
+    day: parts.day,
+    hour: Number(parts.hour)
+  };
 }
 
 function popAtHour(defines, values, ymd, hour) {
   for (let i = 0; i < defines.length; i += 1) {
     const stamp = new Date(defines[i]);
     if (Number.isNaN(stamp.getTime())) continue;
-    if (formatYmd(stamp) === ymd && stamp.getHours() === hour) {
+    const parts = jstDateParts(stamp);
+    if (`${parts.year}-${parts.month}-${parts.day}` === ymd && parts.hour === hour) {
       return values[i] ?? null;
     }
   }
@@ -263,8 +282,8 @@ function extractPoint(forecast, city, mapping) {
         tempMax,
         tempMin,
         pop: todayPop,
-        popAm: todayAm ?? todayPop,
-        popPm: todayPm ?? todayPop,
+        popAm: todayAm,
+        popPm: todayPm,
         humidity: estimateLiveHumidity(todayPop, todayCode)
       });
       continue;
@@ -288,8 +307,8 @@ function extractPoint(forecast, city, mapping) {
       tempMax,
       tempMin,
       pop: dayPop,
-      popAm: i === 1 ? (tomorrowAm ?? dayPop) : dayPop,
-      popPm: i === 1 ? (tomorrowPm ?? dayPop) : dayPop,
+      popAm: i === 1 ? tomorrowAm : dayPop,
+      popPm: i === 1 ? tomorrowPm : dayPop,
       humidity: estimateLiveHumidity(dayPop, code)
     });
   }
@@ -306,6 +325,8 @@ function extractPoint(forecast, city, mapping) {
     tempMax: weeklyDays[0].tempMax,
     tempMin: weeklyDays[0].tempMin,
     pop: todayPop,
+    morning: todayAm,
+    noon: todayPm,
     normalMax: num(climate?.max),
     normalMin: num(climate?.min),
     jmaClass10: mapping.class10 || "",
@@ -315,7 +336,9 @@ function extractPoint(forecast, city, mapping) {
       weatherLabel: weeklyDays[1].weatherLabel,
       tempMax: weeklyDays[1].tempMax,
       tempMin: weeklyDays[1].tempMin,
-      pop: weeklyDays[1].pop
+      pop: weeklyDays[1].pop,
+      morning: tomorrowAm,
+      noon: tomorrowPm
     },
     weekly: weeklyDays,
     reportDatetime: shortTerm.reportDatetime || ""

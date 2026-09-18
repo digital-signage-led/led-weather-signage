@@ -25,14 +25,14 @@ export function expandForecast(point, updatedAt) {
     pop: clampPop(storedTomorrow.pop ?? point.pop)
   };
   const periods = {
-    morning: clampPop(point.pop - 10),
-    noon: clampPop(point.pop),
-    night: clampPop(point.pop + (isWetWeather(todayWx) ? 15 : 5))
+    morning: firstPop(point.morning, point.weekly?.[0]?.popAm),
+    noon: firstPop(point.noon, point.weekly?.[0]?.popPm),
+    night: firstPop(point.night)
   };
   const tomorrowPeriods = {
-    morning: clampPop(tomorrow.pop - 10),
-    noon: clampPop(tomorrow.pop),
-    night: clampPop(tomorrow.pop + (isWetWeather(tomorrowWx) ? 15 : 5))
+    morning: firstPop(storedTomorrow.morning, point.weekly?.[1]?.popAm),
+    noon: firstPop(storedTomorrow.noon, point.weekly?.[1]?.popPm),
+    night: firstPop(storedTomorrow.night)
   };
   const weekly = [];
   for (let i = 0; i < 7; i += 1) {
@@ -51,7 +51,7 @@ export function expandForecast(point, updatedAt) {
       stored?.popPm
       ?? (i === 0 ? periods.noon : i === 1 ? tomorrowPeriods.noon : dayPop)
     );
-    const dayPopMax = Math.max(popAm, popPm, dayPop);
+    const dayPopMax = [popAm, popPm, dayPop].filter((n) => Number.isFinite(n)).reduce((best, n) => Math.max(best, n), dayPop);
     weekly.push({
       date: formatDate(date),
       weekday: WEEKDAYS[date.getDay()],
@@ -132,7 +132,15 @@ export function popTone(pop) {
   return "is-pop-low";
 }
 
+function firstPop(...values) {
+  for (const value of values) {
+    if (value != null && Number.isFinite(Number(value))) return clampPop(value);
+  }
+  return null;
+}
+
 function clampPop(value) {
+  if (value == null || !Number.isFinite(Number(value))) return null;
   return Math.max(0, Math.min(90, Math.round(Number(value) / 10) * 10));
 }
 

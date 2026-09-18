@@ -2,7 +2,7 @@
  * Studio / signage bootstrap. Studio drives the iframe viewport.
  */
 
-import { APP_VERSION, DATA_VERSION, MAP_VERSION } from "./version.js?v=pref526";
+import { APP_VERSION, DATA_VERSION, MAP_VERSION } from "./version.js?v=pref527";
 import { isWeatherDoc, readWeatherLkg, writeWeatherLkg } from "./weather-cache.js?v=pref522";
 import {
   canonicalContent,
@@ -16,10 +16,10 @@ import {
 } from "./catalog.js?v=pref485";
 import { adaptWeather, aggregateRegion, assertRegionCoverage, emptyWeatherPoint } from "./weather-data.js?v=pref415";
 import { existingMapLayers, fillMountedMap, loadMapSvg, mountMap, mountMapFrame, placeCardsAroundMap, projectCity } from "./map-renderer.js?v=pref525";
-import { formatStamp, renderCityCard, renderCityCardSkeleton, renderPin, pinRadiusForViewBox, pinRadiusForMatchingScreen, pickNoteWeather, weatherTone, renderNoteIcon, renderPrecipTodLegend } from "./weather-renderer.js?v=pref526";
+import { formatStamp, renderCityCard, renderCityCardSkeleton, renderPin, pinRadiusForViewBox, pinRadiusForMatchingScreen, pickNoteWeather, weatherTone, renderNoteIcon, renderPrecipTodLegend } from "./weather-renderer.js?v=pref527";
 import { CONTENT_MASTER, REGION_MASTER, citiesForMaster } from "./area-master.js?v=pref525";
 import { applyCardScale, applyLockedCards, applyMapTransform, applyPrecipLegend, applyTitleScale, bindCardEditor, bindMapControls, bindMapEditor, bindOkinawaEditor, bindPrecipLegendEditor, CARD_POS_MAX, CARD_POS_MIN, CARD_SCALE_MAX, CARD_SCALE_MIN, TITLE_SCALE_MAX, TITLE_SCALE_MIN, centerCityCards, hasLocalLayouts, initLayoutDefaults, listCardPositions, loadCardScale, loadLayout, loadTitleScale, moveLockedCard, resetCardScale, resetLayout, resetTitleScale, saveCardScale, saveLayout, saveTitleScale, snapshotAllLayoutDefaults, snapshotLayoutDefaults } from "./studio-layout.js?v=pref525";
-import { expandForecast, formatNoteHtml, noteFor } from "./forecast.js?v=pref526";
+import { expandForecast, formatNoteHtml, noteFor } from "./forecast.js?v=pref527";
 import { renderWeeklyTable, renderWeeklyTableSkeleton, weeklyTableRows } from "./table-renderer.js?v=pref525";
 import {
   DEFAULT_STUDIO_VIEWPORT,
@@ -38,7 +38,7 @@ import {
   showAuxiliary
 } from "./viewport.js?v=pref506";
 import { msUntilIconPhaseChange } from "./jma-icons.js?v=pref387";
-import { fetchJmaWeather } from "./jma-live.js?v=pref387";
+import { fetchJmaWeather } from "./jma-live.js?v=pref527";
 import { buildWeekPoints, fetchWeekAlert, renderWeekPointsHtml } from "./week-points.js?v=pref387";
 
 /** 気象庁の定時発表（JST）。反映待ちで +5 分後にも取り直す。 */
@@ -1604,11 +1604,42 @@ async function loadWeatherDoc() {
   return bundledWeatherDoc;
 }
 
+function keepPop(next, prev) {
+  return Number.isFinite(Number(next)) ? Number(next) : (Number.isFinite(Number(prev)) ? Number(prev) : next);
+}
+
 function mergeWeatherDocs(base, live) {
   if (!isWeatherDoc(live)) return base;
   if (!isWeatherDoc(base)) return live;
+  const prevById = new Map((base.points || []).map((point) => [point.cityId, point]));
   const byId = new Map((base.points || []).map((point) => [point.cityId, point]));
-  for (const point of live.points) byId.set(point.cityId, point);
+  for (const point of live.points) {
+    const prev = prevById.get(point.cityId);
+    if (!prev) {
+      byId.set(point.cityId, point);
+      continue;
+    }
+    const weekly = (point.weekly || []).map((day, index) => {
+      const before = prev.weekly?.[index];
+      if (!day || !before) return day;
+      return {
+        ...day,
+        popAm: keepPop(day.popAm, before.popAm),
+        popPm: keepPop(day.popPm, before.popPm)
+      };
+    });
+    byId.set(point.cityId, {
+      ...point,
+      morning: keepPop(point.morning, prev.morning),
+      noon: keepPop(point.noon, prev.noon),
+      tomorrow: {
+        ...(point.tomorrow || {}),
+        morning: keepPop(point.tomorrow?.morning, prev.tomorrow?.morning),
+        noon: keepPop(point.tomorrow?.noon, prev.tomorrow?.noon)
+      },
+      weekly
+    });
+  }
   return {
     ...base,
     ...live,
