@@ -12,5 +12,6 @@
       </g>
     </g>
     <use href="#corner" transform="rotate(180 960 540)"/>
+    <use href="#corner" transform="matrix(-1 0 0 1 1920 0)"/>
   </g>
 </svg>

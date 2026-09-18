@@ -832,7 +832,7 @@ html.is-edit .precip-tod-legend.is-dragging {
 #led-screen[data-content="weekly_precip"],
 .led-screen[data-content="weekly_weather"],
 .led-screen[data-content="weekly_precip"] {
-  background: var(--bg-sea) url("../img/weekly-frame.svg?v=pref387") no-repeat center / 100% 100%;
+  background: var(--bg-sea) url("../img/weekly-frame.svg?v=pref534") no-repeat center / 100% 100%;
 }
 
 .led-screen[data-content="weekly_weather"] .led-header,
