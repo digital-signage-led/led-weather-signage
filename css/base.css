@@ -26,13 +26,13 @@
   --line: #7eb8d8;
   --font-main: "Noto Sans JP", "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif;
   --font-number: "Noto Sans JP", "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif;
-  --box-radius: 4px;
-  --card-box-w: 110px;
-  --card-box-h: 42px;
-  --header-title-height: 40px;
-  --header-height: 28px;
-  --footer-height: 56px;
-  --footer-gap: 12px;
+  --box-radius: 8px;
+  --card-box-w: 200px;
+  --card-box-h: 260px;
+  --header-title-height: 87px;
+  --header-height: 60px;
+  --footer-height: 150px;
+  --footer-gap: 42px;
   color-scheme: only light;
 }
 
@@ -302,12 +302,12 @@ body.is-kiosk #app {
 }
 
 .led-screen {
-  --card-scale: 1;
-  --title-scale: 1;
-  --header-title-height: 40px;
-  --header-height: 28px;
-  --footer-height: 56px;
-  --footer-gap: 12px;
+  --card-scale: 0.748052;
+  --title-scale: 1.3;
+  --header-title-height: 87px;
+  --header-height: 60px;
+  --footer-height: 150px;
+  --footer-gap: 42px;
   position: absolute;
   left: 0;
   top: 0;
