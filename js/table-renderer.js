@@ -44,6 +44,45 @@ export function renderWeeklyTableSkeleton(cities, contentId) {
   `;
 }
 
+/** 通信待ちなし。週間降水は完成形、週間天気はアイコン以外を本番グリッドで出す。 */
+export function renderWeeklyTableSync(cities, contentId) {
+  const list = Array.isArray(cities) ? cities.slice(0, TABLE_ROW_MAX) : [];
+  const slots = weeklyTableRows(list);
+  const days = list[0]?.weekly || list.find((c) => c?.weekly?.length)?.weekly || [];
+  const dayCount = Math.max(7, days.length || 7);
+  const precip = canonicalContent(contentId) === "weekly_precip";
+  const head = [
+    `<span class="forecast-city-h" aria-hidden="true"></span>`,
+    ...(days.length
+      ? days.map((day) => `
+      <span class="forecast-day-h${day.weekend ? " is-weekend" : ""}${day.today ? " is-today" : ""}${weekdayClass(day.weekday)}${holidayClass(day)}">${dayMonthLabel(day)}${day.weekday || ""}</span>
+    `)
+      : Array.from({ length: 7 }, () => `<span class="forecast-day-h"></span>`))
+  ];
+  const body = [];
+  for (let row = 0; row < slots; row += 1) {
+    const city = list[row];
+    if (!city) {
+      body.push(`<span class="forecast-city is-empty" aria-hidden="true"></span>`);
+      for (let i = 0; i < dayCount; i += 1) body.push(`<div class="forecast-cell is-empty" aria-hidden="true"></div>`);
+      continue;
+    }
+    body.push(`<span class="forecast-city">${city.cityName}</span>`);
+    const week = city.weekly?.length ? city.weekly : days;
+    body.push(...(week.length ? week : Array.from({ length: 7 }, () => ({}))).map((day) => (
+      precip ? renderPopCell(day) : renderWeatherCellSync(day)
+    )));
+  }
+  return `
+    <div class="forecast-table" data-content="${contentId}" data-rows="${slots}" style="--forecast-rows:${slots}">
+      <div class="forecast-grid">
+        ${head.join("")}
+        ${body.join("")}
+      </div>
+    </div>
+  `;
+}
+
 export async function renderWeeklyTable(cities, contentId) {
   const list = Array.isArray(cities) ? cities.slice(0, TABLE_ROW_MAX) : [];
   const slots = weeklyTableRows(list);
@@ -107,6 +146,21 @@ function holidayClass(day) {
   return isJapaneseHoliday(Number(match[1]), Number(match[2]), Number(match[3]))
     ? " is-holiday"
     : "";
+}
+
+function renderWeatherCellSync(day) {
+  return `
+    <div class="forecast-cell is-weather${day.today ? " is-today" : ""}">
+      <span class="week-icon-slot">
+        <span class="wx-icon ${weatherTone(day.weather || "200")}" aria-hidden="true"></span>
+      </span>
+      <span class="forecast-temps">
+        <b class="temp-max">${formatTemp(day.tempMax)}</b>
+        <span class="temp-slash">/</span>
+        <b class="temp-min">${formatTemp(day.tempMin)}</b>
+      </span>
+    </div>
+  `;
 }
 
 async function renderWeatherCell(day) {

@@ -2,7 +2,7 @@
  * Studio / signage bootstrap. Studio drives the iframe viewport.
  */
 
-import { APP_VERSION, DATA_VERSION, MAP_VERSION } from "./version.js?v=pref531";
+import { APP_VERSION, DATA_VERSION, MAP_VERSION } from "./version.js?v=pref532";
 import { isWeatherDoc, readWeatherLkg, writeWeatherLkg } from "./weather-cache.js?v=pref522";
 import {
   canonicalContent,
@@ -20,7 +20,7 @@ import { formatStamp, renderCityCard, renderCityCardSkeleton, renderPin, pinRadi
 import { CONTENT_MASTER, REGION_MASTER, citiesForMaster } from "./area-master.js?v=pref525";
 import { applyCardScale, applyLockedCards, applyMapTransform, applyPrecipLegend, applyTitleScale, bindCardEditor, bindMapControls, bindMapEditor, bindOkinawaEditor, bindPrecipLegendEditor, CARD_POS_MAX, CARD_POS_MIN, CARD_SCALE_MAX, CARD_SCALE_MIN, TITLE_SCALE_MAX, TITLE_SCALE_MIN, centerCityCards, hasLocalLayouts, initLayoutDefaults, listCardPositions, loadCardScale, loadLayout, loadTitleScale, moveLockedCard, resetCardScale, resetLayout, resetTitleScale, saveCardScale, saveLayout, saveTitleScale, snapshotAllLayoutDefaults, snapshotLayoutDefaults } from "./studio-layout.js?v=pref525";
 import { expandForecast, formatNoteHtml, noteFor } from "./forecast.js?v=pref527";
-import { renderWeeklyTable, renderWeeklyTableSkeleton, weeklyTableRows } from "./table-renderer.js?v=pref525";
+import { renderWeeklyTable, renderWeeklyTableSkeleton, renderWeeklyTableSync, weeklyTableRows } from "./table-renderer.js?v=pref532";
 import {
   DEFAULT_STUDIO_VIEWPORT,
   FIXED_DESIGN,
@@ -784,9 +784,24 @@ async function bootSignage() {
         : ((a.priority - b.priority) || String(a.cityId).localeCompare(String(b.cityId)))
     ));
     if (contentMeta.kind === "table") {
-      const page = cities.slice(0, 4).map((city) => ({ cityId: city.cityId, cityName: city.cityName }));
+      const page = partitionTablePages(cities, tablePageSize(regionMeta.id))[0] || [];
       applyTableLayout(screen, initialVp, weeklyTableRows(page));
-      stage.innerHTML = renderWeeklyTableSkeleton(page, contentMeta.id);
+      const lkgDoc = liveWeatherCache.doc;
+      if (isWeatherDoc(lkgDoc) && page.length) {
+        const weather = adaptWeather(lkgDoc);
+        const selected = page.map((city) => attachForecast(
+          city,
+          weather.pointsByCity.get(city.cityId) || emptyWeatherPoint(city.cityId),
+          contentMeta,
+          weather.updatedAt
+        ));
+        stage.innerHTML = renderWeeklyTableSync(selected, contentMeta.id);
+        if (liveWeatherCache.at) {
+          stampEl.textContent = formatStamp(new Date(liveWeatherCache.at).toISOString(), !showAuxiliary(initialVp, "stampWeek"));
+        }
+      } else {
+        stage.innerHTML = renderWeeklyTableSkeleton(page, contentMeta.id);
+      }
       return;
     }
     const layers = mountMapFrame(stage, regionMeta.id);

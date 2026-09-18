@@ -29,6 +29,10 @@
       --card-box-w: 200px;
       --card-box-h: 260px;
     }
+    html[data-boot-content="weekly_weather"] #led-screen,
+    html[data-boot-content="weekly_precip"] #led-screen {
+      background: #c8ebff url("img/weekly-frame.svg?v=pref532") no-repeat center / 100% 100%;
+    }
     #boot-status {
       display: none;
       position: fixed;
@@ -63,15 +67,32 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/base.css?v=pref528">
-  <link rel="stylesheet" href="css/weather.css?v=pref531">
-  <link rel="modulepreload" href="js/app.js?v=pref531">
+  <link rel="stylesheet" href="css/weather.css?v=pref532">
+  <link rel="modulepreload" href="js/app.js?v=pref532">
   <link rel="modulepreload" href="js/area-master.js?v=pref528">
   <link rel="preload" href="data/weather.json?v=pref522" as="fetch" crossorigin>
   <link rel="preload" href="data/locations.json?v=pref522" as="fetch" crossorigin>
   <link rel="preload" href="maps/japan.svg?v=pref507" as="fetch" crossorigin>
+  <link rel="preload" href="img/weekly-frame.svg?v=pref532" as="image">
   <script>
     (function () {
       try { document.documentElement.classList.remove("is-boot"); } catch (e) { /* ignore */ }
+      try {
+        var q = new URLSearchParams(window.location.search);
+        var content = String(q.get("content") || "").toLowerCase();
+        var region = String(q.get("region") || "national").toLowerCase();
+        if (content === "weekly-pop" || content === "weeklypop") content = "weekly_precip";
+        if (content === "weekly" || content === "weekly-weather") content = "weekly_weather";
+        if (content === "weekly_precip" || content === "weekly_weather") {
+          document.documentElement.setAttribute("data-boot-content", content);
+        }
+        var regionNames = { national:"全国", hokkaido:"北海道", tohoku:"東北", kanto:"関東", chubu:"中部", kinki:"近畿", chugoku:"中国", shikoku:"四国", kyushu:"九州", okinawa:"沖縄" };
+        var contentNames = { weekly_weather:"週間天気", weekly_precip:"週間降水確率" };
+        if (contentNames[content]) {
+          var title = (regionNames[region] || "全国") + "｜" + contentNames[content];
+          document.documentElement.setAttribute("data-boot-title", title);
+        }
+      } catch (e) { /* ignore */ }
       if (navigator.serviceWorker) {
         navigator.serviceWorker.getRegistrations().then(function (regs) {
           regs.forEach(function (reg) { reg.unregister(); });
@@ -196,6 +217,13 @@
     (function () {
       var screen = document.getElementById("led-screen");
       if (!screen) return;
+      var bootTitle = document.documentElement.getAttribute("data-boot-title");
+      var bootContent = document.documentElement.getAttribute("data-boot-content");
+      if (bootContent) screen.setAttribute("data-content", bootContent);
+      if (bootTitle) {
+        var titleEl = document.getElementById("led-title");
+        if (titleEl) titleEl.textContent = bootTitle;
+      }
       var params = new URLSearchParams(window.location.search);
       if (Number(params.get("vw")) > 0 && Number(params.get("vh")) > 0) return;
       function fit() {
@@ -216,6 +244,6 @@
       window.addEventListener("resize", fit);
     })();
   </script>
-  <script type="module" src="js/app.js?v=pref531"></script>
+  <script type="module" src="js/app.js?v=pref532"></script>
 </body>
 </html>
