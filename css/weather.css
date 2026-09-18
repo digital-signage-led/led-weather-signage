@@ -849,6 +849,7 @@ html.is-edit .precip-tod-legend.is-dragging {
   background: transparent;
 }
 
+.map-fit[hidden],
 .map-cards[data-player-content][hidden],
 .player-table-panel[hidden],
 .player-table-page[hidden] {

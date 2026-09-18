@@ -94,13 +94,12 @@ export function existingMapLayers(stage, regionId = "national") {
   };
 }
 
-export function mountMapFrame(stage, regionId = "national") {
+export function mountMapFrame(stage, regionId = "national", options = {}) {
   const existing = existingMapLayers(stage, regionId);
   if (existing) return existing;
   regionId = canonicalRegion(regionId);
-  stage.dataset.mapRegion = regionId;
-  stage.innerHTML = `
-    <div class="map-fit">
+  const html = `
+    <div class="map-fit"${options.hidden ? " hidden" : ""}>
       <div class="map-geo">
         <div class="map-core">
           <div class="map-square">
@@ -114,6 +113,12 @@ export function mountMapFrame(stage, regionId = "national") {
       <button type="button" class="map-resize" aria-label="地図の大きさを変える"></button>
     </div>
   `;
+  if (options.replace === false && stage.childElementCount) {
+    stage.insertAdjacentHTML("afterbegin", html);
+  } else {
+    stage.innerHTML = html;
+  }
+  stage.dataset.mapRegion = regionId;
   return existingMapLayers(stage, regionId);
 }
 
