@@ -74,8 +74,6 @@ export function expandForecast(point, updatedAt) {
   return { tomorrow, periods, tomorrowPeriods, weekly };
 }
 
-const LOCAL_CONDITIONS = "現在の気象状況　🌡 28.4℃　💨 北西 6.2m/s　☔ 1時間雨量 0.4mm";
-
 /** ノート用。絵文字の風・傘アイコンを線画へ差し替える */
 export function formatNoteHtml(text) {
   const raw = String(text || "");
@@ -117,14 +115,7 @@ export function noteFor(contentId, regionId, weather, points) {
     else base = "明日はおおむね穏やかです。";
   } else if (content === "weekly_precip") base = "向こう一週間の降水確率と湿度です。";
   else base = "向こう一週間の天気です。";
-  return appendLocalConditions(base);
-}
-
-function appendLocalConditions(text) {
-  const base = String(text || "").trim();
-  if (!base) return LOCAL_CONDITIONS;
-  if (base.includes("現在の気象状況")) return base;
-  return `${base}　　${LOCAL_CONDITIONS}`;
+  return String(base || "").trim();
 }
 
 function strongestTone(points) {

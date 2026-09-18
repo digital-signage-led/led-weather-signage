@@ -34,8 +34,9 @@ export function formatStamp(iso, compact = false) {
   }).formatToParts(date);
   const pick = (type) => parts.find((part) => part.type === type)?.value || "";
   const weekday = pick("weekday").replace("曜日", "");
-  if (compact) return `${pick("month")}月${pick("day")}日 ${pick("hour")}:${pick("minute")}更新`;
-  return `${pick("month")}月${pick("day")}日(${weekday}) ${pick("hour")}:${pick("minute")}更新`;
+  // 表示は毎時0分（JST）。取得が遅れた場合も分は出さない。
+  if (compact) return `${pick("month")}月${pick("day")}日 ${pick("hour")}:00更新`;
+  return `${pick("month")}月${pick("day")}日(${weekday}) ${pick("hour")}:00更新`;
 }
 
 export function renderLeader(position) {
