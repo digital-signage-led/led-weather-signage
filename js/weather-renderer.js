@@ -130,14 +130,16 @@ export async function renderCityCard(point, position, options = {}) {
   `;
 }
 
-export function renderPrecipTodLegend() {
+export function renderPrecipTodLegend(band = "early") {
+  const top = band === "late" ? "12〜18時" : "6〜12時";
+  const bottom = band === "late" ? "18〜24時" : "12〜18時";
   return `
     <aside class="precip-tod-legend" aria-label="降水確率・時間帯">
       <div class="precip-tod-legend-title">降水確率</div>
       <div class="precip-tod-legend-row">
         <div class="precip-tod-legend-box">
-          <span class="is-morning">6〜12時</span>
-          <span class="is-noon">12〜18時</span>
+          <span class="is-morning">${top}</span>
+          <span class="is-noon">${bottom}</span>
         </div>
       </div>
     </aside>

@@ -228,8 +228,10 @@ function extractPoint(forecast, city, mapping) {
   const tomorrowYmd = formatYmd(tomorrowDate);
   const todayAm = popAtHour(popDefines, pops, todayYmd, 6);
   const todayPm = popAtHour(popDefines, pops, todayYmd, 12);
+  const todayEve = popAtHour(popDefines, pops, todayYmd, 18);
   const tomorrowAm = popAtHour(popDefines, pops, tomorrowYmd, 6);
   const tomorrowPm = popAtHour(popDefines, pops, tomorrowYmd, 12);
+  const tomorrowEve = popAtHour(popDefines, pops, tomorrowYmd, 18);
   const todayPops = pops.filter((n) => n != null);
   const todayPop = todayAm != null || todayPm != null
     ? Math.max(todayAm ?? 0, todayPm ?? 0)
@@ -277,6 +279,7 @@ function extractPoint(forecast, city, mapping) {
         pop: todayPop,
         popAm: todayAm,
         popPm: todayPm,
+        popEve: todayEve,
         humidity: estimateLiveHumidity(todayPop, todayCode)
       });
       continue;
@@ -320,6 +323,8 @@ function extractPoint(forecast, city, mapping) {
     pop: todayPop,
     morning: todayAm,
     noon: todayPm,
+    evening: todayEve,
+    precipBand: todayAm != null ? "early" : "late",
     normalMax: num(climate?.max),
     normalMin: num(climate?.min),
     jmaClass10: mapping.class10 || "",
@@ -331,7 +336,8 @@ function extractPoint(forecast, city, mapping) {
       tempMin: weeklyDays[1].tempMin,
       pop: weeklyDays[1].pop,
       morning: tomorrowAm,
-      noon: tomorrowPm
+      noon: tomorrowPm,
+      evening: tomorrowEve
     },
     weekly: weeklyDays,
     reportDatetime: shortTerm.reportDatetime || ""

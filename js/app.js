@@ -2,7 +2,7 @@
  * Studio / signage bootstrap. Studio drives the iframe viewport.
  */
 
-import { APP_VERSION, DATA_VERSION, MAP_VERSION } from "./version.js?v=pref532";
+import { APP_VERSION, DATA_VERSION, MAP_VERSION } from "./version.js?v=pref533";
 import { isWeatherDoc, readWeatherLkg, writeWeatherLkg } from "./weather-cache.js?v=pref522";
 import {
   canonicalContent,
@@ -16,10 +16,10 @@ import {
 } from "./catalog.js?v=pref485";
 import { adaptWeather, aggregateRegion, assertRegionCoverage, emptyWeatherPoint } from "./weather-data.js?v=pref415";
 import { existingMapLayers, fillMountedMap, loadMapSvg, mountMap, mountMapFrame, placeCardsAroundMap, projectCity } from "./map-renderer.js?v=pref530";
-import { formatStamp, renderCityCard, renderCityCardSkeleton, renderPin, pinRadiusForViewBox, pinRadiusForMatchingScreen, pickNoteWeather, weatherTone, renderNoteIcon, renderPrecipTodLegend } from "./weather-renderer.js?v=pref527";
+import { formatStamp, renderCityCard, renderCityCardSkeleton, renderPin, pinRadiusForViewBox, pinRadiusForMatchingScreen, pickNoteWeather, weatherTone, renderNoteIcon, renderPrecipTodLegend } from "./weather-renderer.js?v=pref533";
 import { CONTENT_MASTER, REGION_MASTER, citiesForMaster } from "./area-master.js?v=pref525";
 import { applyCardScale, applyLockedCards, applyMapTransform, applyPrecipLegend, applyTitleScale, bindCardEditor, bindMapControls, bindMapEditor, bindOkinawaEditor, bindPrecipLegendEditor, CARD_POS_MAX, CARD_POS_MIN, CARD_SCALE_MAX, CARD_SCALE_MIN, TITLE_SCALE_MAX, TITLE_SCALE_MIN, centerCityCards, hasLocalLayouts, initLayoutDefaults, listCardPositions, loadCardScale, loadLayout, loadTitleScale, moveLockedCard, resetCardScale, resetLayout, resetTitleScale, saveCardScale, saveLayout, saveTitleScale, snapshotAllLayoutDefaults, snapshotLayoutDefaults } from "./studio-layout.js?v=pref525";
-import { expandForecast, formatNoteHtml, noteFor } from "./forecast.js?v=pref527";
+import { expandForecast, formatNoteHtml, noteFor } from "./forecast.js?v=pref533";
 import { renderWeeklyTable, renderWeeklyTableSkeleton, renderWeeklyTableSync, weeklyTableRows } from "./table-renderer.js?v=pref532";
 import {
   DEFAULT_STUDIO_VIEWPORT,
@@ -38,7 +38,7 @@ import {
   showAuxiliary
 } from "./viewport.js?v=pref506";
 import { msUntilIconPhaseChange } from "./jma-icons.js?v=pref387";
-import { fetchJmaWeather } from "./jma-live.js?v=pref529";
+import { fetchJmaWeather } from "./jma-live.js?v=pref533";
 import { buildWeekPoints, fetchWeekAlert, renderWeekPointsHtml } from "./week-points.js?v=pref387";
 
 /** 気象庁の定時発表（JST）。反映待ちで +5 分後にも取り直す。 */
@@ -1533,7 +1533,12 @@ function syncPrecipTodLegend(content, stage, layout, regionId, canEdit, onLegend
   host.querySelectorAll(".precip-tod-legend").forEach((node) => node.remove());
   const show = content.id === "today_precip" || content.id === "tomorrow_precip";
   if (!show) return;
-  host.insertAdjacentHTML("beforeend", renderPrecipTodLegend());
+  const band = content.id === "tomorrow_precip"
+    ? "early"
+    : ((liveWeatherCache.doc?.points || []).some((point) => Number.isFinite(Number(point.morning)))
+      ? "early"
+      : "late");
+  host.insertAdjacentHTML("beforeend", renderPrecipTodLegend(band));
   if (layout) applyPrecipLegend(host, layout);
   if (canEdit && layout && regionId) {
     bindPrecipLegendEditor(layout, regionId, content.id, onLegendChange);
@@ -1653,6 +1658,8 @@ function mergeWeatherDocs(base, live) {
       ...point,
       morning: keepPop(point.morning, prev.morning),
       noon: keepPop(point.noon, prev.noon),
+      evening: keepPop(point.evening, prev.evening),
+      precipBand: point.morning != null || prev.morning != null ? "early" : (point.precipBand || prev.precipBand),
       tomorrow: {
         ...(point.tomorrow || {}),
         morning: keepPop(point.tomorrow?.morning, prev.tomorrow?.morning),

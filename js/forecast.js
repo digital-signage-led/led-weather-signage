@@ -24,16 +24,16 @@ export function expandForecast(point, updatedAt) {
     tempMin: storedTomorrow.tempMin ?? point.tempMin,
     pop: clampPop(storedTomorrow.pop ?? point.pop)
   };
-  const periods = {
+  const periods = fillOpenPrecipSlots({
     morning: firstPop(point.morning, point.weekly?.[0]?.popAm),
     noon: firstPop(point.noon, point.weekly?.[0]?.popPm),
-    night: firstPop(point.night)
-  };
-  const tomorrowPeriods = {
+    night: firstPop(point.night, point.evening, point.weekly?.[0]?.popEve)
+  }, firstPop(point.evening, point.weekly?.[0]?.popEve));
+  const tomorrowPeriods = fillOpenPrecipSlots({
     morning: firstPop(storedTomorrow.morning, point.weekly?.[1]?.popAm),
     noon: firstPop(storedTomorrow.noon, point.weekly?.[1]?.popPm),
-    night: firstPop(storedTomorrow.night)
-  };
+    night: firstPop(storedTomorrow.night, storedTomorrow.evening)
+  }, firstPop(storedTomorrow.evening));
   const weekly = [];
   for (let i = 0; i < 7; i += 1) {
     const date = new Date(start.getFullYear(), start.getMonth(), start.getDate() + i);
@@ -130,6 +130,18 @@ export function popTone(pop) {
   if (pop >= 60) return "is-pop-high";
   if (pop >= 30) return "is-pop-mid";
   return "is-pop-low";
+}
+
+function fillOpenPrecipSlots(periods, evening) {
+  if (periods.morning != null || periods.noon == null) {
+    return { ...periods, precipBand: periods.morning != null ? "early" : "late" };
+  }
+  return {
+    morning: periods.noon,
+    noon: evening ?? periods.noon,
+    night: periods.night,
+    precipBand: "late"
+  };
 }
 
 function firstPop(...values) {
