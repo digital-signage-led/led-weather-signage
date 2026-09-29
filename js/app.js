@@ -2,7 +2,7 @@
  * Studio / signage bootstrap. Studio drives the iframe viewport.
  */
 
-import { APP_VERSION, DATA_VERSION, MAP_VERSION } from "./version.js?v=pref533";
+import { APP_VERSION, DATA_VERSION, MAP_VERSION } from "./version.js?v=pref535";
 import { isWeatherDoc, readWeatherLkg, writeWeatherLkg } from "./weather-cache.js?v=pref522";
 import {
   canonicalContent,
@@ -36,7 +36,7 @@ import {
   partitionTablePages,
   readViewport,
   showAuxiliary
-} from "./viewport.js?v=pref506";
+} from "./viewport.js?v=pref535";
 import { msUntilIconPhaseChange } from "./jma-icons.js?v=pref387";
 import { fetchJmaWeather } from "./jma-live.js?v=pref533";
 import { buildWeekPoints, fetchWeekAlert, renderWeekPointsHtml } from "./week-points.js?v=pref387";
@@ -1310,9 +1310,15 @@ async function bootSignage() {
     applyViewport(screen, vp, state.regionId, content, { fixedScale: useFixedScale });
     applyTitleScale(screen, loadTitleScale(vp.width, vp.height, state.regionId, content.id));
     const isTable = content.kind === "table";
+    document.documentElement.removeAttribute("data-boot-content");
     if (player.layers?.fit) player.layers.fit.hidden = isTable;
+    if (player.layers?.cards) player.layers.cards.hidden = true;
     for (const [id, el] of player.cards) el.hidden = isTable || id !== content.id;
     for (const [id, el] of player.tables) el.hidden = !isTable || id !== content.id;
+    stage.querySelectorAll(".forecast-table").forEach((table) => {
+      const wrap = table.closest(".player-table-panel");
+      table.hidden = !isTable || !wrap || wrap.hidden;
+    });
     const legend = screen.querySelector(".precip-tod-legend");
     if (legend) legend.hidden = content.id !== "today_precip" && content.id !== "tomorrow_precip";
     attributionEl.hidden = isTable || !showAuxiliary(vp, "attribution");
@@ -1441,6 +1447,7 @@ async function bootSignage() {
       player.meta.set(id, await chromeFor(content, pack, built.selected));
     }
     syncPrecipTodLegend(getContent("today_precip"), stage, layout, region.id, false);
+    stage.querySelectorAll(":scope > .forecast-table").forEach((table) => table.remove());
     player.ready = true;
     showPlayerContent(state.contentId);
   }

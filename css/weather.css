@@ -851,6 +851,16 @@ html.is-edit .precip-tod-legend.is-dragging {
   background: transparent;
 }
 
+.led-screen[data-content="weekly_weather"] .map-fit,
+.led-screen[data-content="weekly_precip"] .map-fit {
+  display: none !important;
+}
+
+.led-screen:not([data-content="weekly_weather"]):not([data-content="weekly_precip"]) .player-table-panel,
+.led-screen:not([data-content="weekly_weather"]):not([data-content="weekly_precip"]) .forecast-table {
+  display: none !important;
+}
+
 .map-fit[hidden],
 .map-cards[data-player-content][hidden],
 .player-table-panel[hidden],

@@ -253,6 +253,7 @@ export function applyViewport(element, vp, regionId, content, options = {}) {
   }
   element.dataset.region = regionId;
   element.dataset.content = content.id;
+  document.documentElement?.removeAttribute?.("data-boot-content");
   element.dataset.shape = vp.shape;
   element.dataset.size = vp.size;
   element.dataset.density = vp.density;
