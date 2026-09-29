@@ -2,7 +2,7 @@
  * Studio / signage bootstrap. Studio drives the iframe viewport.
  */
 
-import { APP_VERSION, DATA_VERSION, MAP_VERSION } from "./version.js?v=pref535";
+import { APP_VERSION, DATA_VERSION, MAP_VERSION } from "./version.js?v=pref536";
 import { isWeatherDoc, readWeatherLkg, writeWeatherLkg } from "./weather-cache.js?v=pref522";
 import {
   canonicalContent,
@@ -840,7 +840,8 @@ async function bootSignage() {
   const TABLE_PAGE_MS = 10 * 1000;
   const tableRotateOff = params.get("rotate") === "0";
   const PLAYER_CONTENTS = ["today_weather", "today_precip", "tomorrow_weather", "tomorrow_precip", "weekly_weather", "weekly_precip"];
-  const playerOn = !canEdit && params.get("loop") !== "0";
+  const loopParam = String(params.get("loop") || "").toLowerCase();
+  const playerOn = !canEdit && (loopParam === "1" || loopParam === "true" || Number(loopParam) > 1000);
   const playerMs = Number(params.get("loop")) > 1000 ? Number(params.get("loop")) : 30000;
   const player = {
     cards: new Map(),
