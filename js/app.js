@@ -2,8 +2,8 @@
  * Studio / signage bootstrap. Studio drives the iframe viewport.
  */
 
-import { APP_VERSION, DATA_VERSION, MAP_VERSION } from "./version.js?v=pref548";
-import { applyPortraitSeason } from "./season.js?v=pref548";
+import { APP_VERSION, DATA_VERSION, MAP_VERSION } from "./version.js?v=pref549";
+import { applyPortraitSeason } from "./season.js?v=pref549";
 import { isWeatherDoc, readWeatherLkg, writeWeatherLkg } from "./weather-cache.js?v=pref522";
 import {
   canonicalContent,
@@ -18,7 +18,7 @@ import {
 import { adaptWeather, aggregateRegion, assertRegionCoverage, emptyWeatherPoint } from "./weather-data.js?v=pref415";
 import { existingMapLayers, fillMountedMap, loadMapSvg, mountMap, mountMapFrame, placeCardsAroundMap, projectCity } from "./map-renderer.js?v=pref530";
 import { formatStamp, renderCityCard, renderCityCardSkeleton, renderPin, pinRadiusForViewBox, pinRadiusForMatchingScreen, pickNoteWeather, weatherTone, renderNoteIcon, renderPrecipTodLegend } from "./weather-renderer.js?v=pref533";
-import { CONTENT_MASTER, REGION_MASTER, citiesForMaster } from "./area-master.js?v=pref548";
+import { CONTENT_MASTER, REGION_MASTER, citiesForMaster } from "./area-master.js?v=pref549";
 import { applyCardScale, applyLockedCards, applyMapTransform, applyPrecipLegend, applyTitleScale, bindCardEditor, bindMapControls, bindMapEditor, bindOkinawaEditor, bindPrecipLegendEditor, CARD_POS_MAX, CARD_POS_MIN, CARD_SCALE_MAX, CARD_SCALE_MIN, TITLE_SCALE_MAX, TITLE_SCALE_MIN, centerCityCards, hasLocalLayouts, initLayoutDefaults, listCardPositions, loadCardScale, loadLayout, loadTitleScale, moveLockedCard, resetCardScale, resetLayout, resetTitleScale, saveCardScale, saveLayout, saveTitleScale, snapshotAllLayoutDefaults, snapshotLayoutDefaults } from "./studio-layout.js?v=pref525";
 import { expandForecast, formatNoteHtml, noteFor } from "./forecast.js?v=pref533";
 import { hydrateWeeklyWeatherIcons, renderWeeklyTable, renderWeeklyTableSkeleton, renderWeeklyTableSync, weeklyTableRows } from "./table-renderer.js?v=pref544";
@@ -38,7 +38,7 @@ import {
   readViewport,
   showAuxiliary
 } from "./viewport.js?v=pref535";
-} from "./viewport.js?v=pref548";
+} from "./viewport.js?v=pref549";
 import { fetchJmaWeather } from "./jma-live.js?v=pref533";
 import { buildWeekPoints, fetchWeekAlert, renderWeekPointsHtml } from "./week-points.js?v=pref387";
 
@@ -1611,6 +1611,7 @@ function tablePageSize(regionId) {
   const id = String(regionId || "").toLowerCase();
   if (id === "kinki" && wantsPortrait()) return 6;
   if (id === "national" || id === "hokkaido" || id === "chubu" || id === "kinki" || id === "kanto" || id === "kyushu") return 4;
+  return 5;
 }
 
 function syncTitleMark(content) {
