@@ -75,13 +75,13 @@
       max-height: 100%;
     }
   </style>
-  <link rel="stylesheet" href="css/base.css?v=pref550">
+  <link rel="stylesheet" href="css/base.css?v=pref551">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/weather.css?v=pref550">
-  <link rel="modulepreload" href="js/app.js?v=pref550">
-  <link rel="modulepreload" href="js/area-master.js?v=pref550">
+  <link rel="stylesheet" href="css/weather.css?v=pref551">
+  <link rel="modulepreload" href="js/app.js?v=pref551">
+  <link rel="modulepreload" href="js/area-master.js?v=pref551">
   <script>
     (function () {
       try { document.documentElement.classList.remove("is-boot"); } catch (e) { /* ignore */ }
@@ -103,10 +103,10 @@
         if (portrait && isWeekly) {
           var month = Number(new Intl.DateTimeFormat("en-US", { timeZone: "Asia/Tokyo", month: "numeric" }).format(new Date()));
           var seasons = {
-            spring: { bg: "#fff0f4", img: "img/seasons/spring-1080x1920.jpg?v=pref550" },
-            summer: { bg: "#e8f6ff", img: "img/seasons/summer-1080x1920.png?v=pref550" },
-            autumn: { bg: "#fff6ea", img: "img/seasons/autumn-1080x1920.jpg?v=pref550" },
-            winter: { bg: "#eef4ff", img: "img/seasons/winter-1080x1920.jpg?v=pref550" }
+            spring: { bg: "#fff0f4", img: "img/seasons/spring-1080x1920.jpg?v=pref551" },
+            summer: { bg: "#e8f6ff", img: "img/seasons/summer-1080x1920.png?v=pref551" },
+            autumn: { bg: "#fff6ea", img: "img/seasons/autumn-1080x1920.jpg?v=pref551" },
+            winter: { bg: "#eef4ff", img: "img/seasons/winter-1080x1920.jpg?v=pref551" }
           };
           var season = (month >= 3 && month <= 5) ? "spring"
             : (month >= 6 && month <= 8) ? "summer"
@@ -138,10 +138,10 @@
           if (portrait) {
             var bootSeason = document.documentElement.getAttribute("data-boot-season") || "autumn";
             var seasonFiles = {
-              spring: "img/seasons/spring-1080x1920.jpg?v=pref550",
-              summer: "img/seasons/summer-1080x1920.png?v=pref550",
-              autumn: "img/seasons/autumn-1080x1920.jpg?v=pref550",
-              winter: "img/seasons/winter-1080x1920.jpg?v=pref550"
+              spring: "img/seasons/spring-1080x1920.jpg?v=pref551",
+              summer: "img/seasons/summer-1080x1920.png?v=pref551",
+              autumn: "img/seasons/autumn-1080x1920.jpg?v=pref551",
+              winter: "img/seasons/winter-1080x1920.jpg?v=pref551"
             };
             link.href = seasonFiles[bootSeason] || seasonFiles.autumn;
           } else {
@@ -311,6 +311,6 @@
       window.addEventListener("resize", fit);
     })();
   </script>
-  <script type="module" src="js/app.js?v=pref550"></script>
+  <script type="module" src="js/app.js?v=pref551"></script>
 </body>
 </html>
