@@ -183,10 +183,11 @@ export function tableLayoutTokens(vp, rows = 5) {
   const bottomChrome = portrait ? 48 : 36;
   const availW = Math.max(80, vp.width - pad * 2);
   const availH = Math.max(80, vp.height - topChrome - bottomChrome);
+  /* 日付＋曜日の2段表示ぶんの高さを確保 */
   const dayHeadH = clamp(
-    Math.round(availH * (portrait ? 0.075 : 0.11)),
-    portrait ? 44 : 26,
-    Math.round(s * (portrait ? 0.1 : 0.09))
+    Math.round(availH * (portrait ? 0.095 : 0.14)),
+    portrait ? 64 : 44,
+    Math.round(s * (portrait ? 0.12 : 0.11))
   );
   const cityCol = clamp(
     Math.round(availW * (portrait ? 0.16 : 0.14)),
@@ -224,9 +225,9 @@ export function tableLayoutTokens(vp, rows = 5) {
     "--cell-height": `${Math.round(cellH)}px`,
     "--cell-min": `${Math.round(cellMin)}px`,
     "--font-week-day": `${Math.round(clamp(
-      Math.min(dayHeadH * (portrait ? 0.42 : 0.72), cellW * (portrait ? 0.34 : 0.55)),
-      portrait ? 14 : 16,
-      portrait ? 28 : 48
+      Math.min(dayHeadH * 0.36, cellW * (portrait ? 0.38 : 0.42)),
+      portrait ? 13 : 14,
+      portrait ? 24 : 34
     ))}px`,
     "--font-week-city": `${Math.round(clamp(Math.min(cellH * 0.62, cityCol * 0.48), 24, cityMax))}px`,
     "--font-week-label": `${Math.round(clamp(Math.min(cellH * 0.17, cellW * 0.125), 12, labelMax))}px`,
