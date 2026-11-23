@@ -167,35 +167,81 @@ function precipLegendTokens(vp) {
 export const WEEKLY_TABLE_TITLE_SCALE = 1.3;
 
 /**
- * 週間表：行数（3 / 4 / 5）だけでセルと文字サイズを決める。地方では変えない。
+ * 週間表：行数でセルと文字サイズを決める。
+ * 横（元URL）は縦追加前と同じ計算。縦専用の調整は portrait のときだけ。
  */
 export function tableLayoutTokens(vp, rows = 5) {
-  const rowCount = Math.max(2, Math.min(7, Number(rows) || 5));
-  const s = vp.basis || vp.minSide;
   const portrait = vp.shape === "portrait" || vp.height > vp.width;
-  const dense = rowCount >= 6;
+  const s = vp.basis || vp.minSide;
   const chrome = 1.5;
-  const gap = Math.max(1, fluidPx(s, portrait ? 0.006 : 0.005, 1, 4));
-  const pad = fluidPx(s, portrait ? 0.04 : 0.035, 6, 28);
+
+  if (!portrait) {
+    const rowCount = Math.max(2, Math.min(5, Number(rows) || 5));
+    const gap = Math.max(1, fluidPx(s, 0.005, 1, 4));
+    const pad = fluidPx(s, 0.035, 6, 28);
+    const headerTitle = fluidPx(s, 0.092 * chrome, 24, Math.round(58 * chrome));
+    const headerSub = fluidPx(s, 0.062 * chrome, 16, Math.round(40 * chrome));
+    const stackGap = clamp(headerSub * 0.18, 4, 10);
+    const topChrome = pad + (headerTitle + headerSub + stackGap) * WEEKLY_TABLE_TITLE_SCALE + 20;
+    const bottomChrome = 36;
+    const availW = Math.max(80, vp.width - pad * 2);
+    const availH = Math.max(80, vp.height - topChrome - bottomChrome);
+    const dayHeadH = clamp(Math.round(availH * 0.11), 26, Math.round(s * 0.09));
+    const cityCol = clamp(Math.round(availW * 0.14), Math.round(s * 0.12), Math.round(availW * 0.2));
+    const gridPad = gap;
+    const innerW = availW - gridPad * 2;
+    const innerH = availH - gridPad * 2;
+    const cellW = (innerW - cityCol - gap * 7) / 7;
+    const cellH = (innerH - dayHeadH - gap * rowCount) / rowCount;
+    const cellMin = Math.max(8, Math.min(cellW, cellH));
+    const radius = clamp(Math.round(cellMin * 0.12), 4, 14);
+    const cityMax = rowCount <= 3 ? 68 : rowCount === 4 ? 62 : 58;
+    const labelMax = rowCount <= 3 ? 24 : rowCount === 4 ? 22 : 20;
+    const valueMax = rowCount <= 3 ? 50 : rowCount === 4 ? 46 : 42;
+    const unitMax = rowCount <= 3 ? 20 : rowCount === 4 ? 19 : 18;
+    const tempMax = rowCount <= 3 ? 52 : rowCount === 4 ? 48 : 44;
+    const tempFont = Math.round(clamp(cellH * (rowCount >= 5 ? 0.24 : 0.26), 12, tempMax));
+    const padY = Math.round(clamp(cellH * 0.05, 1, 8));
+    const padX = Math.round(clamp(cellW * 0.05, 1, 10));
+    const tempRow = Math.round(tempFont * 1.08);
+    const iconH = Math.max(28, cellH - tempRow - padY * 2);
+    const iconW = Math.max(28, cellW - padX * 2);
+    return {
+      "--forecast-rows": String(rowCount),
+      "--weekly-title-scale": String(WEEKLY_TABLE_TITLE_SCALE),
+      "--forecast-gap": `${gap}px`,
+      "--forecast-radius": `${radius}px`,
+      "--city-col-width": `${Math.round(cityCol)}px`,
+      "--day-head-height": `${Math.round(dayHeadH)}px`,
+      "--cell-width": `${Math.round(cellW)}px`,
+      "--cell-height": `${Math.round(cellH)}px`,
+      "--cell-min": `${Math.round(cellMin)}px`,
+      "--font-week-day": `${Math.round(clamp(dayHeadH * 0.72, 16, 48))}px`,
+      "--font-week-city": `${Math.round(clamp(Math.min(cellH * 0.62, cityCol * 0.48), 24, cityMax))}px`,
+      "--font-week-label": `${Math.round(clamp(Math.min(cellH * 0.17, cellW * 0.125), 12, labelMax))}px`,
+      "--font-week-value": `${Math.round(clamp(Math.min(cellH * 0.32, cellW * 0.3), 18, valueMax))}px`,
+      "--font-week-unit": `${Math.round(clamp(Math.min(cellH * 0.145, cellW * 0.125), 11, unitMax))}px`,
+      "--font-week-temp": `${tempFont}px`,
+      "--week-temp-row": `${tempRow}px`,
+      "--icon-week": `${Math.round(clamp(Math.min(iconW, iconH * 1.5), 36, 280))}px`,
+      "--week-pad-y": `${padY}px`,
+      "--week-pad-x": `${padX}px`
+    };
+  }
+
+  const rowCount = Math.max(2, Math.min(7, Number(rows) || 5));
+  const dense = rowCount >= 6;
+  const gap = Math.max(1, fluidPx(s, 0.006, 1, 4));
+  const pad = fluidPx(s, 0.04, 6, 28);
   const headerTitle = fluidPx(s, 0.092 * chrome, 24, Math.round(58 * chrome));
   const headerSub = fluidPx(s, 0.062 * chrome, 16, Math.round(40 * chrome));
   const stackGap = clamp(headerSub * 0.18, 4, 10);
-  const topChrome = pad + (headerTitle + headerSub + stackGap) * WEEKLY_TABLE_TITLE_SCALE + (portrait ? 28 : 20);
-  const bottomChrome = portrait ? 48 : 36;
+  const topChrome = pad + (headerTitle + headerSub + stackGap) * WEEKLY_TABLE_TITLE_SCALE + 28;
+  const bottomChrome = 48;
   const availW = Math.max(80, vp.width - pad * 2);
   const availH = Math.max(80, vp.height - topChrome - bottomChrome);
-  /* 日付＋曜日の2段表示ぶんの高さを確保 */
-  const dayHeadH = clamp(
-    Math.round(availH * (portrait ? 0.095 : 0.14)),
-    portrait ? 64 : 44,
-    Math.round(s * (portrait ? 0.12 : 0.11))
-  );
-  /* 縦のみ都市列を広げて3文字対応。横（元URL）は従来比率 */
-  const cityCol = clamp(
-    Math.round(availW * (portrait ? 0.22 : 0.14)),
-    Math.round(s * (portrait ? 0.18 : 0.12)),
-    Math.round(availW * (portrait ? 0.28 : 0.2))
-  );
+  const dayHeadH = clamp(Math.round(availH * 0.095), 64, Math.round(s * 0.12));
+  const cityCol = clamp(Math.round(availW * 0.22), Math.round(s * 0.18), Math.round(availW * 0.28));
   const gridPad = gap;
   const innerW = availW - gridPad * 2;
   const innerH = availH - gridPad * 2;
@@ -203,38 +249,24 @@ export function tableLayoutTokens(vp, rows = 5) {
   const cellH = (innerH - dayHeadH - gap * rowCount) / rowCount;
   const cellMin = Math.max(8, Math.min(cellW, cellH));
   const radius = clamp(Math.round(cellMin * 0.12), 4, 14);
-  const cityMax = dense
-    ? (portrait ? 48 : 44)
-    : portrait
-      ? (rowCount <= 3 ? 64 : rowCount === 4 ? 58 : 52)
-      : (rowCount <= 3 ? 68 : rowCount === 4 ? 62 : 58);
+  const cityMax = dense ? 48 : (rowCount <= 3 ? 64 : rowCount === 4 ? 58 : 52);
   const labelMax = dense ? 18 : rowCount <= 3 ? 24 : rowCount === 4 ? 22 : 20;
   const valueMax = dense ? 36 : rowCount <= 3 ? 50 : rowCount === 4 ? 46 : 42;
   const unitMax = dense ? 15 : rowCount <= 3 ? 20 : rowCount === 4 ? 19 : 18;
-  const tempMax = dense
-    ? (portrait ? 40 : 36)
-    : portrait
-      ? (rowCount <= 3 ? 56 : rowCount === 4 ? 52 : 48)
-      : (rowCount <= 3 ? 52 : rowCount === 4 ? 48 : 44);
-  const tempFont = Math.round(clamp(
-    cellH * (dense ? 0.22 : (portrait ? 0.12 : (rowCount >= 5 ? 0.24 : 0.26))),
-    12,
-    tempMax
-  ));
-  const padY = Math.round(clamp(cellH * (dense ? 0.03 : (portrait ? 0.04 : 0.05)), 1, dense ? 6 : (portrait ? 14 : 8)));
+  const tempMax = dense ? 40 : (rowCount <= 3 ? 56 : rowCount === 4 ? 52 : 48);
+  const tempFont = Math.round(clamp(cellH * (dense ? 0.22 : 0.12), 12, tempMax));
+  const padY = Math.round(clamp(cellH * (dense ? 0.03 : 0.04), 1, dense ? 6 : 14));
   const padX = Math.round(clamp(cellW * 0.05, 1, 10));
-  const cityPadX = Math.round(clamp(cityCol * (portrait ? 0.06 : 0.04), 4, 14));
+  const cityPadX = Math.round(clamp(cityCol * 0.06, 4, 14));
   const cityFont = Math.round(clamp(
-    portrait
-      ? Math.min(cellH * (dense ? 0.55 : 0.42), (cityCol - cityPadX * 2) / 3.1)
-      : Math.min(cellH * 0.62, cityCol * 0.48),
-    portrait ? 16 : 24,
+    Math.min(cellH * (dense ? 0.55 : 0.42), (cityCol - cityPadX * 2) / 3.1),
+    16,
     cityMax
   ));
   const tempRow = Math.round(tempFont * 1.08);
   const iconH = Math.max(22, cellH - tempRow - padY * 2);
   const iconW = Math.max(22, cellW - padX * 2);
-  const iconMax = dense ? (portrait ? 180 : 140) : (portrait ? 360 : 280);
+  const iconMax = dense ? 180 : 360;
 
   return {
     "--forecast-rows": String(rowCount),
@@ -246,11 +278,7 @@ export function tableLayoutTokens(vp, rows = 5) {
     "--cell-width": `${Math.round(cellW)}px`,
     "--cell-height": `${Math.round(cellH)}px`,
     "--cell-min": `${Math.round(cellMin)}px`,
-    "--font-week-day": `${Math.round(clamp(
-      Math.min(dayHeadH * (portrait ? 0.44 : 0.72), cellW * (portrait ? 0.52 : 0.55)),
-      portrait ? 18 : 16,
-      portrait ? 40 : 48
-    ))}px`,
+    "--font-week-day": `${Math.round(clamp(Math.min(dayHeadH * 0.44, cellW * 0.52), 18, 40))}px`,
     "--font-week-city": `${cityFont}px`,
     "--week-city-pad-x": `${cityPadX}px`,
     "--font-week-label": `${Math.round(clamp(Math.min(cellH * 0.17, cellW * 0.125), 12, labelMax))}px`,
@@ -258,7 +286,7 @@ export function tableLayoutTokens(vp, rows = 5) {
     "--font-week-unit": `${Math.round(clamp(Math.min(cellH * 0.145, cellW * 0.125), 11, unitMax))}px`,
     "--font-week-temp": `${tempFont}px`,
     "--week-temp-row": `${tempRow}px`,
-    "--icon-week": `${Math.round(clamp(Math.min(iconW, iconH * (portrait ? 1.1 : 1.5)), 36, iconMax))}px`,
+    "--icon-week": `${Math.round(clamp(Math.min(iconW, iconH * 1.1), 36, iconMax))}px`,
     "--week-pad-y": `${padY}px`,
     "--week-pad-x": `${padX}px`
   };
