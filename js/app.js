@@ -2,7 +2,7 @@
  * Studio / signage bootstrap. Studio drives the iframe viewport.
  */
 
-import { APP_VERSION, DATA_VERSION, MAP_VERSION } from "./version.js?v=pref545";
+import { APP_VERSION, DATA_VERSION, MAP_VERSION } from "./version.js?v=pref546";
 import { isWeatherDoc, readWeatherLkg, writeWeatherLkg } from "./weather-cache.js?v=pref522";
 import {
   canonicalContent,
@@ -37,7 +37,7 @@ import {
   partitionTablePages,
   readViewport,
   showAuxiliary
-} from "./viewport.js?v=pref545";
+} from "./viewport.js?v=pref546";
 import { msUntilIconPhaseChange } from "./jma-icons.js?v=pref387";
 import { fetchJmaWeather } from "./jma-live.js?v=pref533";
 import { buildWeekPoints, fetchWeekAlert, renderWeekPointsHtml } from "./week-points.js?v=pref387";
@@ -1690,14 +1690,20 @@ async function pullLiveWeatherAndRender(renderFn) {
   livePullInFlight = (async () => {
     try {
       const locations = await fetchJson("data/locations.json");
+      /* 津など alsoOnRegions の地点も地域表示に含める（近畿の津＝中部所属） */
       const cities = (locations.cities || []).filter((city) => {
         if (state.regionId === "national") return city.showOnNational !== false && city.showOnNational;
-        return city.regionId === state.regionId;
+        return city.regionId === state.regionId
+          || (city.alsoOnRegions || []).includes(state.regionId);
       });
       const live = await withTimeout(fetchJmaWeather(cities.length ? cities : locations.cities), LIVE_FETCH_TIMEOUT_MS);
       if (!isWeatherDoc(live)) return;
       const at = Date.now();
-      const merged = mergeWeatherDocs(liveWeatherCache.doc, live);
+      if (!bundledWeatherDoc) {
+        try { bundledWeatherDoc = await fetchJson("data/weather.json"); } catch { /* ignore */ }
+      }
+      const base = mergeWeatherDocs(bundledWeatherDoc, liveWeatherCache.doc);
+      const merged = mergeWeatherDocs(base, live);
       liveWeatherCache = { at, doc: merged };
       writeWeatherLkg(merged, at);
       if (typeof renderFn === "function") await renderFn();
@@ -1711,15 +1717,22 @@ async function pullLiveWeatherAndRender(renderFn) {
 }
 
 async function loadWeatherDoc() {
-  if (isWeatherDoc(liveWeatherCache.doc)) return liveWeatherCache.doc;
-  const lkg = readWeatherLkg();
-  if (lkg) {
-    liveWeatherCache = lkg;
-    return lkg.doc;
-  }
   if (!bundledWeatherDoc) {
-    bundledWeatherDoc = await fetchJson("data/weather.json");
+    try { bundledWeatherDoc = await fetchJson("data/weather.json"); } catch { bundledWeatherDoc = null; }
   }
+  let doc = liveWeatherCache.doc;
+  if (!isWeatherDoc(doc)) {
+    const lkg = readWeatherLkg();
+    if (lkg) {
+      liveWeatherCache = lkg;
+      doc = lkg.doc;
+    }
+  }
+  /* LKGに津などが欠けていても同梱データで埋める */
+  if (isWeatherDoc(doc) && isWeatherDoc(bundledWeatherDoc)) {
+    return mergeWeatherDocs(bundledWeatherDoc, doc);
+  }
+  if (isWeatherDoc(doc)) return doc;
   return bundledWeatherDoc;
 }
 

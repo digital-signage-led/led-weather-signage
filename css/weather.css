@@ -912,6 +912,11 @@ html.is-edit .precip-tod-legend.is-dragging {
   overflow: hidden;
 }
 
+/* 縦・7行: 最下段（津）がフッターに隠れないよう下余白を増やす */
+.led-screen[data-shape="portrait"] .forecast-table {
+  bottom: 56px;
+}
+
 /* セル基準トークン（JS の applyTableLayout）で列・行・文字を統一 */
 .forecast-grid {
   flex: 1 1 auto;
