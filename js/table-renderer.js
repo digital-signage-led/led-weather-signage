@@ -55,7 +55,7 @@ export function renderWeeklyTableSync(cities, contentId) {
     `<span class="forecast-city-h" aria-hidden="true"></span>`,
     ...(days.length
       ? days.map((day) => `
-      <span class="forecast-day-h${day.weekend ? " is-weekend" : ""}${day.today ? " is-today" : ""}${weekdayClass(day.weekday)}${holidayClass(day)}">${dayMonthLabel(day)}${day.weekday || ""}</span>
+      <span class="forecast-day-h${day.weekend ? " is-weekend" : ""}${day.today ? " is-today" : ""}${weekdayClass(day.weekday)}${holidayClass(day)}">${renderDayHead(day)}</span>
     `)
       : Array.from({ length: 7 }, () => `<span class="forecast-day-h"></span>`))
   ];
@@ -91,7 +91,7 @@ export async function renderWeeklyTable(cities, contentId) {
   const head = [
     `<span class="forecast-city-h" aria-hidden="true"></span>`,
     ...days.map((day) => `
-      <span class="forecast-day-h${day.weekend ? " is-weekend" : ""}${day.today ? " is-today" : ""}${weekdayClass(day.weekday)}${holidayClass(day)}">${dayMonthLabel(day)}${day.weekday || ""}</span>
+      <span class="forecast-day-h${day.weekend ? " is-weekend" : ""}${day.today ? " is-today" : ""}${weekdayClass(day.weekday)}${holidayClass(day)}">${renderDayHead(day)}</span>
     `)
   ];
 
@@ -131,6 +131,14 @@ function dayMonthLabel(day) {
   if (day?.month != null && day?.day != null) return `${Number(day.month)}/${Number(day.day)}`;
   if (day?.day != null && day.day !== "") return String(Number(day.day) || day.day);
   return "";
+}
+
+function renderDayHead(day) {
+  const date = dayMonthLabel(day);
+  const weekday = day?.weekday || "";
+  if (!date && !weekday) return "";
+  if (!weekday) return `<span class="forecast-day-num">${date}</span>`;
+  return `<span class="forecast-day-num">${date}</span><span class="forecast-day-w">${weekday}</span>`;
 }
 
 function weekdayClass(label) {

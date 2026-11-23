@@ -184,9 +184,9 @@ export function tableLayoutTokens(vp, rows = 5) {
   const availW = Math.max(80, vp.width - pad * 2);
   const availH = Math.max(80, vp.height - topChrome - bottomChrome);
   const dayHeadH = clamp(
-    Math.round(availH * (portrait ? 0.06 : 0.11)),
-    26,
-    Math.round(s * (portrait ? 0.08 : 0.09))
+    Math.round(availH * (portrait ? 0.075 : 0.11)),
+    portrait ? 44 : 26,
+    Math.round(s * (portrait ? 0.1 : 0.09))
   );
   const cityCol = clamp(
     Math.round(availW * (portrait ? 0.16 : 0.14)),
@@ -223,7 +223,11 @@ export function tableLayoutTokens(vp, rows = 5) {
     "--cell-width": `${Math.round(cellW)}px`,
     "--cell-height": `${Math.round(cellH)}px`,
     "--cell-min": `${Math.round(cellMin)}px`,
-    "--font-week-day": `${Math.round(clamp(dayHeadH * 0.72, 16, 48))}px`,
+    "--font-week-day": `${Math.round(clamp(
+      Math.min(dayHeadH * (portrait ? 0.42 : 0.72), cellW * (portrait ? 0.34 : 0.55)),
+      portrait ? 14 : 16,
+      portrait ? 28 : 48
+    ))}px`,
     "--font-week-city": `${Math.round(clamp(Math.min(cellH * 0.62, cityCol * 0.48), 24, cityMax))}px`,
     "--font-week-label": `${Math.round(clamp(Math.min(cellH * 0.17, cellW * 0.125), 12, labelMax))}px`,
     "--font-week-value": `${Math.round(clamp(Math.min(cellH * 0.32, cellW * 0.3), 18, valueMax))}px`,

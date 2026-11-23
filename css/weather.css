@@ -959,13 +959,38 @@ html.is-edit .precip-tod-legend.is-dragging {
 .forecast-day-h {
   flex-direction: row;
   justify-content: center;
-  gap: 0;
-  padding: 0;
+  align-items: center;
+  gap: 0.08em;
+  padding: 0 0.1em;
   background: var(--forecast-head);
   line-height: 1;
   font-size: var(--font-week-day, var(--font-week));
   font-family: var(--font-number);
   letter-spacing: -0.02em;
+  overflow: hidden;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.led-screen[data-shape="portrait"] .forecast-day-h {
+  flex-direction: column;
+  gap: 0.12em;
+  letter-spacing: -0.04em;
+  white-space: normal;
+}
+
+.led-screen[data-shape="portrait"] .forecast-day-num,
+.led-screen[data-shape="portrait"] .forecast-day-w {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: clip;
+  line-height: 1;
+}
+
+.led-screen[data-shape="portrait"] .forecast-day-w {
+  font-size: 0.78em;
+  font-weight: 800;
 }
 
 .forecast-grid > .forecast-day-h:nth-child(8) {
