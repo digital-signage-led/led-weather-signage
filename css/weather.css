@@ -1089,10 +1089,20 @@ html.is-edit .precip-tod-legend.is-dragging {
   object-fit: contain;
 }
 
-.forecast-table[data-rows="5"] .forecast-cell.is-weather .wx-icon {
+.forecast-table[data-rows="5"] .forecast-cell.is-weather .wx-icon,
+.forecast-table[data-rows="6"] .forecast-cell.is-weather .wx-icon,
+.forecast-table[data-rows="7"] .forecast-cell.is-weather .wx-icon {
   height: 100%;
   max-width: 100%;
   max-height: 100%;
+}
+
+/* 近畿一括（6〜7行）: 行間の空きを抑えてアイコンと気温を寄せる */
+.forecast-table[data-rows="6"] .forecast-cell.is-weather,
+.forecast-table[data-rows="7"] .forecast-cell.is-weather {
+  grid-template-rows: minmax(0, 1.15fr) var(--week-temp-row, 1.4em);
+  gap: 1px;
+  padding: 1px 2px 2px;
 }
 
 .forecast-cell.is-weather .forecast-temps {

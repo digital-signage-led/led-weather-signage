@@ -9,8 +9,8 @@ import { popTone } from "./forecast.js?v=pref387";
 import { isNightHours, jmaLabel } from "./jma-icons.js?v=pref387";
 import { isJapaneseHoliday } from "./jp-holidays.js?v=pref470";
 
-/** 1ページの上限行。ページ都市数がこれ未満ならその数で描く（1行だけは避ける） */
-const TABLE_ROW_MAX = 5;
+/** 1ページの上限行。近畿一括（7都市）まで対応。ページ都市数がこれ未満ならその数で描く */
+const TABLE_ROW_MAX = 7;
 
 export function weeklyTableRows(cities) {
   const n = Array.isArray(cities) ? cities.length : 0;

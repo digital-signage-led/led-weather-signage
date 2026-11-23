@@ -2,7 +2,7 @@
  * Studio / signage bootstrap. Studio drives the iframe viewport.
  */
 
-import { APP_VERSION, DATA_VERSION, MAP_VERSION } from "./version.js?v=pref541";
+import { APP_VERSION, DATA_VERSION, MAP_VERSION } from "./version.js?v=pref542";
 import { isWeatherDoc, readWeatherLkg, writeWeatherLkg } from "./weather-cache.js?v=pref522";
 import {
   canonicalContent,
@@ -20,7 +20,7 @@ import { formatStamp, renderCityCard, renderCityCardSkeleton, renderPin, pinRadi
 import { CONTENT_MASTER, REGION_MASTER, citiesForMaster } from "./area-master.js?v=pref525";
 import { applyCardScale, applyLockedCards, applyMapTransform, applyPrecipLegend, applyTitleScale, bindCardEditor, bindMapControls, bindMapEditor, bindOkinawaEditor, bindPrecipLegendEditor, CARD_POS_MAX, CARD_POS_MIN, CARD_SCALE_MAX, CARD_SCALE_MIN, TITLE_SCALE_MAX, TITLE_SCALE_MIN, centerCityCards, hasLocalLayouts, initLayoutDefaults, listCardPositions, loadCardScale, loadLayout, loadTitleScale, moveLockedCard, resetCardScale, resetLayout, resetTitleScale, saveCardScale, saveLayout, saveTitleScale, snapshotAllLayoutDefaults, snapshotLayoutDefaults } from "./studio-layout.js?v=pref525";
 import { expandForecast, formatNoteHtml, noteFor } from "./forecast.js?v=pref533";
-import { renderWeeklyTable, renderWeeklyTableSkeleton, renderWeeklyTableSync, weeklyTableRows } from "./table-renderer.js?v=pref539";
+import { renderWeeklyTable, renderWeeklyTableSkeleton, renderWeeklyTableSync, weeklyTableRows } from "./table-renderer.js?v=pref542";
 import {
   DEFAULT_STUDIO_VIEWPORT,
   FIXED_DESIGN,
@@ -37,7 +37,7 @@ import {
   partitionTablePages,
   readViewport,
   showAuxiliary
-} from "./viewport.js?v=pref541";
+} from "./viewport.js?v=pref542";
 import { msUntilIconPhaseChange } from "./jma-icons.js?v=pref387";
 import { fetchJmaWeather } from "./jma-live.js?v=pref533";
 import { buildWeekPoints, fetchWeekAlert, renderWeekPointsHtml } from "./week-points.js?v=pref387";
@@ -1526,10 +1526,11 @@ function attachForecast(city, todayPoint, content, updatedAt) {
   return { ...city, ...todayPoint, weekly: forecast.weekly, missing };
 }
 
-/** 週間表の1ページ都市数。全国・北海道・中部・近畿・関東・九州は4都市ずつ（九州7地点は 4+3）。 */
+/** 週間表の1ページ都市数。近畿は全都市を一括表示。他は分割。 */
 function tablePageSize(regionId) {
   const id = String(regionId || "").toLowerCase();
-  if (id === "national" || id === "hokkaido" || id === "chubu" || id === "kinki" || id === "kanto" || id === "kyushu") return 4;
+  if (id === "kinki") return 7;
+  if (id === "national" || id === "hokkaido" || id === "chubu" || id === "kanto" || id === "kyushu") return 4;
   return 5;
 }
 

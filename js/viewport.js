@@ -170,9 +170,10 @@ export const WEEKLY_TABLE_TITLE_SCALE = 1.3;
  * 週間表：行数（3 / 4 / 5）だけでセルと文字サイズを決める。地方では変えない。
  */
 export function tableLayoutTokens(vp, rows = 5) {
-  const rowCount = Math.max(2, Math.min(5, Number(rows) || 5));
+  const rowCount = Math.max(2, Math.min(7, Number(rows) || 5));
   const s = vp.basis || vp.minSide;
   const portrait = vp.shape === "portrait" || vp.height > vp.width;
+  const dense = rowCount >= 6;
   const chrome = 1.5;
   const gap = Math.max(1, fluidPx(s, portrait ? 0.006 : 0.005, 1, 4));
   const pad = fluidPx(s, portrait ? 0.04 : 0.035, 6, 28);
@@ -202,24 +203,36 @@ export function tableLayoutTokens(vp, rows = 5) {
   const cellH = (innerH - dayHeadH - gap * rowCount) / rowCount;
   const cellMin = Math.max(8, Math.min(cellW, cellH));
   const radius = clamp(Math.round(cellMin * 0.12), 4, 14);
-  const cityMax = portrait ? (rowCount <= 3 ? 64 : rowCount === 4 ? 58 : 52) : (rowCount <= 3 ? 62 : rowCount === 4 ? 56 : 52);
-  const labelMax = rowCount <= 3 ? 24 : rowCount === 4 ? 22 : 20;
-  const valueMax = rowCount <= 3 ? 50 : rowCount === 4 ? 46 : 42;
-  const unitMax = rowCount <= 3 ? 20 : rowCount === 4 ? 19 : 18;
-  const tempMax = portrait ? (rowCount <= 3 ? 56 : rowCount === 4 ? 52 : 48) : (rowCount <= 3 ? 52 : rowCount === 4 ? 48 : 44);
-  const tempFont = Math.round(clamp(cellH * (portrait ? 0.12 : (rowCount >= 5 ? 0.24 : 0.26)), 12, tempMax));
-  const padY = Math.round(clamp(cellH * (portrait ? 0.04 : 0.05), 1, portrait ? 14 : 8));
+  const cityMax = dense
+    ? (portrait ? 48 : 44)
+    : portrait
+      ? (rowCount <= 3 ? 64 : rowCount === 4 ? 58 : 52)
+      : (rowCount <= 3 ? 62 : rowCount === 4 ? 56 : 52);
+  const labelMax = dense ? 18 : rowCount <= 3 ? 24 : rowCount === 4 ? 22 : 20;
+  const valueMax = dense ? 36 : rowCount <= 3 ? 50 : rowCount === 4 ? 46 : 42;
+  const unitMax = dense ? 15 : rowCount <= 3 ? 20 : rowCount === 4 ? 19 : 18;
+  const tempMax = dense
+    ? (portrait ? 40 : 36)
+    : portrait
+      ? (rowCount <= 3 ? 56 : rowCount === 4 ? 52 : 48)
+      : (rowCount <= 3 ? 52 : rowCount === 4 ? 48 : 44);
+  const tempFont = Math.round(clamp(
+    cellH * (dense ? 0.22 : (portrait ? 0.12 : (rowCount >= 5 ? 0.24 : 0.26))),
+    12,
+    tempMax
+  ));
+  const padY = Math.round(clamp(cellH * (dense ? 0.03 : (portrait ? 0.04 : 0.05)), 1, dense ? 6 : (portrait ? 14 : 8)));
   const padX = Math.round(clamp(cellW * 0.05, 1, 10));
   const cityPadX = Math.round(clamp(cityCol * 0.06, 4, 14));
   const cityFont = Math.round(clamp(
-    Math.min(cellH * 0.42, (cityCol - cityPadX * 2) / 3.1),
+    Math.min(cellH * (dense ? 0.55 : 0.42), (cityCol - cityPadX * 2) / 3.1),
     16,
     cityMax
   ));
   const tempRow = Math.round(tempFont * 1.08);
-  const iconH = Math.max(28, cellH - tempRow - padY * 2);
-  const iconW = Math.max(28, cellW - padX * 2);
-  const iconMax = portrait ? 360 : 280;
+  const iconH = Math.max(22, cellH - tempRow - padY * 2);
+  const iconW = Math.max(22, cellW - padX * 2);
+  const iconMax = dense ? (portrait ? 180 : 140) : (portrait ? 360 : 280);
 
   return {
     "--forecast-rows": String(rowCount),
@@ -324,7 +337,7 @@ export function applyTableLayout(element, vp, rows) {
 export function cityLimit(vp, regionId, content, available = 12) {
   const wanted = Math.max(1, available);
   if (content.kind === "table") {
-    return Math.min(5, wanted);
+    return Math.min(7, wanted);
   }
   return wanted;
 }
