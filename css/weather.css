@@ -1013,10 +1013,15 @@ html.is-edit .precip-tod-legend.is-dragging {
   font-family: var(--font-main);
   font-size: var(--font-week-city, var(--font-city));
   font-weight: 900;
-  letter-spacing: 0;
-  padding: 0 var(--week-pad-x, 0.2em);
+  letter-spacing: -0.06em;
+  padding: 0 var(--week-city-pad-x, var(--week-pad-x, 0.2em));
   background: var(--forecast-city-bg);
   color: var(--text-primary);
+  overflow: hidden;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  text-overflow: clip;
 }
 
 .forecast-day-h.is-sunday,

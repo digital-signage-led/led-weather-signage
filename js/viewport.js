@@ -189,10 +189,11 @@ export function tableLayoutTokens(vp, rows = 5) {
     portrait ? 64 : 44,
     Math.round(s * (portrait ? 0.12 : 0.11))
   );
+  /* 3文字都市名（和歌山など）が列内に収まる幅 */
   const cityCol = clamp(
-    Math.round(availW * (portrait ? 0.16 : 0.14)),
-    Math.round(s * (portrait ? 0.14 : 0.12)),
-    Math.round(availW * (portrait ? 0.22 : 0.2))
+    Math.round(availW * (portrait ? 0.22 : 0.16)),
+    Math.round(s * (portrait ? 0.18 : 0.13)),
+    Math.round(availW * (portrait ? 0.28 : 0.22))
   );
   const gridPad = gap;
   const innerW = availW - gridPad * 2;
@@ -201,7 +202,7 @@ export function tableLayoutTokens(vp, rows = 5) {
   const cellH = (innerH - dayHeadH - gap * rowCount) / rowCount;
   const cellMin = Math.max(8, Math.min(cellW, cellH));
   const radius = clamp(Math.round(cellMin * 0.12), 4, 14);
-  const cityMax = portrait ? (rowCount <= 3 ? 72 : rowCount === 4 ? 66 : 60) : (rowCount <= 3 ? 68 : rowCount === 4 ? 62 : 58);
+  const cityMax = portrait ? (rowCount <= 3 ? 64 : rowCount === 4 ? 58 : 52) : (rowCount <= 3 ? 62 : rowCount === 4 ? 56 : 52);
   const labelMax = rowCount <= 3 ? 24 : rowCount === 4 ? 22 : 20;
   const valueMax = rowCount <= 3 ? 50 : rowCount === 4 ? 46 : 42;
   const unitMax = rowCount <= 3 ? 20 : rowCount === 4 ? 19 : 18;
@@ -209,6 +210,12 @@ export function tableLayoutTokens(vp, rows = 5) {
   const tempFont = Math.round(clamp(cellH * (portrait ? 0.12 : (rowCount >= 5 ? 0.24 : 0.26)), 12, tempMax));
   const padY = Math.round(clamp(cellH * (portrait ? 0.04 : 0.05), 1, portrait ? 14 : 8));
   const padX = Math.round(clamp(cellW * 0.05, 1, 10));
+  const cityPadX = Math.round(clamp(cityCol * 0.06, 4, 14));
+  const cityFont = Math.round(clamp(
+    Math.min(cellH * 0.42, (cityCol - cityPadX * 2) / 3.1),
+    16,
+    cityMax
+  ));
   const tempRow = Math.round(tempFont * 1.08);
   const iconH = Math.max(28, cellH - tempRow - padY * 2);
   const iconW = Math.max(28, cellW - padX * 2);
@@ -229,7 +236,8 @@ export function tableLayoutTokens(vp, rows = 5) {
       portrait ? 18 : 16,
       portrait ? 40 : 40
     ))}px`,
-    "--font-week-city": `${Math.round(clamp(Math.min(cellH * 0.62, cityCol * 0.48), 24, cityMax))}px`,
+    "--font-week-city": `${cityFont}px`,
+    "--week-city-pad-x": `${cityPadX}px`,
     "--font-week-label": `${Math.round(clamp(Math.min(cellH * 0.17, cellW * 0.125), 12, labelMax))}px`,
     "--font-week-value": `${Math.round(clamp(Math.min(cellH * 0.32, cellW * 0.3), 18, valueMax))}px`,
     "--font-week-unit": `${Math.round(clamp(Math.min(cellH * 0.145, cellW * 0.125), 11, unitMax))}px`,
