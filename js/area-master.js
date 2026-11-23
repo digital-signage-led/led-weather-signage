@@ -582,9 +582,7 @@ export const CITY_MASTER = [
     "regionId": "chubu",
     "showOnNational": false,
     "showOnRegion": true,
-    "alsoOnRegions": [
-      "kinki"
-    ],
+    "alsoOnRegions": [],
     "priority": 3,
     "latitude": 34.73,
     "longitude": 136.509,

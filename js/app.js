@@ -2,8 +2,8 @@
  * Studio / signage bootstrap. Studio drives the iframe viewport.
  */
 
-import { APP_VERSION, DATA_VERSION, MAP_VERSION } from "./version.js?v=pref547";
-import { applyPortraitSeason } from "./season.js?v=pref547";
+import { APP_VERSION, DATA_VERSION, MAP_VERSION } from "./version.js?v=pref548";
+import { applyPortraitSeason } from "./season.js?v=pref548";
 import { isWeatherDoc, readWeatherLkg, writeWeatherLkg } from "./weather-cache.js?v=pref522";
 import {
   canonicalContent,
@@ -18,14 +18,13 @@ import {
 import { adaptWeather, aggregateRegion, assertRegionCoverage, emptyWeatherPoint } from "./weather-data.js?v=pref415";
 import { existingMapLayers, fillMountedMap, loadMapSvg, mountMap, mountMapFrame, placeCardsAroundMap, projectCity } from "./map-renderer.js?v=pref530";
 import { formatStamp, renderCityCard, renderCityCardSkeleton, renderPin, pinRadiusForViewBox, pinRadiusForMatchingScreen, pickNoteWeather, weatherTone, renderNoteIcon, renderPrecipTodLegend } from "./weather-renderer.js?v=pref533";
-import { CONTENT_MASTER, REGION_MASTER, citiesForMaster } from "./area-master.js?v=pref525";
+import { CONTENT_MASTER, REGION_MASTER, citiesForMaster } from "./area-master.js?v=pref548";
 import { applyCardScale, applyLockedCards, applyMapTransform, applyPrecipLegend, applyTitleScale, bindCardEditor, bindMapControls, bindMapEditor, bindOkinawaEditor, bindPrecipLegendEditor, CARD_POS_MAX, CARD_POS_MIN, CARD_SCALE_MAX, CARD_SCALE_MIN, TITLE_SCALE_MAX, TITLE_SCALE_MIN, centerCityCards, hasLocalLayouts, initLayoutDefaults, listCardPositions, loadCardScale, loadLayout, loadTitleScale, moveLockedCard, resetCardScale, resetLayout, resetTitleScale, saveCardScale, saveLayout, saveTitleScale, snapshotAllLayoutDefaults, snapshotLayoutDefaults } from "./studio-layout.js?v=pref525";
 import { expandForecast, formatNoteHtml, noteFor } from "./forecast.js?v=pref533";
 import { hydrateWeeklyWeatherIcons, renderWeeklyTable, renderWeeklyTableSkeleton, renderWeeklyTableSync, weeklyTableRows } from "./table-renderer.js?v=pref544";
 import {
   DEFAULT_STUDIO_VIEWPORT,
   FIXED_DESIGN,
-  PORTRAIT_DESIGN,
   VIEWPORT_PRESETS,
   applyTableLayout,
   applyViewport,
@@ -38,15 +37,15 @@ import {
   partitionTablePages,
   readViewport,
   showAuxiliary
-} from "./viewport.js?v=pref547";
-import { msUntilIconPhaseChange } from "./jma-icons.js?v=pref387";
+} from "./viewport.js?v=pref535";
+} from "./viewport.js?v=pref548";
 import { fetchJmaWeather } from "./jma-live.js?v=pref533";
 import { buildWeekPoints, fetchWeekAlert, renderWeekPointsHtml } from "./week-points.js?v=pref387";
 
-/** æ°—è±¡åºã®å®šæ™‚ç™ºè¡¨ï¼ˆJSTï¼‰ã€‚åæ˜ å¾…ã¡ã§ +5 åˆ†å¾Œã«ã‚‚å–ã‚Šç›´ã™ã€‚ */
+/** ‹CÛ’¡‚Ì’è”­•\iJSTjB”½‰f‘Ò‚¿‚Å +5 •ªŒã‚É‚àæ‚è’¼‚·B */
 const JMA_PUBLISH_HOURS_JST = [5, 11, 17];
 const JMA_PUBLISH_LAG_MS = 5 * 60 * 1000;
-/** è‡ªå‰ã®æ¯æ™‚0åˆ†æ›´æ–°ï¼ˆ12æ™‚ã‚’å«ã‚€ï¼‰ã€‚ */
+/** ©‘O‚Ì–ˆ0•ªXVi12‚ğŠÜ‚ŞjB */
 const LIVE_REFRESH_MS = 60 * 60 * 1000;
 const LIVE_FETCH_TIMEOUT_MS = 12000;
 const storedLkg = readWeatherLkg();
@@ -95,7 +94,7 @@ function dateFromJst(year, month, day, hour = 0, minute = 0, second = 0) {
   return new Date(Date.UTC(year, month - 1, day, hour - 9, minute, second));
 }
 
-/** æ¯æ™‚0åˆ†ï¼ˆJSTï¼‰ï¼‹æ°—è±¡åºç™ºè¡¨ã®5åˆ†å¾Œ */
+/** –ˆ0•ªiJSTj{‹CÛ’¡”­•\‚Ì5•ªŒã */
 function refreshSlotsOnJstDay(year, month, day) {
   const slots = [];
   for (let hour = 0; hour < 24; hour += 1) {
@@ -122,7 +121,7 @@ function msUntilNextRefresh(now = new Date()) {
   return Math.max(1000, nextRefreshAt(now) - now.getTime());
 }
 
-/** æœªå–å¾—ã€1æ™‚é–“ä»¥ä¸ŠçµŒéã€æ¯æ™‚0åˆ†ã€ã¾ãŸã¯æ°—è±¡åºç™ºè¡¨æ ã‚’éãã¦ã„ã‚Œã°å–ã‚Šç›´ã— */
+/** –¢æ“¾A1ŠÔˆÈãŒo‰ßA–ˆ0•ªA‚Ü‚½‚Í‹CÛ’¡”­•\˜g‚ğ‰ß‚¬‚Ä‚¢‚ê‚Îæ‚è’¼‚µ */
 function needsJmaRefresh(now = new Date()) {
   if (!liveWeatherCache.doc) return true;
   const nowMs = now.getTime();
@@ -191,6 +190,7 @@ function productionUrl(regionId, contentId, extra = {}) {
   if (extra.edit) next.searchParams.set("edit", "1");
   if (extra.debug) next.searchParams.set("debug", "1");
   if (extra.site) next.searchParams.set("site", extra.site);
+  if (extra.vw) next.searchParams.set("vw", String(Math.round(Number(extra.vw) || FIXED_DESIGN.width)));
   if (extra.portrait || extra.orient === "portrait") {
     next.searchParams.set("orient", "portrait");
   } else {
@@ -204,12 +204,11 @@ function productionUrl(regionId, contentId, extra = {}) {
 
 function wantsPortrait(search = params) {
   const orient = String(search.get("orient") || search.get("orientation") || "").toLowerCase();
-  if (orient === "portrait" || orient === "vertical" || orient === "tate" || orient === "ç¸¦") return true;
+  if (orient === "portrait" || orient === "vertical" || orient === "tate" || orient === "c") return true;
   if (search.get("portrait") === "1" || search.get("tate") === "1") return true;
   const fromW = Number(search.get("vw") || search.get("w"));
   const fromH = Number(search.get("vh") || search.get("h"));
   return fromW > 0 && fromH > 0 && fromH > fromW;
-}
 
 async function postStudioSnapshot(snapshot) {
   const body = JSON.stringify(snapshot || {});
@@ -345,7 +344,7 @@ async function bootStudio() {
   heightInput.value = String(state.viewport.height);
   presetHost.innerHTML = VIEWPORT_PRESETS.map((item) => (
     `<button type="button" data-w="${item.width}" data-h="${item.height}">${item.label}</button>`
-  )).join("") + `<button type="button" data-live="1">ã“ã®ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦</button>`;
+  )).join("") + `<button type="button" data-live="1">‚±‚ÌƒEƒBƒ“ƒhƒE</button>`;
 
   const persistStudio = () => {
     const next = new URL(window.location.href);
@@ -425,7 +424,7 @@ async function bootStudio() {
   studioBar.addEventListener("submit", (event) => event.preventDefault());
   const syncMapControls = bindMapControls(studioBar, layout, () => {
     const { w, h } = vpSize();
-    // è¦ªã® layout.cards ãŒç©ºã§ã‚‚ã€ä¿å­˜æ¸ˆã¿ã‚«ãƒ¼ãƒ‰ã‚’æ¶ˆã•ãªã„
+    // e‚Ì layout.cards ‚ª‹ó‚Å‚àA•Û‘¶Ï‚İƒJ[ƒh‚ğÁ‚³‚È‚¢
     const latest = loadLayout(state.regionId, state.contentId, w, h);
     if (!Object.keys(layout.cards || {}).length && Object.keys(latest.cards || {}).length) {
       layout.cards = { ...latest.cards };
@@ -440,7 +439,7 @@ async function bootStudio() {
   const cardWidthInput = document.getElementById("card-width-px");
   const titleScaleInput = document.getElementById("title-scale");
   const titleScaleOut = document.getElementById("title-scale-value");
-  // åœ°å›³4ç¨®ã¯åŒã˜å¤–æ ãƒ»åŒã˜é…ç½®ã‚’ä½¿ã†ï¼ˆé™æ°´ã§ã‚‚ weather æ ï¼‰
+  // ’n}4í‚Í“¯‚¶ŠO˜gE“¯‚¶”z’u‚ğg‚¤i~…‚Å‚à weather ˜gj
   const cardVariant = () => (getContent(state.contentId).kind === "map" ? "weather" : (getContent(state.contentId).card === "pop" ? "pop" : "weather"));
   const applyManualCardScale = (scale) => {
     const next = Math.min(CARD_SCALE_MAX, Math.max(CARD_SCALE_MIN, Number(scale) || 1));
@@ -729,13 +728,13 @@ async function bootStudio() {
       };
       postStudioSnapshot(snapshot).then(async (ok) => {
         if (!ok) throw new Error("save failed");
-        setHint(`é…ç½®ã‚’å›ºå®šã—ã¾ã—ãŸï¼ˆ${w}x${h}ï¼‰ã€‚ã“ã®åœ°åŸŸã®ä»Šæ—¥/æ˜æ—¥ã®å¤©æ°—ãƒ»é™æ°´ãŒåŒã˜åœ°å›³ã‚’ä½¿ã„ã¾ã™ã€‚GitHubåæ˜ ã¯ã‚³ãƒŸãƒƒãƒˆï¼†ãƒ—ãƒƒã‚·ãƒ¥ãŒå¿…è¦ã§ã™ã€‚`);
+        setHint(`”z’u‚ğŒÅ’è‚µ‚Ü‚µ‚½i${w}x${h}jB‚±‚Ì’nˆæ‚Ì¡“ú/–¾“ú‚Ì“V‹CE~…‚ª“¯‚¶’n}‚ğg‚¢‚Ü‚·BGitHub”½‰f‚ÍƒRƒ~ƒbƒg•ƒvƒbƒVƒ…‚ª•K—v‚Å‚·B`);
       }).catch(async () => {
         try {
           await downloadMerged();
-          setHint(`ãƒ–ãƒ©ã‚¦ã‚¶å†…ã«å›ºå®šã—ã€layout-defaults.json ã‚’ãƒ€ã‚¦ãƒ³ãƒ­ãƒ¼ãƒ‰ã—ã¾ã—ãŸã€‚data/ ã«ä¸Šæ›¸ãã—ã¦ã‹ã‚‰ã‚³ãƒŸãƒƒãƒˆã—ã¦ãã ã•ã„ã€‚`);
+          setHint(`ƒuƒ‰ƒEƒU“à‚ÉŒÅ’è‚µAlayout-defaults.json ‚ğƒ_ƒEƒ“ƒ[ƒh‚µ‚Ü‚µ‚½Bdata/ ‚Éã‘‚«‚µ‚Ä‚©‚çƒRƒ~ƒbƒg‚µ‚Ä‚­‚¾‚³‚¢B`);
         } catch {
-          setHint("ãƒ–ãƒ©ã‚¦ã‚¶å†…ã«ã¯å›ºå®šã—ã¾ã—ãŸã€‚ãƒ•ã‚¡ã‚¤ãƒ«ä¿å­˜ã«ã¯ npm startï¼ˆãƒ—ãƒ¬ãƒ“ãƒ¥ãƒ¼ã‚µãƒ¼ãƒãƒ¼ï¼‰ãŒå¿…è¦ã§ã™ã€‚");
+          setHint("ƒuƒ‰ƒEƒU“à‚É‚ÍŒÅ’è‚µ‚Ü‚µ‚½Bƒtƒ@ƒCƒ‹•Û‘¶‚É‚Í npm startiƒvƒŒƒrƒ…[ƒT[ƒo[j‚ª•K—v‚Å‚·B");
         }
       });
       fillCardEditors(Object.entries(layout.cards || {}).map(([cityId, pos]) => ({
@@ -772,7 +771,8 @@ async function bootSignage() {
   const noteEl = document.getElementById("led-note");
   const noteIconEl = document.getElementById("led-note-icon");
   const attributionEl = document.getElementById("map-attribution");
-  // ã‚¹ã‚¿ã‚¸ã‚ª iframeï¼ˆ?vw/?vhï¼‰ä»¥å¤–ã¯è¨­è¨ˆè§£åƒåº¦ã§å›ºå®šã€‚ç¸¦ã¯ 1080Ã—1920ã€‚
+  // ƒXƒ^ƒWƒI iframei?vw/?vhjˆÈŠO‚ÍİŒv‰ğ‘œ“x‚ÅŒÅ’èBÀ‘‹ƒTƒCƒY‚É‚Í’Ç]‚µ‚È‚¢B
+  // ƒXƒ^ƒWƒI iframei?vw/?vhjˆÈŠO‚ÍİŒv‰ğ‘œ“x‚ÅŒÅ’èBc‚Í 1080~1920B
   const measure = () => {
     const fromW = Number(params.get("vw") || params.get("w"));
     const fromH = Number(params.get("vh") || params.get("h"));
@@ -785,21 +785,20 @@ async function bootSignage() {
   const initialVp = measure();
   state.viewport = initialVp;
   document.documentElement.dataset.orient = initialVp.height > initialVp.width ? "portrait" : "landscape";
-  const layout = loadLayout(state.regionId, state.contentId, initialVp.width, initialVp.height);
 
   function paintKnownSync() {
     const regionMeta = REGION_MASTER[canonicalRegion(state.regionId)] || REGION_MASTER.national;
     const contentMeta = CONTENT_MASTER[canonicalContent(state.contentId)] || CONTENT_MASTER.today_weather;
     applyViewport(screen, initialVp, regionMeta.id, contentMeta, { fixedScale: useFixedScale });
+    applyMapTransform(screen, layout);
     if (initialVp.height > initialVp.width) applyPortraitSeason(screen);
     else {
       delete screen.dataset.season;
       screen.style.removeProperty("--season-bg");
       screen.style.removeProperty("--season-image");
     }
-    applyMapTransform(screen, layout);
     applyTitleScale(screen, loadTitleScale(initialVp.width, initialVp.height, regionMeta.id, contentMeta.id));
-    titleEl.textContent = `${regionMeta.name}ï½œ${contentMeta.name}`;
+    titleEl.textContent = `${regionMeta.name}b${contentMeta.name}`;
     document.title = titleEl.textContent;
     syncTitleMark(contentMeta);
     const cities = citiesForMaster(regionMeta.id).slice().sort((a, b) => (
@@ -842,6 +841,7 @@ async function bootSignage() {
   }
 
   paintKnownSync();
+  loadMapSvg().then((svg) => {
   const bootContentKind = (CONTENT_MASTER[canonicalContent(state.contentId)] || {}).kind;
   const isTableBoot = bootContentKind === "table";
   if (!isTableBoot) {
@@ -852,7 +852,6 @@ async function bootSignage() {
   }
 
   const layoutReady = isTableBoot ? Promise.resolve() : initLayoutDefaults();
-
   let iconPhaseTimer = 0;
   let tablePageTimer = 0;
   let tablePageIndex = Math.max(0, Number.parseInt(params.get("page") || "0", 10) || 0);
@@ -982,6 +981,7 @@ async function bootSignage() {
     window.history.replaceState({}, "", next);
   };
 
+  async function render() {
   function resolveRegionMeta(id) {
     const fromCatalog = (() => {
       try { return getRegion(id); } catch { return null; }
@@ -1014,7 +1014,7 @@ async function bootSignage() {
     }
     if (content.id !== "weekly_weather") hideWeekPoints();
 
-    // è§£åƒåº¦ã”ã¨ã®ä¿å­˜ãƒ¬ã‚¤ã‚¢ã‚¦ãƒˆã‚’èª­ã¿ç›´ã™
+    // ‰ğ‘œ“x‚²‚Æ‚Ì•Û‘¶ƒŒƒCƒAƒEƒg‚ğ“Ç‚İ’¼‚·
     const savedLayout = loadLayout(region.id, content.id, vp.width, vp.height);
     layout.map = { ...savedLayout.map };
     layout.okinawa = { ...savedLayout.okinawa };
@@ -1022,7 +1022,7 @@ async function bootSignage() {
     layout.precipLegend = { ...savedLayout.precipLegend };
 
     try {
-      /* é€±é–“è¡¨ã¯åœ°å›³JSONã‚’èª­ã¾ãšã€éƒ½å¸‚ãƒã‚¹ã‚¿ï¼‹æ°—è±¡ã ã‘ã§å³æç”» */
+      /* TŠÔ•\‚Í’n}JSON‚ğ“Ç‚Ü‚¸A“ssƒ}ƒXƒ^{‹CÛ‚¾‚¯‚Å‘¦•`‰æ */
       if (content.kind === "table") {
         const weatherDoc = await loadWeatherDoc();
         const weather = adaptWeather(weatherDoc);
@@ -1055,7 +1055,7 @@ async function bootSignage() {
             render();
           }, TABLE_PAGE_MS);
         }
-        const title = `${region.name}ï½œ${content.name || content.title || ""}`;
+        const title = `${region.name}b${content.name || content.title || ""}`;
         titleEl.textContent = title;
         document.title = title;
         stampEl.textContent = formatStamp(stampIso, !showAuxiliary(vp, "stampWeek"));
@@ -1074,7 +1074,7 @@ async function bootSignage() {
         updateDebug(vp, region, content, weatherStamp);
         recordSite();
         scheduleIconPhase();
-        /* é‡ã„ã‚¢ã‚¤ã‚³ãƒ³ãƒ»è£œè¶³ã¯å¾Œå›ã—ï¼ˆå…ˆã«è¡¨ã‚’å‡ºã™ï¼‰ */
+        /* d‚¢ƒAƒCƒRƒ“E•â‘«‚ÍŒã‰ñ‚µiæ‚É•\‚ğo‚·j */
         hydrateWeeklyWeatherIcons(stage).catch(() => {});
         const noteWeather = pickNoteWeather(selected.flatMap((city) => city.weekly || [city]));
         noteIconEl.className = `wx-icon ${weatherTone(noteWeather)}`;
@@ -1134,7 +1134,6 @@ async function bootSignage() {
           fitTitleBars(screen);
           layoutNoteTicker();
         }).catch(() => {});
-      }
 
       const svgText = await loadMapSvg(region.mapFile);
       const layers = existingMapLayers(stage, region.id) || mountMap(stage, svgText, region.id);
@@ -1144,7 +1143,7 @@ async function bootSignage() {
       });
       const cardScale = loadCardScale(content.id, region.id, vp.width, vp.height);
       applyCardScale(screen, cardScale);
-      // ä»Šæ—¥/æ˜æ—¥Ã—å¤©æ°—/é™æ°´ã¯åœ°å›³ãƒ»ãƒœãƒƒã‚¯ã‚¹é…ç½®ã‚’å…±æœ‰ï¼ˆè‡ªå‹•é…ç½®ã‚¹ãƒ­ãƒƒãƒˆã‚‚ weather å´ã«çµ±ä¸€ï¼‰
+      // ¡“ú/–¾“ú~“V‹C/~…‚Í’n}Eƒ{ƒbƒNƒX”z’u‚ğ‹¤—Li©“®”z’uƒXƒƒbƒg‚à weather ‘¤‚É“ˆêj
       const variant = "weather";
       const baseSize = cardSizePct(vp, region.id, variant);
       const cardBox = { w: baseSize.w * cardScale, h: baseSize.h * cardScale };
@@ -1244,7 +1243,7 @@ async function bootSignage() {
       if (event.data.map) Object.assign(layout.map, event.data.map);
       if (event.data.okinawa) Object.assign(layout.okinawa, event.data.okinawa);
       applyMapTransform(screen, layout);
-      // æ‰‹å‹•ã®åˆ—å³¶æ‹¡å¤§ã‚’è‡ªå‹•ãƒ•ã‚£ãƒƒãƒˆã§æˆ»ã•ãªã„
+      // è“®‚Ì—ñ“‡Šg‘å‚ğ©“®ƒtƒBƒbƒg‚Å–ß‚³‚È‚¢
       repaintPins();
       notifyStudio({ type: "map", map: { ...layout.map }, okinawa: { ...layout.okinawa } });
     }
@@ -1309,7 +1308,7 @@ async function bootSignage() {
   });
 
   window.addEventListener("resize", () => {
-    // è¨­è¨ˆè§£åƒåº¦ã¯å¤‰ãˆãšã€è¡¨ç¤ºã‚¹ã‚±ãƒ¼ãƒ«ã ã‘åˆã‚ã›ã‚‹ï¼ˆç´¯ç©ã—ãªã„ï¼‰
+    // İŒv‰ğ‘œ“x‚Í•Ï‚¦‚¸A•\¦ƒXƒP[ƒ‹‚¾‚¯‡‚í‚¹‚éi—İÏ‚µ‚È‚¢j
     if (useFixedScale) {
       fitFixedScreen(screen, state.viewport.width, state.viewport.height);
     }
@@ -1543,8 +1542,9 @@ async function bootSignage() {
   }
 
   try {
+    await loadCatalog();
     if (isTableBoot) {
-      /* é€±é–“è¡¨ã¯ã‚«ã‚¿ãƒ­ã‚°å¾…ã¡ãªã—ã€‚URLã® region/content ã‚’ãã®ã¾ã¾ä½¿ã† */
+      /* TŠÔ•\‚ÍƒJƒ^ƒƒO‘Ò‚¿‚È‚µBURL‚Ì region/content ‚ğ‚»‚Ì‚Ü‚Üg‚¤ */
       state.regionId = canonicalRegion(state.regionId);
       state.contentId = canonicalContent(state.contentId);
       await render();
@@ -1561,7 +1561,6 @@ async function bootSignage() {
       } else {
         await render();
       }
-    }
   } finally {
     document.documentElement.classList.remove("is-boot");
   }
@@ -1606,12 +1605,12 @@ function attachForecast(city, todayPoint, content, updatedAt) {
   return { ...city, ...todayPoint, weekly: forecast.weekly, missing };
 }
 
-/** é€±é–“è¡¨ã®1ãƒšãƒ¼ã‚¸éƒ½å¸‚æ•°ã€‚ç¸¦ãƒ»è¿‘ç•¿ã®ã¿å…¨éƒ½å¸‚ä¸€æ‹¬ã€‚æ¨ªï¼ˆå…ƒURLï¼‰ã¯å¾“æ¥ã©ãŠã‚Šåˆ†å‰²ã€‚ */
+/** TŠÔ•\‚Ì1ƒy[ƒW“ss”B‘S‘E–kŠC“¹E’†•”E‹ß‹EEŠÖ“ŒE‹ãB‚Í4“ss‚¸‚Âi‹ãB7’n“_‚Í 4+3jB */
+/** TŠÔ•\‚Ì1ƒy[ƒW“ss”BcE‹ß‹E‚Ì‚İ‘S“ssˆêŠ‡B‰¡iŒ³URLj‚Í]—ˆ‚Ç‚¨‚è•ªŠ„B */
 function tablePageSize(regionId) {
   const id = String(regionId || "").toLowerCase();
-  if (id === "kinki" && wantsPortrait()) return 7;
+  if (id === "kinki" && wantsPortrait()) return 6;
   if (id === "national" || id === "hokkaido" || id === "chubu" || id === "kinki" || id === "kanto" || id === "kyushu") return 4;
-  return 5;
 }
 
 function syncTitleMark(content) {
@@ -1703,7 +1702,8 @@ async function pullLiveWeatherAndRender(renderFn) {
   livePullInFlight = (async () => {
     try {
       const locations = await fetchJson("data/locations.json");
-      /* æ´¥ãªã© alsoOnRegions ã®åœ°ç‚¹ã‚‚åœ°åŸŸè¡¨ç¤ºã«å«ã‚ã‚‹ï¼ˆè¿‘ç•¿ã®æ´¥ï¼ä¸­éƒ¨æ‰€å±ï¼‰ */
+      const cities = (locations.cities || []).filter((city) => {
+      /* ’Ã‚È‚Ç alsoOnRegions ‚Ì’n“_‚à’nˆæ•\¦‚ÉŠÜ‚ß‚éi‹ß‹E‚Ì’Ã’†•”Š‘®j */
       const cities = (locations.cities || []).filter((city) => {
         if (state.regionId === "national") return city.showOnNational !== false && city.showOnNational;
         return city.regionId === state.regionId
@@ -1717,11 +1717,10 @@ async function pullLiveWeatherAndRender(renderFn) {
       }
       const base = mergeWeatherDocs(bundledWeatherDoc, liveWeatherCache.doc);
       const merged = mergeWeatherDocs(base, live);
-      liveWeatherCache = { at, doc: merged };
       writeWeatherLkg(merged, at);
       if (typeof renderFn === "function") await renderFn();
     } catch {
-      /* åŒæ¢±ãƒ‡ãƒ¼ã‚¿ã¾ãŸã¯å‰å›ã‚­ãƒ£ãƒƒã‚·ãƒ¥ã®ã¾ã¾ */
+      /* “¯«ƒf[ƒ^‚Ü‚½‚Í‘O‰ñƒLƒƒƒbƒVƒ…‚Ì‚Ü‚Ü */
     } finally {
       livePullInFlight = null;
     }
@@ -1730,6 +1729,7 @@ async function pullLiveWeatherAndRender(renderFn) {
 }
 
 async function loadWeatherDoc() {
+  if (isWeatherDoc(liveWeatherCache.doc)) return liveWeatherCache.doc;
   if (!bundledWeatherDoc) {
     try { bundledWeatherDoc = await fetchJson("data/weather.json"); } catch { bundledWeatherDoc = null; }
   }
@@ -1741,12 +1741,11 @@ async function loadWeatherDoc() {
       doc = lkg.doc;
     }
   }
-  /* LKGã«æ´¥ãªã©ãŒæ¬ ã‘ã¦ã„ã¦ã‚‚åŒæ¢±ãƒ‡ãƒ¼ã‚¿ã§åŸ‹ã‚ã‚‹ */
+  /* LKG‚É’Ã‚È‚Ç‚ªŒ‡‚¯‚Ä‚¢‚Ä‚à“¯«ƒf[ƒ^‚Å–„‚ß‚é */
   if (isWeatherDoc(doc) && isWeatherDoc(bundledWeatherDoc)) {
     return mergeWeatherDocs(bundledWeatherDoc, doc);
   }
   if (isWeatherDoc(doc)) return doc;
-  return bundledWeatherDoc;
 }
 
 function keepPop(next, prev) {
@@ -1796,12 +1795,12 @@ function mergeWeatherDocs(base, live) {
 }
 
 function unregisterSignageWorkers() {
-  /* SW ã ã‘å¤–ã™ã€‚Cache Storage ã¯æ®‹ã—ã¦å†èª­è¾¼ã‚’é€Ÿãã™ã‚‹ */
+  if (!("serviceWorker" in navigator)) return;
+  /* SW ‚¾‚¯ŠO‚·BCache Storage ‚Íc‚µ‚ÄÄ“Ç‚ğ‘¬‚­‚·‚é */
   if (!("serviceWorker" in navigator)) return;
   navigator.serviceWorker.getRegistrations()
     .then((regs) => Promise.all(regs.map((reg) => reg.unregister())))
     .catch(() => {});
-}
 
 const jsonCache = new Map();
 

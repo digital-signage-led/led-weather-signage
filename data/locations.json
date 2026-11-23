@@ -636,9 +636,7 @@
       "regionOffsetY": 8,
       "priority": 3,
       "showOnNational": false,
-      "alsoOnRegions": [
-        "kinki"
-      ],
+      "alsoOnRegions": [],
       "useOkinawaInset": false
     },
     {
