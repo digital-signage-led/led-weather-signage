@@ -960,13 +960,13 @@ html.is-edit .precip-tod-legend.is-dragging {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  gap: 0.2em;
-  padding: 0.12em 0.08em;
+  gap: 0.1em;
+  padding: 0.08em 0.04em;
   background: var(--forecast-head);
-  line-height: 1.05;
+  line-height: 1;
   font-size: var(--font-week-day, var(--font-week));
   font-family: var(--font-number);
-  letter-spacing: -0.03em;
+  letter-spacing: -0.04em;
   overflow: hidden;
   min-width: 0;
   max-width: 100%;
@@ -981,13 +981,13 @@ html.is-edit .precip-tod-legend.is-dragging {
   max-width: 100%;
   overflow: hidden;
   text-overflow: clip;
-  line-height: 1.05;
+  line-height: 1;
 }
 
 .forecast-day-w {
-  font-size: 0.72em;
-  font-weight: 800;
-  margin-top: 0.05em;
+  font-size: 0.88em;
+  font-weight: 900;
+  margin-top: 0.02em;
 }
 
 .forecast-grid > .forecast-day-h:nth-child(8) {
@@ -1004,9 +1004,9 @@ html.is-edit .precip-tod-legend.is-dragging {
 
 .forecast-day-num {
   font-family: var(--font-number);
-  font-size: 0.96em;
+  font-size: 1em;
   font-weight: 900;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.04em;
 }
 
 .forecast-city {

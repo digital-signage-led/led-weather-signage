@@ -225,9 +225,9 @@ export function tableLayoutTokens(vp, rows = 5) {
     "--cell-height": `${Math.round(cellH)}px`,
     "--cell-min": `${Math.round(cellMin)}px`,
     "--font-week-day": `${Math.round(clamp(
-      Math.min(dayHeadH * 0.36, cellW * (portrait ? 0.38 : 0.42)),
-      portrait ? 13 : 14,
-      portrait ? 24 : 34
+      Math.min(dayHeadH * (portrait ? 0.44 : 0.4), cellW * (portrait ? 0.52 : 0.48)),
+      portrait ? 18 : 16,
+      portrait ? 40 : 40
     ))}px`,
     "--font-week-city": `${Math.round(clamp(Math.min(cellH * 0.62, cityCol * 0.48), 24, cityMax))}px`,
     "--font-week-label": `${Math.round(clamp(Math.min(cellH * 0.17, cellW * 0.125), 12, labelMax))}px`,
