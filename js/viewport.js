@@ -6,8 +6,12 @@
 /** 本番の固定設計解像度（レイアウト・週間フレーム基準） */
 export const FIXED_DESIGN = { width: 1920, height: 1080 };
 
+/** 縦サイネージ用（1080×1920） */
+export const PORTRAIT_DESIGN = { width: 1080, height: 1920 };
+
 export const VIEWPORT_PRESETS = [
-  { width: 1920, height: 1080, label: "1920×1080（固定）" },
+  { width: 1920, height: 1080, label: "1920×1080（横）" },
+  { width: 1080, height: 1920, label: "1080×1920（縦）" },
   { width: 720, height: 576, label: "720×576" },
   { width: 576, height: 432, label: "576×432" },
   { width: 432, height: 288, label: "432×288" },
@@ -24,7 +28,7 @@ export const DEFAULT_STUDIO_VIEWPORT = { ...FIXED_DESIGN };
 const MIN_W = 160;
 const MIN_H = 120;
 const MAX_W = 1920;
-const MAX_H = 1080;
+const MAX_H = 1920;
 
 export function clamp(n, min, max) {
   return Math.min(max, Math.max(min, n));
@@ -168,18 +172,27 @@ export const WEEKLY_TABLE_TITLE_SCALE = 1.3;
 export function tableLayoutTokens(vp, rows = 5) {
   const rowCount = Math.max(2, Math.min(5, Number(rows) || 5));
   const s = vp.basis || vp.minSide;
+  const portrait = vp.shape === "portrait" || vp.height > vp.width;
   const chrome = 1.5;
-  const gap = Math.max(1, fluidPx(s, 0.005, 1, 4));
-  const pad = fluidPx(s, 0.035, 6, 28);
+  const gap = Math.max(1, fluidPx(s, portrait ? 0.006 : 0.005, 1, 4));
+  const pad = fluidPx(s, portrait ? 0.04 : 0.035, 6, 28);
   const headerTitle = fluidPx(s, 0.092 * chrome, 24, Math.round(58 * chrome));
   const headerSub = fluidPx(s, 0.062 * chrome, 16, Math.round(40 * chrome));
   const stackGap = clamp(headerSub * 0.18, 4, 10);
-  const topChrome = pad + (headerTitle + headerSub + stackGap) * WEEKLY_TABLE_TITLE_SCALE + 20;
-  const bottomChrome = 36;
+  const topChrome = pad + (headerTitle + headerSub + stackGap) * WEEKLY_TABLE_TITLE_SCALE + (portrait ? 28 : 20);
+  const bottomChrome = portrait ? 48 : 36;
   const availW = Math.max(80, vp.width - pad * 2);
   const availH = Math.max(80, vp.height - topChrome - bottomChrome);
-  const dayHeadH = clamp(Math.round(availH * 0.11), 26, Math.round(s * 0.09));
-  const cityCol = clamp(Math.round(availW * 0.14), Math.round(s * 0.12), Math.round(availW * 0.2));
+  const dayHeadH = clamp(
+    Math.round(availH * (portrait ? 0.06 : 0.11)),
+    26,
+    Math.round(s * (portrait ? 0.08 : 0.09))
+  );
+  const cityCol = clamp(
+    Math.round(availW * (portrait ? 0.16 : 0.14)),
+    Math.round(s * (portrait ? 0.14 : 0.12)),
+    Math.round(availW * (portrait ? 0.22 : 0.2))
+  );
   const gridPad = gap;
   const innerW = availW - gridPad * 2;
   const innerH = availH - gridPad * 2;
@@ -187,17 +200,18 @@ export function tableLayoutTokens(vp, rows = 5) {
   const cellH = (innerH - dayHeadH - gap * rowCount) / rowCount;
   const cellMin = Math.max(8, Math.min(cellW, cellH));
   const radius = clamp(Math.round(cellMin * 0.12), 4, 14);
-  const cityMax = rowCount <= 3 ? 68 : rowCount === 4 ? 62 : 58;
+  const cityMax = portrait ? (rowCount <= 3 ? 72 : rowCount === 4 ? 66 : 60) : (rowCount <= 3 ? 68 : rowCount === 4 ? 62 : 58);
   const labelMax = rowCount <= 3 ? 24 : rowCount === 4 ? 22 : 20;
   const valueMax = rowCount <= 3 ? 50 : rowCount === 4 ? 46 : 42;
   const unitMax = rowCount <= 3 ? 20 : rowCount === 4 ? 19 : 18;
-  const tempMax = rowCount <= 3 ? 52 : rowCount === 4 ? 48 : 44;
-  const tempFont = Math.round(clamp(cellH * (rowCount >= 5 ? 0.24 : 0.26), 12, tempMax));
-  const padY = Math.round(clamp(cellH * 0.05, 1, 8));
+  const tempMax = portrait ? (rowCount <= 3 ? 56 : rowCount === 4 ? 52 : 48) : (rowCount <= 3 ? 52 : rowCount === 4 ? 48 : 44);
+  const tempFont = Math.round(clamp(cellH * (portrait ? 0.12 : (rowCount >= 5 ? 0.24 : 0.26)), 12, tempMax));
+  const padY = Math.round(clamp(cellH * (portrait ? 0.04 : 0.05), 1, portrait ? 14 : 8));
   const padX = Math.round(clamp(cellW * 0.05, 1, 10));
   const tempRow = Math.round(tempFont * 1.08);
   const iconH = Math.max(28, cellH - tempRow - padY * 2);
   const iconW = Math.max(28, cellW - padX * 2);
+  const iconMax = portrait ? 360 : 280;
 
   return {
     "--forecast-rows": String(rowCount),
@@ -216,7 +230,7 @@ export function tableLayoutTokens(vp, rows = 5) {
     "--font-week-unit": `${Math.round(clamp(Math.min(cellH * 0.145, cellW * 0.125), 11, unitMax))}px`,
     "--font-week-temp": `${tempFont}px`,
     "--week-temp-row": `${tempRow}px`,
-    "--icon-week": `${Math.round(clamp(Math.min(iconW, iconH * 1.5), 36, 280))}px`,
+    "--icon-week": `${Math.round(clamp(Math.min(iconW, iconH * (portrait ? 1.1 : 1.5)), 36, iconMax))}px`,
     "--week-pad-y": `${padY}px`,
     "--week-pad-x": `${padX}px`
   };

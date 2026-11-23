@@ -2,7 +2,7 @@
  * Studio / signage bootstrap. Studio drives the iframe viewport.
  */
 
-import { APP_VERSION, DATA_VERSION, MAP_VERSION } from "./version.js?v=pref536";
+import { APP_VERSION, DATA_VERSION, MAP_VERSION } from "./version.js?v=pref537";
 import { isWeatherDoc, readWeatherLkg, writeWeatherLkg } from "./weather-cache.js?v=pref522";
 import {
   canonicalContent,
@@ -24,6 +24,7 @@ import { renderWeeklyTable, renderWeeklyTableSkeleton, renderWeeklyTableSync, we
 import {
   DEFAULT_STUDIO_VIEWPORT,
   FIXED_DESIGN,
+  PORTRAIT_DESIGN,
   VIEWPORT_PRESETS,
   applyTableLayout,
   applyViewport,
@@ -36,7 +37,7 @@ import {
   partitionTablePages,
   readViewport,
   showAuxiliary
-} from "./viewport.js?v=pref535";
+} from "./viewport.js?v=pref537";
 import { msUntilIconPhaseChange } from "./jma-icons.js?v=pref387";
 import { fetchJmaWeather } from "./jma-live.js?v=pref533";
 import { buildWeekPoints, fetchWeekAlert, renderWeekPointsHtml } from "./week-points.js?v=pref387";
@@ -189,11 +190,24 @@ function productionUrl(regionId, contentId, extra = {}) {
   if (extra.edit) next.searchParams.set("edit", "1");
   if (extra.debug) next.searchParams.set("debug", "1");
   if (extra.site) next.searchParams.set("site", extra.site);
-  if (extra.vw) next.searchParams.set("vw", String(Math.round(Number(extra.vw) || FIXED_DESIGN.width)));
-  if (extra.vh) next.searchParams.set("vh", String(Math.round(Number(extra.vh) || FIXED_DESIGN.height)));
+  if (extra.portrait || extra.orient === "portrait") {
+    next.searchParams.set("orient", "portrait");
+  } else {
+    if (extra.vw) next.searchParams.set("vw", String(Math.round(Number(extra.vw) || FIXED_DESIGN.width)));
+    if (extra.vh) next.searchParams.set("vh", String(Math.round(Number(extra.vh) || FIXED_DESIGN.height)));
+  }
   next.searchParams.set("v", DATA_VERSION);
   next.searchParams.set("mapv", MAP_VERSION);
   return next.pathname + next.search;
+}
+
+function wantsPortrait(search = params) {
+  const orient = String(search.get("orient") || search.get("orientation") || "").toLowerCase();
+  if (orient === "portrait" || orient === "vertical" || orient === "tate" || orient === "縦") return true;
+  if (search.get("portrait") === "1" || search.get("tate") === "1") return true;
+  const fromW = Number(search.get("vw") || search.get("w"));
+  const fromH = Number(search.get("vh") || search.get("h"));
+  return fromW > 0 && fromH > 0 && fromH > fromW;
 }
 
 async function postStudioSnapshot(snapshot) {
@@ -757,16 +771,19 @@ async function bootSignage() {
   const noteEl = document.getElementById("led-note");
   const noteIconEl = document.getElementById("led-note-icon");
   const attributionEl = document.getElementById("map-attribution");
-  // スタジオ iframe（?vw/?vh）以外は設計解像度で固定。実窓サイズには追従しない。
+  // スタジオ iframe（?vw/?vh）以外は設計解像度で固定。縦は 1080×1920。
   const measure = () => {
-    const fromW = Number(params.get("vw"));
-    const fromH = Number(params.get("vh"));
+    const fromW = Number(params.get("vw") || params.get("w"));
+    const fromH = Number(params.get("vh") || params.get("h"));
     if (fromW > 0 && fromH > 0) return readViewport(fromW, fromH);
+    if (wantsPortrait()) return readViewport(PORTRAIT_DESIGN.width, PORTRAIT_DESIGN.height);
     return readViewport(FIXED_DESIGN.width, FIXED_DESIGN.height);
   };
-  const useFixedScale = !(Number(params.get("vw")) > 0 && Number(params.get("vh")) > 0);
+  const embeddedStudio = window.parent !== window.self && Number(params.get("vw")) > 0 && Number(params.get("vh")) > 0;
+  const useFixedScale = !embeddedStudio;
   const initialVp = measure();
   state.viewport = initialVp;
+  document.documentElement.dataset.orient = initialVp.height > initialVp.width ? "portrait" : "landscape";
   const layout = loadLayout(state.regionId, state.contentId, initialVp.width, initialVp.height);
 
   function paintKnownSync() {

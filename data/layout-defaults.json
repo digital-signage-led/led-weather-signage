@@ -2254,6 +2254,8 @@
     "kyushu:map:1920x1080": 1.3,
     "chubu:weekly_weather:1920x1080": 1.3,
     "kinki:weekly_weather:1920x1080": 1.3,
+    "kinki:weekly_weather:1080x1920": 1.3,
+    "kinki:weekly_precip:1080x1920": 1.3,
     "kanto:weekly_weather:1920x1080": 1.3,
     "tohoku:weekly_weather:1920x1080": 1.3,
     "hokkaido:weekly_weather:1920x1080": 1.3,
