@@ -190,11 +190,11 @@ export function tableLayoutTokens(vp, rows = 5) {
     portrait ? 64 : 44,
     Math.round(s * (portrait ? 0.12 : 0.11))
   );
-  /* 3文字都市名（和歌山など）が列内に収まる幅 */
+  /* 縦のみ都市列を広げて3文字対応。横（元URL）は従来比率 */
   const cityCol = clamp(
-    Math.round(availW * (portrait ? 0.22 : 0.16)),
-    Math.round(s * (portrait ? 0.18 : 0.13)),
-    Math.round(availW * (portrait ? 0.28 : 0.22))
+    Math.round(availW * (portrait ? 0.22 : 0.14)),
+    Math.round(s * (portrait ? 0.18 : 0.12)),
+    Math.round(availW * (portrait ? 0.28 : 0.2))
   );
   const gridPad = gap;
   const innerW = availW - gridPad * 2;
@@ -207,7 +207,7 @@ export function tableLayoutTokens(vp, rows = 5) {
     ? (portrait ? 48 : 44)
     : portrait
       ? (rowCount <= 3 ? 64 : rowCount === 4 ? 58 : 52)
-      : (rowCount <= 3 ? 62 : rowCount === 4 ? 56 : 52);
+      : (rowCount <= 3 ? 68 : rowCount === 4 ? 62 : 58);
   const labelMax = dense ? 18 : rowCount <= 3 ? 24 : rowCount === 4 ? 22 : 20;
   const valueMax = dense ? 36 : rowCount <= 3 ? 50 : rowCount === 4 ? 46 : 42;
   const unitMax = dense ? 15 : rowCount <= 3 ? 20 : rowCount === 4 ? 19 : 18;
@@ -223,10 +223,12 @@ export function tableLayoutTokens(vp, rows = 5) {
   ));
   const padY = Math.round(clamp(cellH * (dense ? 0.03 : (portrait ? 0.04 : 0.05)), 1, dense ? 6 : (portrait ? 14 : 8)));
   const padX = Math.round(clamp(cellW * 0.05, 1, 10));
-  const cityPadX = Math.round(clamp(cityCol * 0.06, 4, 14));
+  const cityPadX = Math.round(clamp(cityCol * (portrait ? 0.06 : 0.04), 4, 14));
   const cityFont = Math.round(clamp(
-    Math.min(cellH * (dense ? 0.55 : 0.42), (cityCol - cityPadX * 2) / 3.1),
-    16,
+    portrait
+      ? Math.min(cellH * (dense ? 0.55 : 0.42), (cityCol - cityPadX * 2) / 3.1)
+      : Math.min(cellH * 0.62, cityCol * 0.48),
+    portrait ? 16 : 24,
     cityMax
   ));
   const tempRow = Math.round(tempFont * 1.08);
@@ -245,9 +247,9 @@ export function tableLayoutTokens(vp, rows = 5) {
     "--cell-height": `${Math.round(cellH)}px`,
     "--cell-min": `${Math.round(cellMin)}px`,
     "--font-week-day": `${Math.round(clamp(
-      Math.min(dayHeadH * (portrait ? 0.44 : 0.4), cellW * (portrait ? 0.52 : 0.48)),
+      Math.min(dayHeadH * (portrait ? 0.44 : 0.72), cellW * (portrait ? 0.52 : 0.55)),
       portrait ? 18 : 16,
-      portrait ? 40 : 40
+      portrait ? 40 : 48
     ))}px`,
     "--font-week-city": `${cityFont}px`,
     "--week-city-pad-x": `${cityPadX}px`,

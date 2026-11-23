@@ -957,26 +957,34 @@ html.is-edit .precip-tod-legend.is-dragging {
 }
 
 .forecast-day-h {
-  flex-direction: column;
+  flex-direction: row;
   justify-content: center;
   align-items: center;
-  gap: 0.1em;
-  padding: 0.08em 0.04em;
+  gap: 0.08em;
+  padding: 0 0.1em;
   background: var(--forecast-head);
   line-height: 1;
   font-size: var(--font-week-day, var(--font-week));
   font-family: var(--font-number);
-  letter-spacing: -0.04em;
+  letter-spacing: -0.02em;
   overflow: hidden;
   min-width: 0;
   max-width: 100%;
-  white-space: normal;
+  white-space: nowrap;
   box-sizing: border-box;
+}
+
+/* 縦URLのみ：日付と曜日を上下に分離 */
+.led-screen[data-shape="portrait"] .forecast-day-h {
+  flex-direction: column;
+  gap: 0.1em;
+  padding: 0.08em 0.04em;
+  letter-spacing: -0.04em;
+  white-space: normal;
 }
 
 .forecast-day-num,
 .forecast-day-w {
-  display: block;
   flex: 0 0 auto;
   max-width: 100%;
   overflow: hidden;
@@ -984,7 +992,17 @@ html.is-edit .precip-tod-legend.is-dragging {
   line-height: 1;
 }
 
+.led-screen[data-shape="portrait"] .forecast-day-num,
+.led-screen[data-shape="portrait"] .forecast-day-w {
+  display: block;
+}
+
 .forecast-day-w {
+  font-size: 0.78em;
+  font-weight: 800;
+}
+
+.led-screen[data-shape="portrait"] .forecast-day-w {
   font-size: 0.88em;
   font-weight: 900;
   margin-top: 0.02em;
