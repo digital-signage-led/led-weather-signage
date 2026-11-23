@@ -157,10 +157,11 @@ function holidayClass(day) {
 }
 
 function renderWeatherCellSync(day) {
+  const code = day.weather || "200";
   return `
-    <div class="forecast-cell is-weather${day.today ? " is-today" : ""}">
+    <div class="forecast-cell is-weather${day.today ? " is-today" : ""}" data-weather="${code}" data-today="${day.today ? "1" : "0"}">
       <span class="week-icon-slot">
-        <span class="wx-icon ${weatherTone(day.weather || "200")}" aria-hidden="true"></span>
+        <span class="wx-icon ${weatherTone(code)}" aria-hidden="true"></span>
       </span>
       <span class="forecast-temps">
         <b class="temp-max">${formatTemp(day.tempMax)}</b>
@@ -169,6 +170,26 @@ function renderWeatherCellSync(day) {
       </span>
     </div>
   `;
+}
+
+/** 同期描画後にアイコンだけ差し込み（表全体の作り直しを避ける） */
+export async function hydrateWeeklyWeatherIcons(root) {
+  if (!root) return;
+  const slots = [...root.querySelectorAll(".forecast-cell.is-weather[data-weather] .wx-icon")];
+  if (!slots.length) return;
+  await Promise.all(slots.map(async (el) => {
+    const cell = el.closest(".forecast-cell");
+    const code = cell?.getAttribute("data-weather") || "200";
+    const today = cell?.getAttribute("data-today") === "1";
+    const night = today && isNightHours();
+    try {
+      el.innerHTML = await loadIcon(code, night);
+      el.className = `wx-icon ${weatherTone(code)}`;
+      el.setAttribute("aria-label", `${night ? "夜" : "昼"} ${jmaLabel(code)}`);
+    } catch {
+      /* keep empty slot */
+    }
+  }));
 }
 
 async function renderWeatherCell(day) {

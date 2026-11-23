@@ -71,18 +71,10 @@
       max-height: 100%;
     }
   </style>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/base.css?v=pref528">
-  <link rel="stylesheet" href="css/weather.css?v=pref542">
-  <link rel="modulepreload" href="js/app.js?v=pref542">
+  <link rel="stylesheet" href="css/weather.css?v=pref543">
+  <link rel="modulepreload" href="js/app.js?v=pref543">
   <link rel="modulepreload" href="js/area-master.js?v=pref528">
-  <link rel="preload" href="data/weather.json?v=pref522" as="fetch" crossorigin>
-  <link rel="preload" href="data/locations.json?v=pref522" as="fetch" crossorigin>
-  <link rel="preload" href="maps/japan.svg?v=pref507" as="fetch" crossorigin>
-  <link rel="preload" href="img/weekly-frame.svg?v=pref534" as="image">
-  <link rel="preload" href="img/weekly-frame-portrait.svg?v=pref537" as="image">
   <script>
     (function () {
       try { document.documentElement.classList.remove("is-boot"); } catch (e) { /* ignore */ }
@@ -98,24 +90,51 @@
         else document.documentElement.setAttribute("data-orient", "landscape");
         if (content === "weekly-pop" || content === "weeklypop") content = "weekly_precip";
         if (content === "weekly" || content === "weekly-weather") content = "weekly_weather";
-        if (content === "weekly_precip" || content === "weekly_weather") {
-          document.documentElement.setAttribute("data-boot-content", content);
-        }
+        var isWeekly = content === "weekly_precip" || content === "weekly_weather";
+        if (isWeekly) document.documentElement.setAttribute("data-boot-content", content);
         var regionNames = { national:"全国", hokkaido:"北海道", tohoku:"東北", kanto:"関東", chubu:"中部", kinki:"近畿", chugoku:"中国", shikoku:"四国", kyushu:"九州", okinawa:"沖縄" };
-        var contentNames = { weekly_weather:"週間天気", weekly_precip:"週間降水確率" };
-        if (contentNames[content]) {
-          var title = (regionNames[region] || "全国") + "｜" + contentNames[content] + (portrait ? "（縦）" : "");
-          document.documentElement.setAttribute("data-boot-title", title);
+        var contentNames = {
+          today_weather:"今日の天気", today_precip:"今日の降水確率",
+          tomorrow_weather:"明日の天気", tomorrow_precip:"明日の降水確率",
+          weekly_weather:"週間天気", weekly_precip:"週間降水確率"
+        };
+        var title = (regionNames[region] || "全国") + "｜" + (contentNames[content] || "今日の天気");
+        document.documentElement.setAttribute("data-boot-title", title);
+        document.title = title;
+        /* 最初の描画から正しい見出しを出す（全国｜今日の天気のちらつき防止） */
+        document.addEventListener("DOMContentLoaded", function () {
+          var el = document.getElementById("led-title");
+          if (el) el.textContent = title;
+        });
+        /* 週間表は地図・地点JSONを先読みしない */
+        if (isWeekly) {
+          var link = document.createElement("link");
+          link.rel = "preload";
+          link.as = "image";
+          link.href = portrait
+            ? "img/weekly-frame-portrait.svg?v=pref537"
+            : "img/weekly-frame.svg?v=pref534";
+          document.head.appendChild(link);
+          var weather = document.createElement("link");
+          weather.rel = "preload";
+          weather.as = "fetch";
+          weather.href = "data/weather.json?v=pref522";
+          weather.crossOrigin = "anonymous";
+          document.head.appendChild(weather);
+        } else {
+          [["data/weather.json?v=pref522","fetch"],["data/locations.json?v=pref522","fetch"],["maps/japan.svg?v=pref507","fetch"]].forEach(function (item) {
+            var l = document.createElement("link");
+            l.rel = "preload";
+            l.as = item[1];
+            l.href = item[0];
+            if (item[1] === "fetch") l.crossOrigin = "anonymous";
+            document.head.appendChild(l);
+          });
         }
       } catch (e) { /* ignore */ }
       if (navigator.serviceWorker) {
         navigator.serviceWorker.getRegistrations().then(function (regs) {
           regs.forEach(function (reg) { reg.unregister(); });
-        });
-      }
-      if (window.caches) {
-        caches.keys().then(function (keys) {
-          keys.forEach(function (key) { caches.delete(key); });
         });
       }
     })();
@@ -203,7 +222,7 @@
                 </g>
               </svg>
             </span>
-            <h1 class="led-title" id="led-title">全国｜今日の天気</h1>
+            <h1 class="led-title" id="led-title">読込中</h1>
           </div>
           <div class="led-title-bar led-sub-bar">
             <div class="led-stamp" id="led-stamp">9月16日(水) 18:00更新</div>
