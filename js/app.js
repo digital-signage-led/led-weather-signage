@@ -2,7 +2,8 @@
  * Studio / signage bootstrap. Studio drives the iframe viewport.
  */
 
-import { APP_VERSION, DATA_VERSION, MAP_VERSION } from "./version.js?v=pref546";
+import { APP_VERSION, DATA_VERSION, MAP_VERSION } from "./version.js?v=pref547";
+import { applyPortraitSeason } from "./season.js?v=pref547";
 import { isWeatherDoc, readWeatherLkg, writeWeatherLkg } from "./weather-cache.js?v=pref522";
 import {
   canonicalContent,
@@ -37,7 +38,7 @@ import {
   partitionTablePages,
   readViewport,
   showAuxiliary
-} from "./viewport.js?v=pref546";
+} from "./viewport.js?v=pref547";
 import { msUntilIconPhaseChange } from "./jma-icons.js?v=pref387";
 import { fetchJmaWeather } from "./jma-live.js?v=pref533";
 import { buildWeekPoints, fetchWeekAlert, renderWeekPointsHtml } from "./week-points.js?v=pref387";
@@ -790,6 +791,12 @@ async function bootSignage() {
     const regionMeta = REGION_MASTER[canonicalRegion(state.regionId)] || REGION_MASTER.national;
     const contentMeta = CONTENT_MASTER[canonicalContent(state.contentId)] || CONTENT_MASTER.today_weather;
     applyViewport(screen, initialVp, regionMeta.id, contentMeta, { fixedScale: useFixedScale });
+    if (initialVp.height > initialVp.width) applyPortraitSeason(screen);
+    else {
+      delete screen.dataset.season;
+      screen.style.removeProperty("--season-bg");
+      screen.style.removeProperty("--season-image");
+    }
     applyMapTransform(screen, layout);
     applyTitleScale(screen, loadTitleScale(initialVp.width, initialVp.height, regionMeta.id, contentMeta.id));
     titleEl.textContent = `${regionMeta.name}｜${contentMeta.name}`;
@@ -999,6 +1006,12 @@ async function bootSignage() {
     const vp = measure();
     state.viewport = vp;
     applyViewport(screen, vp, region.id, content, { fixedScale: useFixedScale });
+    if (vp.height > vp.width) applyPortraitSeason(screen);
+    else {
+      delete screen.dataset.season;
+      screen.style.removeProperty("--season-bg");
+      screen.style.removeProperty("--season-image");
+    }
     if (content.id !== "weekly_weather") hideWeekPoints();
 
     // 解像度ごとの保存レイアウトを読み直す
