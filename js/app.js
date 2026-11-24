@@ -2,8 +2,8 @@
  * Studio / signage bootstrap. Studio drives the iframe viewport.
  */
 
-import { APP_VERSION, DATA_VERSION, MAP_VERSION } from "./version.js?v=pref553";
-import { applyPortraitSeason } from "./season.js?v=pref553";
+import { APP_VERSION, DATA_VERSION, MAP_VERSION } from "./version.js?v=pref554";
+import { applyPortraitSeason } from "./season.js?v=pref554";
 import { isWeatherDoc, readWeatherLkg, writeWeatherLkg } from "./weather-cache.js?v=pref522";
 import {
   canonicalContent,
@@ -18,7 +18,7 @@ import {
 import { adaptWeather, aggregateRegion, assertRegionCoverage, emptyWeatherPoint } from "./weather-data.js?v=pref415";
 import { existingMapLayers, fillMountedMap, loadMapSvg, mountMap, mountMapFrame, placeCardsAroundMap, projectCity } from "./map-renderer.js?v=pref530";
 import { formatStamp, renderCityCard, renderCityCardSkeleton, renderPin, pinRadiusForViewBox, pinRadiusForMatchingScreen, pickNoteWeather, weatherTone, renderNoteIcon, renderPrecipTodLegend } from "./weather-renderer.js?v=pref533";
-import { CONTENT_MASTER, REGION_MASTER, citiesForMaster } from "./area-master.js?v=pref553";
+import { CONTENT_MASTER, REGION_MASTER, citiesForMaster } from "./area-master.js?v=pref554";
 import { applyCardScale, applyLockedCards, applyMapTransform, applyPrecipLegend, applyTitleScale, bindCardEditor, bindMapControls, bindMapEditor, bindOkinawaEditor, bindPrecipLegendEditor, CARD_POS_MAX, CARD_POS_MIN, CARD_SCALE_MAX, CARD_SCALE_MIN, TITLE_SCALE_MAX, TITLE_SCALE_MIN, centerCityCards, hasLocalLayouts, initLayoutDefaults, listCardPositions, loadCardScale, loadLayout, loadTitleScale, moveLockedCard, resetCardScale, resetLayout, resetTitleScale, saveCardScale, saveLayout, saveTitleScale, snapshotAllLayoutDefaults, snapshotLayoutDefaults } from "./studio-layout.js?v=pref525";
 import { expandForecast, formatNoteHtml, noteFor } from "./forecast.js?v=pref533";
 import { hydrateWeeklyWeatherIcons, renderWeeklyTable, renderWeeklyTableSkeleton, renderWeeklyTableSync, weeklyTableRows } from "./table-renderer.js?v=pref544";
@@ -38,7 +38,7 @@ import {
   partitionTablePages,
   readViewport,
   showAuxiliary
-} from "./viewport.js?v=pref553";
+} from "./viewport.js?v=pref554";
 import { msUntilIconPhaseChange } from "./jma-icons.js?v=pref387";
 import { fetchJmaWeather } from "./jma-live.js?v=pref533";
 import { buildWeekPoints, fetchWeekAlert, renderWeekPointsHtml } from "./week-points.js?v=pref387";
@@ -794,6 +794,21 @@ async function bootSignage() {
     ? "portrait"
     : "landscape";
   const layout = loadLayout(state.regionId, state.contentId, initialVp.width, initialVp.height);
+  const bootContentMeta = CONTENT_MASTER[canonicalContent(state.contentId)] || CONTENT_MASTER.today_weather;
+  /* ?????????????????????????????? */
+  if (bootContentMeta.kind === "table") {
+    try {
+      const doc = await loadWeatherDoc();
+      if (isWeatherDoc(doc)) {
+        liveWeatherCache = {
+          at: liveWeatherCache.at || Date.now(),
+          doc
+        };
+      }
+    } catch {
+      /* skeleton ???? */
+    }
+  }
 
   function paintKnownSync() {
     const regionMeta = REGION_MASTER[canonicalRegion(state.regionId)] || REGION_MASTER.national;
@@ -810,7 +825,7 @@ async function bootSignage() {
     }
     applyMapTransform(screen, layout);
     applyTitleScale(screen, loadTitleScale(initialVp.width, initialVp.height, regionMeta.id, contentMeta.id));
-    titleEl.textContent = `${regionMeta.name}｜${contentMeta.name}`;
+    titleEl.textContent = `${regionMeta.name}?${contentMeta.name}`;
     document.title = titleEl.textContent;
     syncTitleMark(contentMeta);
     const cities = citiesForMaster(regionMeta.id).slice().sort((a, b) => (
@@ -831,11 +846,21 @@ async function bootSignage() {
           weather.updatedAt
         ));
         stage.innerHTML = renderWeeklyTableSync(selected, contentMeta.id);
-        if (liveWeatherCache.at) {
-          stampEl.textContent = formatStamp(new Date(liveWeatherCache.at).toISOString(), !showAuxiliary(initialVp, "stampWeek"));
+        const stampIso = liveWeatherCache.at
+          ? new Date(liveWeatherCache.at).toISOString()
+          : weather.updatedAt;
+        if (stampIso) {
+          stampEl.textContent = formatStamp(stampIso, !showAuxiliary(initialVp, "stampWeek"));
         }
-      } else {
+        const note = noteFor(contentMeta.id, regionMeta.id, weather, selected);
+        if (noteEl && note) {
+          noteEl.textContent = note;
+          noteEl.dataset.note = note;
+        }
+      } else if (page.length) {
         stage.innerHTML = renderWeeklyTableSkeleton(page, contentMeta.id);
+      } else {
+        stage.innerHTML = renderWeeklyTableSkeleton([], contentMeta.id);
       }
       return;
     }
@@ -1849,7 +1874,9 @@ const jsonCache = new Map();
 
 async function fetchJson(url) {
   if (jsonCache.has(url)) return jsonCache.get(url);
-  const pending = fetch(`${url}?v=${DATA_VERSION}`, { cache: "force-cache" })
+  /* ??JSON???????????force-cache ???????????????????? */
+  const cacheMode = String(url).includes("weather.json") ? "no-cache" : "force-cache";
+  const pending = fetch(`${url}?v=${DATA_VERSION}`, { cache: cacheMode })
     .then((response) => {
       if (!response.ok) throw new Error(`${url} fetch failed`);
       return response.json();
