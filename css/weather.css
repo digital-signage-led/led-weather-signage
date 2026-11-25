@@ -828,53 +828,81 @@ html.is-edit .precip-tod-legend.is-dragging {
   color: #ffffff;
 }
 
-/* 横：従来の水色フレーム（季節背景は縦専用） */
+/* 横・週間: 季節背景（1920x1080） */
 #led-screen:not([data-shape="portrait"])[data-content="weekly_weather"],
 #led-screen:not([data-shape="portrait"])[data-content="weekly_precip"],
 .led-screen:not([data-shape="portrait"])[data-content="weekly_weather"],
 .led-screen:not([data-shape="portrait"])[data-content="weekly_precip"] {
-  background: #c8ebff url("../img/weekly-frame.svg?v=pref534") no-repeat center / 100% 100%;
+  background: var(--season-bg, #fff6ea) url("../img/seasons/autumn-1920x1080.jpg?v=pref560") no-repeat center / 100% 100%;
 }
 
-/* 縦・週間: 季節背景（パスは CSS 相対で固定。JS 変数だと css/ 基準にずれて読めない） */
+#led-screen:not([data-shape="portrait"])[data-content="weekly_weather"][data-season="spring"],
+#led-screen:not([data-shape="portrait"])[data-content="weekly_precip"][data-season="spring"],
+.led-screen:not([data-shape="portrait"])[data-content="weekly_weather"][data-season="spring"],
+.led-screen:not([data-shape="portrait"])[data-content="weekly_precip"][data-season="spring"] {
+  background: #fff0f4 url("../img/seasons/spring-1920x1080.jpg?v=pref560") no-repeat center / 100% 100%;
+}
+
+#led-screen:not([data-shape="portrait"])[data-content="weekly_weather"][data-season="summer"],
+#led-screen:not([data-shape="portrait"])[data-content="weekly_precip"][data-season="summer"],
+.led-screen:not([data-shape="portrait"])[data-content="weekly_weather"][data-season="summer"],
+.led-screen:not([data-shape="portrait"])[data-content="weekly_precip"][data-season="summer"] {
+  background: #e8f6ff url("../img/seasons/summer-1920x1080.jpg?v=pref560") no-repeat center / 100% 100%;
+}
+
+#led-screen:not([data-shape="portrait"])[data-content="weekly_weather"][data-season="autumn"],
+#led-screen:not([data-shape="portrait"])[data-content="weekly_precip"][data-season="autumn"],
+.led-screen:not([data-shape="portrait"])[data-content="weekly_weather"][data-season="autumn"],
+.led-screen:not([data-shape="portrait"])[data-content="weekly_precip"][data-season="autumn"] {
+  background: #fff6ea url("../img/seasons/autumn-1920x1080.jpg?v=pref560") no-repeat center / 100% 100%;
+}
+
+#led-screen:not([data-shape="portrait"])[data-content="weekly_weather"][data-season="winter"],
+#led-screen:not([data-shape="portrait"])[data-content="weekly_precip"][data-season="winter"],
+.led-screen:not([data-shape="portrait"])[data-content="weekly_weather"][data-season="winter"],
+.led-screen:not([data-shape="portrait"])[data-content="weekly_precip"][data-season="winter"] {
+  background: #eef4ff url("../img/seasons/winter-1920x1080.jpg?v=pref560") no-repeat center / 100% 100%;
+}
+
+/* 縦・週間: 季節背景（1080x1920。パスは CSS 相対で固定） */
 #led-screen[data-shape="portrait"][data-content="weekly_weather"],
 #led-screen[data-shape="portrait"][data-content="weekly_precip"],
 .led-screen[data-shape="portrait"][data-content="weekly_weather"],
 .led-screen[data-shape="portrait"][data-content="weekly_precip"] {
-  background: var(--season-bg, #fff6ea) url("../img/seasons/autumn-1080x1920.jpg?v=pref552") no-repeat center / 100% 100%;
+  background: var(--season-bg, #fff6ea) url("../img/seasons/autumn-1080x1920.jpg?v=pref560") no-repeat center / 100% 100%;
 }
 
 #led-screen[data-shape="portrait"][data-content="weekly_weather"][data-season="spring"],
 #led-screen[data-shape="portrait"][data-content="weekly_precip"][data-season="spring"],
 .led-screen[data-shape="portrait"][data-content="weekly_weather"][data-season="spring"],
 .led-screen[data-shape="portrait"][data-content="weekly_precip"][data-season="spring"] {
-  background: #fff0f4 url("../img/seasons/spring-1080x1920.jpg?v=pref552") no-repeat center / 100% 100%;
+  background: #fff0f4 url("../img/seasons/spring-1080x1920.jpg?v=pref560") no-repeat center / 100% 100%;
 }
 
 #led-screen[data-shape="portrait"][data-content="weekly_weather"][data-season="summer"],
 #led-screen[data-shape="portrait"][data-content="weekly_precip"][data-season="summer"],
 .led-screen[data-shape="portrait"][data-content="weekly_weather"][data-season="summer"],
 .led-screen[data-shape="portrait"][data-content="weekly_precip"][data-season="summer"] {
-  background: #e8f6ff url("../img/seasons/summer-1080x1920.png?v=pref552") no-repeat center / 100% 100%;
+  background: #e8f6ff url("../img/seasons/summer-1080x1920.png?v=pref560") no-repeat center / 100% 100%;
 }
 
 #led-screen[data-shape="portrait"][data-content="weekly_weather"][data-season="autumn"],
 #led-screen[data-shape="portrait"][data-content="weekly_precip"][data-season="autumn"],
 .led-screen[data-shape="portrait"][data-content="weekly_weather"][data-season="autumn"],
 .led-screen[data-shape="portrait"][data-content="weekly_precip"][data-season="autumn"] {
-  background: #fff6ea url("../img/seasons/autumn-1080x1920.jpg?v=pref552") no-repeat center / 100% 100%;
+  background: #fff6ea url("../img/seasons/autumn-1080x1920.jpg?v=pref560") no-repeat center / 100% 100%;
 }
 
 #led-screen[data-shape="portrait"][data-content="weekly_weather"][data-season="winter"],
 #led-screen[data-shape="portrait"][data-content="weekly_precip"][data-season="winter"],
 .led-screen[data-shape="portrait"][data-content="weekly_weather"][data-season="winter"],
 .led-screen[data-shape="portrait"][data-content="weekly_precip"][data-season="winter"] {
-  background: #eef4ff url("../img/seasons/winter-1080x1920.jpg?v=pref552") no-repeat center / 100% 100%;
+  background: #eef4ff url("../img/seasons/winter-1080x1920.jpg?v=pref560") no-repeat center / 100% 100%;
 }
 
 .led-screen[data-shape="portrait"][data-content="weekly_weather"] .forecast-table,
 .led-screen[data-shape="portrait"][data-content="weekly_precip"] .forecast-table {
-  bottom: 44px;
+  bottom: calc(var(--footer-height) + 12px);
 }
 
 .led-screen[data-content="weekly_weather"] .led-header,
@@ -1285,6 +1313,58 @@ html.is-edit .precip-tod-legend.is-dragging {
   margin-bottom: 0.06em;
   color: #3d6b8c;
   flex: 0 0 auto;
+}
+
+.pop-label-short { display: none; }
+
+/* 縦・7列: ラベルと「100%」までをセル内に収める */
+.led-screen[data-shape="portrait"] .forecast-cell.is-pop-metrics {
+  container-type: inline-size;
+  gap: 0;
+  padding: 4px 2px;
+  justify-content: space-evenly;
+  overflow: hidden;
+}
+.led-screen[data-shape="portrait"] .forecast-cell.is-pop-metrics .pop-metric {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  column-gap: 0;
+}
+.led-screen[data-shape="portrait"] .pop-label-full { display: none; }
+.led-screen[data-shape="portrait"] .pop-label-short { display: inline; }
+.led-screen[data-shape="portrait"] .forecast-cell.is-pop-metrics .pop-metric-label {
+  font-size: min(26px, 24cqw);
+  font-weight: 900;
+  line-height: 1;
+  white-space: nowrap;
+  letter-spacing: 0;
+  max-width: 100%;
+  overflow: hidden;
+}
+.led-screen[data-shape="portrait"] .forecast-cell.is-pop-metrics .pop-metric-value {
+  font-size: min(46px, 42cqw);
+  min-width: 0;
+  max-width: 100%;
+  width: 100%;
+  justify-content: center;
+  line-height: 1;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.led-screen[data-shape="portrait"] .forecast-cell.is-pop-metrics .pop-metric-value small {
+  font-size: 0.45em;
+  margin-bottom: 0.08em;
+}
+.led-screen[data-shape="portrait"] .forecast-cell.is-pop-metrics .pop-metric-value.is-pop-chance {
+  border-bottom: none;
+  padding-bottom: 0;
 }
 
 .forecast-city.is-empty,

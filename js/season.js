@@ -1,5 +1,5 @@
 /**
- * 縦サイネージ用の季節背景（JSTの月で切替）。横には使わない。
+ * 週間天気／週間降水の季節背景（JSTの月で切替）。縦・横どちらも使う。
  * 画像パスは CSS（css/weather.css）側で ../img/seasons/ を使う。
  * JS で url("img/...") を変数に入れると、CSS適用時に css/img/... へずれて読めない。
  */
@@ -31,8 +31,8 @@ export function currentSeason(date = new Date()) {
   return seasonForMonth(jstMonth(date));
 }
 
-/** 縦画面に季節属性を付与。画像は data-season CSS が担当。横では外す。 */
-export function applyPortraitSeason(element, date = new Date()) {
+/** 週間コンテンツに季節属性を付与。画像は data-season CSS が担当。 */
+export function applyWeeklySeason(element, date = new Date()) {
   if (!element) return null;
   const season = currentSeason(date);
   element.dataset.season = season.id;
@@ -40,4 +40,9 @@ export function applyPortraitSeason(element, date = new Date()) {
   element.style.setProperty("--bg-sea", season.bg);
   element.style.removeProperty("--season-image");
   return season;
+}
+
+/** @deprecated 互換用。applyWeeklySeason と同じ。 */
+export function applyPortraitSeason(element, date = new Date()) {
+  return applyWeeklySeason(element, date);
 }
